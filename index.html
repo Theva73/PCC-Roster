@@ -201,7 +201,7 @@
 
         // --- 0. FIREBASE SETUP ---
 
-        // **FIX:** This logic makes the app portable.
+        // This logic makes the app portable.
         // 1. Check for the environment-injected config (for Canvas)
         // 2. If not found, fall back to the hardcoded config (for github.io etc.)
         
@@ -228,7 +228,7 @@
         }
 
         // Canvas-provided variables, with fallbacks for standalone mode
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'roster-app-standalone';
+        // **REMOVED app_id logic from collection path**
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
         // Initialize Firebase
@@ -238,6 +238,7 @@
         setLogLevel('Debug'); // Enable detailed Firestore logs
 
         // Firestore collection references
+        // **FIX:** Using simple root-level collections for the user's personal project
         let employeesCollection, rosterCollection;
 
         // Local data cache, populated from Firestore
@@ -293,7 +294,7 @@
         ];
         const initialRosterData = {
             '2500135': { '2025-10-01': 'OFF', '2025-10-02': '1', '2025-10-03': '1', '2025-10-04': '2', '2025-10-05': '2', '2025-10-06': 'OFF', '2025-10-07': 'OFF', '2025-10-08': 'AL', '2025-10-09': 'AL', '2025-10-10': '1', '2025-10-11': '1', '2025-10-12': '2', '2025-10-13': '2', '2025-10-14': 'OFF', '2025-10-15': 'OFF', '2025-10-16': 'AL', '2025-10-17': 'AL', '2025-10-18': 'PPT', '2025-10-19': 'PPT', '2025-10-20': '1', '2025-10-21': '1', '2025-10-22': '2', '2025-10-23': '2', '2025-10-24': '2N', '2025-10-25': '2N', '2025-10-26': 'OFF', '2025-10-27': 'OFF', '2025-10-28': '1', '2025-10-29': '1', '2025-10-30': '2' },
-            '2501066': { '2025-10-01': 'OFF', '2025-10-02': '1', '2025-10-03': '1', '2025-10-04': '2', '2025-10-05': '2', '2025-10-06': '2N', '2025-10-07': '2N', '2025-10-08': 'OFF', '2025-10-09': 'OFF', '2025-10-10': '1', '2025-10-11': '1', '2025-10-12': '2', '2025-10-13': '2', '2025-10-14': 'OFF', '2025-10-15': 'OFF', '2025-10-16': '1', '2025-10-17': '1', '2025-10-18': 'OFF', '2025-10-19': 'OFF', '2025-10-20': '1', '2025-10-21': '1', '2025-10-22': '2', '2025-10-23': '2', '2025-10-24': 'OFF', '2025-10-25': 'OFF', '2025-10-26': '1', '2025-10-27': '1', '2025-10-28': '2', '2025-10-29': '2', '2025-10-30': 'OFF' },
+            '2501066': { '2025-10-01': 'OFF', '2025-10-02': '1', '2025-10-03': '1', '2025-10-04': '2', '2025-10-05': '2', '2025-10-06': '2N', '2025-10-07': '2N', '2025-10-08': 'OFF', '2025-10-09': 'OFF', '2025-10-10': '1', '2025-10-11': '1', '2025-10-12': '2', '2025-10-13': '2', '2025-10-14': 'OFF', '2025-10-15': 'OFF', '2025-10-16': '1', '2025-10-17': '1', '2025-10-18': 'OFF', '2025-10-19': 'OFF', '2025-10-20': '1', '2025-10-21': '1', '2025-10-22': '2', '2025-10-23': '2', '2025-10-24': 'OFF', '2025-10-25': 'OFF', '2025-10-26': '1', '2025-10-27': '1', '2025-1T-28': '2', '2025-10-29': '2', '2025-10-30': 'OFF' },
             '2500549': { '2025-10-01': '2N', '2025-10-02': '2N', '2025-10-03': 'OFF', '2025-10-04': 'OFF', '2025-10-05': 'AL', '2025-10-06': 'AL', '2025-10-07': 'AL', '2025-10-08': 'AL', '2025-10-09': 'AL', '2025-10-10': 'OFF', '2025-10-11': 'OFF', '2025-10-12': '1', '2025-10-13': '1', '2025-10-14': '2', '2025-10-15': '2', '2025-10-16': '2N', '2025-10-17': '2N', '2025-10-18': 'OFF', '2025-10-19': 'OFF', '2025-10-20': '1', '2025-10-21': '1', '2025-10-22': '2', '2025-10-23': '2', '2025-10-24': 'PCT', '2025-10-25': 'PCT', '2025-10-26': '2N', '2025-10-27': '2N', '2025-10-28': 'OFF', '2025-10-29': 'OFF', '2025-10-30': 'AL' },
             '2500705': { '2025-10-01': 'AL', '2025-10-02': 'OFF', '2025-10-03': 'OFF', '2025-10-04': '1', '2025-10-05': '1', '2025-10-06': '2', '2025-10-07': '2', '2025-10-08': '2N', '2025-10-09': '2N', '2025-10-10': 'OFF', '2025-10-11': 'OFF', '2025-10-12': '1A', '2025-10-13': '1A', '2025-10-14': '1', '2025-10-15': '1', '2025-10-16': '2', '2025-10-17': '2', '2025-10-18': '2N', '2025-10-19': '2N', '2025-10-20': 'OFF', '2025-10-21': 'OFF', '2025-10-22': '1', '2025-10-23': '1', '2025-10-24': '2', '2025-10-25': '2N', '2025-10-26': '2N', '2025-10-27': 'OFF', '2025-10-28': 'OFF', '2025-10-29': '1', '2025-10-30': '1' },
             '2501182': { '2025-10-01': '1A', '2025-10-02': '1', '2025-10-03': '1', '2025-10-04': '2', '2025-10-05': '2', '2025-10-06': '2N', '2025-10-07': '2N', '2025-10-08': 'OFF', '2025-10-09': 'OFF', '2025-10-10': '1A', '2025-10-11': '1A', '2025-10-12': '1', '2025-10-13': '1', '2025-10-14': '2', '2025-10-15': '2', '2025-10-16': 'OFF', '2025-10-17': 'OFF', '2025-10-18': 'AL', '2025-10-19': 'AL', '2025-10-20': 'OFF', '2025-10-21': 'OFF', '2025-10-22': '1A', '2025-10-23': '1A', '2025-10-24': 'PCT', '2025-10-25': 'PCT', '2025-10-26': 'OFF', '2025-10-27': 'OFF', '2025-10-28': '1', '2025-10-29': '1', '2025-10-30': '2' },
@@ -685,6 +686,7 @@
          */
         async function populateInitialData() {
             console.log("Checking for initial data...");
+            // **FIX:** Check the 'employees' collection
             const querySnapshot = await getDocs(employeesCollection);
             if (querySnapshot.empty) {
                 console.log("No employees found. Populating initial data...");
@@ -692,12 +694,14 @@
                 
                 // Add employees
                 initialEmployeeData.forEach(emp => {
+                    // **FIX:** Use 'employees' collection
                     const empDocRef = doc(employeesCollection, emp.id);
                     batch.set(empDocRef, emp);
                 });
                 
                 // Add roster data
                 Object.keys(initialRosterData).forEach(empId => {
+                    // **FIX:** Use 'roster' collection
                     const rosterDocRef = doc(rosterCollection, empId);
                     batch.set(rosterDocRef, initialRosterData[empId]);
                 });
@@ -714,6 +718,7 @@
          */
         function setupDataListeners() {
             // 1. Listen for Employee changes
+            // **FIX:** Use 'employees' collection
             onSnapshot(query(employeesCollection), (snapshot) => {
                 console.log("Employee data updated from Firestore.");
                 employeeData = [];
@@ -727,6 +732,7 @@
             });
 
             // 2. Listen for Roster changes
+            // **FIX:** Use 'roster' collection
             onSnapshot(query(rosterCollection), (snapshot) => {
                  console.log("Roster data updated from Firestore.");
                 rosterData = {};
@@ -748,25 +754,27 @@
                 if (user) {
                     console.log("User authenticated:", user.uid);
                     loadingState.textContent = "Loading Roster Data...";
-                    const userId = user.uid;
-
-                    // Define collection paths. 
-                    // This uses a public path that works in both environments.
-                    // The 'appId' variable will be unique to Canvas or set to 'roster-app-standalone'
-                    employeesCollection = collection(db, `artifacts/${appId}/public/data/employees`);
-                    rosterCollection = collection(db, `artifacts/${appId}/public/data/roster`);
                     
-                    // Check if we need to populate initial data (one-time check)
-                    await populateInitialData();
+                    // **FIX:** Define collection paths to root-level
+                    employeesCollection = collection(db, "employees");
+                    rosterCollection = collection(db, "roster");
                     
-                    // Setup listeners to get and sync data
-                    setupDataListeners();
-                    
-                    // Mark data as loaded and render
-                    isDataLoaded = true;
-                    loadingState.classList.add('hidden');
-                    rosterContainer.classList.remove('hidden');
-                    renderRoster();
+                    try {
+                        // Check if we need to populate initial data (one-time check)
+                        await populateInitialData();
+                        
+                        // Setup listeners to get and sync data
+                        setupDataListeners();
+                        
+                        // Mark data as loaded and render
+                        isDataLoaded = true;
+                        loadingState.classList.add('hidden');
+                        rosterContainer.classList.remove('hidden');
+                        renderRoster();
+                    } catch (error) {
+                        console.error("Error loading initial data (check Firestore Rules):", error);
+                        loadingState.textContent = "Error: Could not read from database. Please check Firestore security rules.";
+                    }
 
                 } else {
                     console.log("User not signed in.");
@@ -821,7 +829,6 @@
         // --- 6. INITIALIZATION ---
         
         // Start the Firebase connection and data loading process
-        // Added a DOMContentLoaded listener to be safe
         document.addEventListener('DOMContentLoaded', initFirebase);
 
     </script>
