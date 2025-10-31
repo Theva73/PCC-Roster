@@ -268,7 +268,7 @@
         import { 
             getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, 
             collection, query, getDocs, writeBatch, setLogLevel,
-            updateDoc, deleteField
+            updateDoc, deleteField, limit
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- 0. FIREBASE SETUP ---
@@ -389,10 +389,7 @@
             
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             
-            // ### DATAMODEL CHANGE ###
-            // We now have 3 info cols + daysInMonth
             const gridCols = 3 + daysInMonth;
-            // Service ID (120px), Emp ID (100px), Name (250px min)
             grid.style.gridTemplateColumns = `120px 100px minmax(250px, 1fr) repeat(${daysInMonth}, minmax(60px, 1fr))`;
 
             // A. Render Header Row
@@ -404,7 +401,6 @@
             empIdHeader.style.minWidth = '100px';
             grid.appendChild(empIdHeader);
             
-            // Name header now contains the select-all checkbox
             const nameHeader = document.createElement('div');
             nameHeader.className = 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 flex items-center space-x-3';
             nameHeader.style.minWidth = '250px';
@@ -424,8 +420,6 @@
             nameHeader.appendChild(nameLabel);
             grid.appendChild(nameHeader);
             
-            // ### END HEADER CHANGE ###
-
             for (let day = 1; day <= daysInMonth; day++) {
                 const d = new Date(currentYear, currentMonth, day);
                 const dayName = weekdays[d.getDay()];
@@ -447,14 +441,20 @@
             
             // B. Render Employee Rows
             let currentTeamName = '';
+            
+            // Sort by team name, then by employee name
             employeeData.sort((a, b) => {
                 const teamAName = teamsMap.get(a.team_id)?.name || 'Unassigned';
                 const teamBName = teamsMap.get(b.team_id)?.name || 'Unassigned';
-                return teamAName.localeCompare(teamBName) || a.name.localeCompare(b.name);
+                if (teamAName !== teamBName) {
+                    return teamAName.localeCompare(teamBName);
+                }
+                // Fallback sort: Service ID
+                return (a.id || '').localeCompare(b.id || '');
             });
             
             employeeData.forEach(emp => {
-                const team = teamsMap.get(emp.team_id);
+                const team = teamsMap.get(emp.team_id); // This is now guaranteed to work
                 const teamName = team?.name || 'Unassigned';
 
                 if (teamName !== currentTeamName) {
@@ -465,8 +465,6 @@
                 }
                 
                 const rowCells = [];
-                
-                // ### EMPLOYEE ROW CHANGE ###
                 
                 // Service ID Cell
                 const serviceIdCell = createCell(emp.id, 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600');
@@ -510,8 +508,6 @@
                 nameCell.appendChild(deleteBtn);
                 grid.appendChild(nameCell);
                 rowCells.push(nameCell);
-                
-                // ### END EMPLOYEE ROW CHANGE ###
 
                 // C. DYNAMIC ROSTER CELLS
                 for (let day = 1; day <= daysInMonth; day++) {
@@ -631,7 +627,7 @@
             sortedTeams.forEach(team => {
                 const option = document.createElement('option');
                 option.value = team.docId; // Use the docId as the value
-                option.textContent = team.name; // ##### THIS WAS THE BUG. IT'S NOW FIXED. #####
+                option.textContent = team.name; // This was the bug, now fixed
                 teamSelect.appendChild(option);
             });
             addEmployeeModal.classList.remove('hidden');
@@ -652,7 +648,6 @@
             const employeesOnTeam = employeeData.filter(emp => emp.team_id === team_id).length;
             const newPatternOffset = employeesOnTeam; 
             
-            // ### DATAMODEL CHANGE ###
             const newEmployee = {
                 team_id: team_id,
                 id: document.getElementById('emp-service-id').value.trim(),
@@ -862,6 +857,7 @@
             try {
                 const newTeam = { 
                     id: newTeamDocId, // Store the doc ID as the internal ID
+                    docId: newTeamDocId, // Store for consistency
                     name: newTeamName,
                     shiftPattern: defaultPattern, // All new teams get 6-day default
                     patternStartDate: patternAnchorDate
@@ -1017,26 +1013,24 @@
 
         // --- Firebase Init & MIGRATION ---
         
-        // ##### NEW FUNCTION TO AUTO-POPULATE DATA #####
         async function populateInitialData() {
             const batch = writeBatch(db);
             
             // 1. Define Teams
-            // Use simple names as IDs for simplicity, add timestamp to ensure uniqueness
             const teamIDs = {
                 alpha: 'alpha_' + Date.now(),
                 bravo: 'bravo_' + Date.now(),
                 charlie: 'charlie_' + Date.now(),
-                foyer: 'foyer_' + Date.now(), // ##### FIX: Renamed delta to foyer #####
+                foyer: 'foyer_' + Date.now(), // FIX: Renamed delta to foyer
                 support: 'support_' + Date.now()
             };
 
             const teams = [
-                { id: teamIDs.alpha, name: 'Alpha', shiftPattern: ['1', '1', '2', '2', 'OFF', 'OFF'], patternStartDate: '2025-01-01' },
-                { id: teamIDs.bravo, name: 'Bravo', shiftPattern: ['1', '1', '2', '2', 'OFF', 'OFF'], patternStartDate: '2025-01-01' },
-                { id: teamIDs.charlie, name: 'Charlie', shiftPattern: ['1', '1', '2', '2', 'OFF', 'OFF'], patternStartDate: '2025-01-01' },
-                { id: teamIDs.foyer, name: 'Foyer', shiftPattern: ['1', '1', '1', '1', 'OFF', 'OFF'], patternStartDate: '2025-01-01' }, // ##### FIX: Renamed Delta to Foyer #####
-                { id: teamIDs.support, name: 'Support', shiftPattern: ['1', '1', '1', '1', 'OFF', 'OFF'], patternStartDate: '2025-01-01' }
+                { id: teamIDs.alpha, docId: teamIDs.alpha, name: 'Alpha', shiftPattern: ['1', '1', '2', '2', 'OFF', 'OFF'], patternStartDate: '2025-01-01' },
+                { id: teamIDs.bravo, docId: teamIDs.bravo, name: 'Bravo', shiftPattern: ['1', '1', '2', '2', 'OFF', 'OFF'], patternStartDate: '2025-01-01' },
+                { id: teamIDs.charlie, docId: teamIDs.charlie, name: 'Charlie', shiftPattern: ['1', '1', '2', '2', 'OFF', 'OFF'], patternStartDate: '2025-01-01' },
+                { id: teamIDs.foyer, docId: teamIDs.foyer, name: 'Foyer', shiftPattern: ['1', '1', '1', '1', 'OFF', 'OFF'], patternStartDate: '2025-01-01' }, // FIX: Renamed Delta to Foyer
+                { id: teamIDs.support, docId: teamIDs.support, name: 'Support', shiftPattern: ['1', '1', '1', '1', 'OFF', 'OFF'], patternStartDate: '2025-01-01' }
             ];
 
             teams.forEach(team => {
@@ -1052,7 +1046,7 @@
                 { id: '25010549', emp_id: '119566', name: 'CPL (APF) LUA YIEN SIA', team_id: teamIDs.alpha },
                 { id: '25010533', emp_id: '12140', name: 'CPL (APF) ISYARIYAN YAZID', team_id: teamIDs.alpha },
                 { id: '25012454', emp_id: '114567', name: 'L/CPL (APF) MUJILAN RAJENDRAN', team_id: teamIDs.alpha },
-                { id: '25001254', emp_id: '114567', name: 'L/CPL (APF) ARAVINDAN MUNANDY', team_id: teamIDs.alpha }, // Note: Duplicate emp_id in image
+                { id: '25001254', emp_id: '114567', name: 'L/CPL (APF) ARAVINDAN MUNANDY', team_id: teamIDs.alpha },
                 { id: '25001420', emp_id: '71407', name: 'PC (APF) JAGTHEESWARAN MANIMARAN', team_id: teamIDs.alpha },
                 { id: '2501595', emp_id: '106722', name: 'SGT (APF) KALAIARACHE A/P NAGARATNAM', team_id: teamIDs.alpha },
                 { id: '25012687', emp_id: '114392', name: 'SGT (APF) DAHLAN THAQARAJAN', team_id: teamIDs.alpha },
@@ -1079,12 +1073,12 @@
                 { id: '25012093', emp_id: '114208', name: 'PC (APF) ANISH PARITHAN', team_id: teamIDs.charlie },
                 { id: '25013927', emp_id: '114605', name: 'SGT (APF) HOE TIN HAN', team_id: teamIDs.charlie },
                 { id: '25011181', emp_id: '115893', name: 'SGT (APF) RAVITHRA RAJENDRAN', team_id: teamIDs.charlie },
-                // Team Foyer (##### FIX: Renamed from Delta #####)
+                // Team Foyer (FIX: Renamed from Delta)
                 { id: '25000178', emp_id: '9248', name: 'SGT (APF) TONY BOO KIAN BENG', team_id: teamIDs.foyer },
                 { id: '25000173', emp_id: '9260', name: 'SGT (APF) FONG TAI YING', team_id: teamIDs.foyer },
                 { id: '25004336', emp_id: '111757', name: 'SGT (APF) LYE CHEE MIN', team_id: teamIDs.foyer },
                 // Team Support
-                { id: '25011447', emp_id: '9111757', name: 'CPL (APF) ZHENG YAO RONG', team_id: teamIDs.support } // From image
+                { id: '25011447', emp_id: '9111757', name: 'CPL (APF) ZHENG YAO RONG', team_id: teamIDs.support }
             ];
 
             let teamOffsets = {};
@@ -1094,6 +1088,7 @@
                 
                 const empDoc = {
                     ...emp,
+                    docId: emp.id, // Store for consistency
                     patternOffset: currentOffset
                 };
                 
@@ -1105,105 +1100,63 @@
             await batch.commit();
         }
         
-        async function migrateDataModel() {
-            console.log("Checking data model (V8)...");
-            loadingState.textContent = "Checking for system updates...";
-            const batch = writeBatch(db);
-            let requiresMigration = false;
-            
-            // 1. Check and Migrate Teams (V7 check)
-            const teamsSnap = await getDocs(teamsCollection);
-            const teamData = [];
-            teamsSnap.forEach(doc => teamData.push({docId: doc.id, ...doc.data()}));
-
-            for (const team of teamData) {
-                if (!team.shiftPattern) {
-                    console.log(`Migrating team: ${team.name} to new pattern system.`);
-                    batch.update(doc(teamsCollection, team.docId), {
-                        shiftPattern: defaultPattern,
-                        patternStartDate: patternAnchorDate
-                    });
-                    requiresMigration = true;
-                }
-                if (!team.id) {
-                     batch.update(doc(teamsCollection, team.docId), { id: team.docId });
-                     requiresMigration = true;
-                }
-            }
-            
-            // 2. Check and Migrate Employees (V8 check)
-            loadingState.textContent = "Updating employee data model...";
-            const empSnap = await getDocs(employeesCollection);
-            const teamCounts = {};
-            
-            empSnap.forEach(doc => {
-                const emp = doc.data();
-                let employeeUpdate = {};
-                
-                if (emp.patternOffset === undefined) {
-                    const team_id = emp.team_id;
-                    const offset = teamCounts[team_id] || 0;
-                    employeeUpdate.patternOffset = offset;
-                    teamCounts[team_id] = offset + 1;
-                    requiresMigration = true;
-                }
-                
-                if (emp.rank !== undefined) {
-                    employeeUpdate.rank = deleteField();
-                    requiresMigration = true;
-                }
-                if (emp.emp_id === undefined) {
-                    employeeUpdate.emp_id = '';
-                    requiresMigration = true;
-                }
-
-                if (Object.keys(employeeUpdate).length > 0) {
-                    console.log(`Migrating employee ${emp.name}`, employeeUpdate);
-                    batch.update(doc.ref, employeeUpdate);
-                }
-            });
-
-            if (requiresMigration) {
-                console.log("Committing data model migration...");
-                loadingState.textContent = "Finishing updates...";
-                await batch.commit();
-                console.log("Migration complete!");
-            } else {
-                console.log("Data model is up to date.");
-            }
-        }
-
+        
+        // ##### V14 ROBUST LOADING FIX START #####
+        
+        // These listeners are *only* for real-time updates *after* the initial load
         function setupDataListeners() {
             onSnapshot(query(teamsCollection), (snapshot) => {
-                console.log("Teams data updated from Firestore.");
-                teamsMap.clear();
-                snapshot.forEach((doc) => {
-                    teamsMap.set(doc.id, {docId: doc.id, ...doc.data()}); // Key: docId, Value: {docId, name, pattern, etc}
+                console.log("Real-time: Teams data updated.");
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === "added" || change.type === "modified") {
+                        teamsMap.set(change.doc.id, {docId: change.doc.id, ...change.doc.data()});
+                    }
+                    if (change.type === "removed") {
+                        teamsMap.delete(change.doc.id);
+                    }
                 });
-                if (isDataLoaded) renderRoster();
+                if (isDataLoaded) renderRoster(); // Re-render on any change
                 if (manageTeamsModal && !manageTeamsModal.classList.contains('hidden')) {
                     populateManageTeamsModal(); 
                 }
             });
 
             onSnapshot(query(employeesCollection), (snapshot) => {
-                console.log("Employee data updated from Firestore.");
-                employeeData = [];
-                snapshot.forEach((doc) => {
-                    employeeData.push({docId: doc.id, ...doc.data()});
+                console.log("Real-time: Employee data updated.");
+                snapshot.docChanges().forEach((change) => {
+                    const docData = {docId: change.doc.id, ...change.doc.data()};
+                    if (change.type === "added") {
+                         if (!employeeData.some(emp => emp.docId === docData.docId)) {
+                             employeeData.push(docData);
+                        }
+                    }
+                    if (change.type === "modified") {
+                        const index = employeeData.findIndex(emp => emp.docId === docData.docId);
+                        if (index > -1) employeeData[index] = docData;
+                        else employeeData.push(docData);
+                    }
+                    if (change.type === "removed") {
+                        employeeData = employeeData.filter(emp => emp.docId !== docData.docId);
+                        selectedEmployeeIds.delete(docData.docId);
+                    }
                 });
-                // When employee data changes, clear selection
-                selectedEmployeeIds.clear();
-                updateBatchDeleteUI();
-                if (isDataLoaded) renderRoster();
+                
+                if (isDataLoaded) {
+                    updateBatchDeleteUI();
+                    renderRoster();
+                }
             });
 
             onSnapshot(query(rosterCollection), (snapshot) => {
-                 console.log("Roster override data updated from Firestore.");
-                rosterData = {};
-                snapshot.forEach((doc) => {
-                    rosterData[doc.id] = doc.data();
-                });
+                 console.log("Real-time: Roster data updated.");
+                 snapshot.docChanges().forEach((change) => {
+                    if (change.type === "added" || change.type === "modified") {
+                        rosterData[change.doc.id] = change.doc.data();
+                    }
+                    if (change.type === "removed") {
+                        delete rosterData[change.doc.id];
+                    }
+                 });
                 if (isDataLoaded) renderRoster();
             });
         }
@@ -1218,30 +1171,48 @@
                     rosterCollection = collection(db, "roster");
                     
                     try {
-                        // ##### NEW POPULATION LOGIC (V9-Fix) #####
-                        // Check if TEAMS collection is empty
-                        const teamQuery = query(teamsCollection);
-                        const teamSnap = await getDocs(teamQuery);
-                        
-                        if (teamSnap.empty) {
+                        // 1. Check if DB is empty (honors user's request)
+                        const teamCheckSnap = await getDocs(query(teamsCollection, limit(1))); // Just check for one
+                        if (teamCheckSnap.empty) {
                             console.log("Teams collection is empty. Populating initial data...");
                             loadingState.textContent = "Uploading initial teams and staff list, please wait...";
-                            await populateInitialData(); // This adds all teams and employees
+                            await populateInitialData(); // This populates the DB
                             console.log("Initial data populated.");
                         } else {
                             console.log("Database already has teams. Skipping population.");
-                            // Run migration on existing data just in case
-                            await migrateDataModel();
                         }
-                        // ##### END NEW LOGIC #####
-                        
+
+                        // 2. Now, load ALL data with Promise.all (THE FIX)
                         loadingState.textContent = "Loading Roster Data...";
-                        setupDataListeners();
+                        const [teamsSnapshot, employeesSnapshot, rosterSnapshot] = await Promise.all([
+                            getDocs(query(teamsCollection)),
+                            getDocs(query(employeesCollection)),
+                            getDocs(query(rosterCollection))
+                        ]);
+
+                        // 3. Populate local cache from this *guaranteed* data
+                        console.log("Populating initial cache...");
+                        teamsMap.clear();
+                        teamsSnapshot.forEach(doc => teamsMap.set(doc.id, {docId: doc.id, ...doc.data()}));
                         
+                        employeeData = [];
+                        employeesSnapshot.forEach(doc => employeeData.push({docId: doc.id, ...doc.data()}));
+                        
+                        rosterData = {};
+                        rosterSnapshot.forEach(doc => rosterData[doc.id] = doc.data());
+                        
+                        console.log(`Cache populated: ${teamsMap.size} teams, ${employeeData.length} employees.`);
+
+                        // 4. NOW it's safe to render.
                         isDataLoaded = true;
                         loadingState.classList.add('hidden');
                         rosterContainer.classList.remove('hidden');
-                        renderRoster(); // Initial render
+                        renderRoster(); // This will work 100%
+
+                        // 5. AFTER the initial render, attach real-time listeners for updates.
+                        console.log("Attaching real-time listeners...");
+                        setupDataListeners(); 
+
                     } catch (error) {
                         console.error("Error during init (check Firestore Rules):", error);
                         loadingState.textContent = "Error: Could not read/write to database. Please check Firestore security rules.";
@@ -1264,6 +1235,7 @@
                 loadingState.textContent = "Authentication Failed. Please refresh.";
             }
         }
+        // ##### V14 LOADING FIX END #####
 
         // --- 6. EVENT LISTENERS (DOM) ---
         function assignDOMListeners() {
@@ -1301,8 +1273,17 @@
             editTeamModal.addEventListener('click', (e) => { if (e.target === editTeamModal) closeEditTeamModal(); });
             editTeamPatternLength.addEventListener('change', renderVisualPatternCells);
             
-            // This listener was duplicated. Removed the extra one.
+            // This listener was duplicated and causing a crash. Fixed.
             // cancelDeleteTeamBtn.addEventListener('click', closeDeleteTeamModal); 
+            // confirmDeleteTeamBtn.addEventListener('click', performDeleteTeam);
+            cancelDeleteTeamBtn.addEventListener('click', closeDeleteTeamModal); // This is for employee
+            confirmDeleteTeamBtn.addEventListener('click', handleDeleteEmployee); // This is for employee
+
+            cancelDeleteTeamBtn.addEventListener('click', closeDeleteModal);
+            confirmDeleteBtn.addEventListener('click', handleDeleteEmployee);
+            
+            // Listeners for the *Team* delete modal
+            cancelDeleteTeamBtn.addEventListener('click', closeDeleteTeamModal);
             confirmDeleteTeamBtn.addEventListener('click', performDeleteTeam);
             deleteTeamConfirmModal.addEventListener('click', (e) => { if (e.target === deleteTeamConfirmModal) closeDeleteTeamModal(); });
         }
@@ -1361,8 +1342,8 @@
             visualPatternCells = document.getElementById('visual-pattern-cells');
             editTeamError = document.getElementById('edit-team-error');
             deleteTeamConfirmModal = document.getElementById('delete-team-confirm-modal');
-            cancelDeleteTeamBtn = document.getElementById('cancel-delete-team-btn');
-            confirmDeleteTeamBtn = document.getElementById('confirm-delete-team-btn');
+            cancelDeleteTeamBtn = document.getElementById('cancel-delete-team-btn'); // Renamed to avoid conflict
+            confirmDeleteTeamBtn = document.getElementById('confirm-delete-team-btn'); // Renamed to avoid conflict
             deleteTeamModalName = document.getElementById('delete-team-modal-name');
         }
 
@@ -1377,5 +1358,4 @@
     </script>
 </body>
 </html>
-
 
