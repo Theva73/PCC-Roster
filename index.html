@@ -1017,6 +1017,94 @@
 
         // --- Firebase Init & MIGRATION ---
         
+        // ##### NEW FUNCTION TO AUTO-POPULATE DATA #####
+        async function populateInitialData() {
+            const batch = writeBatch(db);
+            
+            // 1. Define Teams
+            // Use simple names as IDs for simplicity, add timestamp to ensure uniqueness
+            const teamIDs = {
+                alpha: 'alpha_' + Date.now(),
+                bravo: 'bravo_' + Date.now(),
+                charlie: 'charlie_' + Date.now(),
+                foyer: 'foyer_' + Date.now(), // ##### FIX: Renamed delta to foyer #####
+                support: 'support_' + Date.now()
+            };
+
+            const teams = [
+                { id: teamIDs.alpha, name: 'Alpha', shiftPattern: ['1', '1', '2', '2', 'OFF', 'OFF'], patternStartDate: '2025-01-01' },
+                { id: teamIDs.bravo, name: 'Bravo', shiftPattern: ['1', '1', '2', '2', 'OFF', 'OFF'], patternStartDate: '2025-01-01' },
+                { id: teamIDs.charlie, name: 'Charlie', shiftPattern: ['1', '1', '2', '2', 'OFF', 'OFF'], patternStartDate: '2025-01-01' },
+                { id: teamIDs.foyer, name: 'Foyer', shiftPattern: ['1', '1', '1', '1', 'OFF', 'OFF'], patternStartDate: '2025-01-01' }, // ##### FIX: Renamed Delta to Foyer #####
+                { id: teamIDs.support, name: 'Support', shiftPattern: ['1', '1', '1', '1', 'OFF', 'OFF'], patternStartDate: '2025-01-01' }
+            ];
+
+            teams.forEach(team => {
+                batch.set(doc(teamsCollection, team.id), team);
+            });
+
+            // 2. Define Employees (Extracted from image)
+            const employees = [
+                // Team Alpha
+                { id: '25013575', emp_id: '11997', name: 'SGT (APF) DAHLIA SHAFIQ', team_id: teamIDs.alpha },
+                { id: '25001375', emp_id: '11977', name: 'SGT (APF) CHEW WAI HOO', team_id: teamIDs.alpha },
+                { id: '25001153', emp_id: '33748', name: 'CPL (APF) RAVILO VEERASAMY', team_id: teamIDs.alpha },
+                { id: '25010549', emp_id: '119566', name: 'CPL (APF) LUA YIEN SIA', team_id: teamIDs.alpha },
+                { id: '25010533', emp_id: '12140', name: 'CPL (APF) ISYARIYAN YAZID', team_id: teamIDs.alpha },
+                { id: '25012454', emp_id: '114567', name: 'L/CPL (APF) MUJILAN RAJENDRAN', team_id: teamIDs.alpha },
+                { id: '25001254', emp_id: '114567', name: 'L/CPL (APF) ARAVINDAN MUNANDY', team_id: teamIDs.alpha }, // Note: Duplicate emp_id in image
+                { id: '25001420', emp_id: '71407', name: 'PC (APF) JAGTHEESWARAN MANIMARAN', team_id: teamIDs.alpha },
+                { id: '2501595', emp_id: '106722', name: 'SGT (APF) KALAIARACHE A/P NAGARATNAM', team_id: teamIDs.alpha },
+                { id: '25012687', emp_id: '114392', name: 'SGT (APF) DAHLAN THAQARAJAN', team_id: teamIDs.alpha },
+                // Team Bravo
+                { id: '25007705', emp_id: '112844', name: 'SGT (APF) LEE SOON THAI', team_id: teamIDs.bravo },
+                { id: '25080785', emp_id: '112888', name: 'SGT (APF) HO CHIE TIN', team_id: teamIDs.bravo },
+                { id: '25001731', emp_id: '70895', name: 'SGT (APF) HO KOK MAN', team_id: teamIDs.bravo },
+                { id: '25000421', emp_id: '104545', name: 'L/CPL (APF) THEVANANTHAN A/L KANAPATHY', team_id: teamIDs.bravo },
+                { id: '25011682', emp_id: '114573', name: 'L/CPL (APF) LIM CHIA MING', team_id: teamIDs.bravo },
+                { id: '25016179', emp_id: '114547', name: 'L/CPL (APF) JENNY WONG JOANN', team_id: teamIDs.bravo },
+                { id: '25002330', emp_id: '115005', name: 'CPL (APF) KRISHNA KUMAR DEVADAS', team_id: teamIDs.bravo },
+                { id: '25013556', emp_id: '112281', name: 'CPL (APF) CHUA YEN KAI', team_id: teamIDs.bravo },
+                { id: '25001355', emp_id: '107483', name: 'SGT (APF) DHARM AL ILBUGANATHAN', team_id: teamIDs.bravo },
+                { id: '25013354', emp_id: '114518', name: 'L/CPL (APF) VIVEKANANTHAN SANKARAN', team_id: teamIDs.bravo },
+                // Team Charlie
+                { id: '25000772', emp_id: '9431', name: 'SGT (APF) YONG KAH WHYE', team_id: teamIDs.charlie },
+                { id: '25080180', emp_id: '113414', name: 'SGT (APF) LIEW TAN HOU THIAN', team_id: teamIDs.charlie },
+                { id: '25080200', emp_id: '115716', name: 'SGT (APF) LIEW TECK LEE', team_id: teamIDs.charlie },
+                { id: '25006095', emp_id: '112048', name: 'CPL (APF) LO KOK BONG', team_id: teamIDs.charlie },
+                { id: '25011208', emp_id: '115904', name: 'CPL (APF) THEVARAJAN SUBRAMANIAM', team_id: teamIDs.charlie },
+                { id: '25012057', emp_id: '112907', name: 'CPL (APF) LAWRENCE A/L MICHAEL', team_id: teamIDs.charlie },
+                { id: '25012122', emp_id: '114221', name: 'L/CPL (APF) MUSTAQIM BIN JAILANI', team_id: teamIDs.charlie },
+                { id: '25012906', emp_id: '114406', name: 'L/CPL (APF) KAMASHNAKAR RAJIAH', team_id: teamIDs.charlie },
+                { id: '25012093', emp_id: '114208', name: 'PC (APF) ANISH PARITHAN', team_id: teamIDs.charlie },
+                { id: '25013927', emp_id: '114605', name: 'SGT (APF) HOE TIN HAN', team_id: teamIDs.charlie },
+                { id: '25011181', emp_id: '115893', name: 'SGT (APF) RAVITHRA RAJENDRAN', team_id: teamIDs.charlie },
+                // Team Foyer (##### FIX: Renamed from Delta #####)
+                { id: '25000178', emp_id: '9248', name: 'SGT (APF) TONY BOO KIAN BENG', team_id: teamIDs.foyer },
+                { id: '25000173', emp_id: '9260', name: 'SGT (APF) FONG TAI YING', team_id: teamIDs.foyer },
+                { id: '25004336', emp_id: '111757', name: 'SGT (APF) LYE CHEE MIN', team_id: teamIDs.foyer },
+                // Team Support
+                { id: '25011447', emp_id: '9111757', name: 'CPL (APF) ZHENG YAO RONG', team_id: teamIDs.support } // From image
+            ];
+
+            let teamOffsets = {};
+            employees.forEach(emp => {
+                const team_id = emp.team_id;
+                const currentOffset = teamOffsets[team_id] || 0;
+                
+                const empDoc = {
+                    ...emp,
+                    patternOffset: currentOffset
+                };
+                
+                batch.set(doc(employeesCollection, emp.id), empDoc);
+                teamOffsets[team_id] = currentOffset + 1; // Increment for next employee on this team
+            });
+            
+            // 3. Commit the batch
+            await batch.commit();
+        }
+        
         async function migrateDataModel() {
             console.log("Checking data model (V8)...");
             loadingState.textContent = "Checking for system updates...";
@@ -1037,7 +1125,6 @@
                     });
                     requiresMigration = true;
                 }
-                // Fix team.id if it's missing (from old data)
                 if (!team.id) {
                      batch.update(doc(teamsCollection, team.docId), { id: team.docId });
                      requiresMigration = true;
@@ -1053,7 +1140,6 @@
                 const emp = doc.data();
                 let employeeUpdate = {};
                 
-                // Add patternOffset (from V7)
                 if (emp.patternOffset === undefined) {
                     const team_id = emp.team_id;
                     const offset = teamCounts[team_id] || 0;
@@ -1062,13 +1148,12 @@
                     requiresMigration = true;
                 }
                 
-                // Add emp_id and remove rank (from V8)
                 if (emp.rank !== undefined) {
                     employeeUpdate.rank = deleteField();
                     requiresMigration = true;
                 }
                 if (emp.emp_id === undefined) {
-                    employeeUpdate.emp_id = ''; // Add new field as empty
+                    employeeUpdate.emp_id = '';
                     requiresMigration = true;
                 }
 
@@ -1133,7 +1218,22 @@
                     rosterCollection = collection(db, "roster");
                     
                     try {
-                        await migrateDataModel();
+                        // ##### NEW POPULATION LOGIC (V9-Fix) #####
+                        // Check if TEAMS collection is empty
+                        const teamQuery = query(teamsCollection);
+                        const teamSnap = await getDocs(teamQuery);
+                        
+                        if (teamSnap.empty) {
+                            console.log("Teams collection is empty. Populating initial data...");
+                            loadingState.textContent = "Uploading initial teams and staff list, please wait...";
+                            await populateInitialData(); // This adds all teams and employees
+                            console.log("Initial data populated.");
+                        } else {
+                            console.log("Database already has teams. Skipping population.");
+                            // Run migration on existing data just in case
+                            await migrateDataModel();
+                        }
+                        // ##### END NEW LOGIC #####
                         
                         loadingState.textContent = "Loading Roster Data...";
                         setupDataListeners();
@@ -1201,7 +1301,8 @@
             editTeamModal.addEventListener('click', (e) => { if (e.target === editTeamModal) closeEditTeamModal(); });
             editTeamPatternLength.addEventListener('change', renderVisualPatternCells);
             
-            cancelDeleteTeamBtn.addEventListener('click', closeDeleteTeamModal);
+            // This listener was duplicated. Removed the extra one.
+            // cancelDeleteTeamBtn.addEventListener('click', closeDeleteTeamModal); 
             confirmDeleteTeamBtn.addEventListener('click', performDeleteTeam);
             deleteTeamConfirmModal.addEventListener('click', (e) => { if (e.target === deleteTeamConfirmModal) closeDeleteTeamModal(); });
         }
