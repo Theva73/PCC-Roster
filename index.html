@@ -201,18 +201,33 @@
 
         // --- 0. FIREBASE SETUP ---
 
-        // **FIX:** Use the environment-provided Firebase configuration
-        // This is the MANDATORY way to initialize Firebase in this environment
-        if (typeof __firebase_config === 'undefined') {
-            console.error("Firebase config not found. App cannot initialize.");
-            // We can't proceed, so show an error
-            document.getElementById('loading-state').textContent = "Error: Firebase config missing. Cannot connect.";
-            // Stop script execution
-            throw new Error("Missing __firebase_config"); 
-        }
-        const firebaseConfig = JSON.parse(__firebase_config);
+        // **FIX:** This logic makes the app portable.
+        // 1. Check for the environment-injected config (for Canvas)
+        // 2. If not found, fall back to the hardcoded config (for github.io etc.)
+        
+        let firebaseConfig;
+        
+        // This is the hardcoded config you provided
+        const standaloneConfig = {
+            apiKey: "AIzaSyAP7b4KcwRYPMZjNc2TWsNqMvC3ywImhOM",
+            authDomain: "roster-4a997.firebaseapp.com",
+            projectId: "roster-4a997",
+            storageBucket: "roster-4a997.firebasestorage.app",
+            messagingSenderId: "901381868881",
+            appId: "1:901381868881:web:92930481d6c1c85fedd770"
+        };
 
-        // Canvas-provided variables
+        if (typeof __firebase_config !== 'undefined') {
+            // We are in the Canvas environment
+            console.log("Using environment-provided Firebase config.");
+            firebaseConfig = JSON.parse(__firebase_config);
+        } else {
+            // We are on an external site (like github.io)
+            console.log("Using standalone Firebase config.");
+            firebaseConfig = standaloneConfig;
+        }
+
+        // Canvas-provided variables, with fallbacks for standalone mode
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'roster-app-standalone';
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
@@ -735,8 +750,9 @@
                     loadingState.textContent = "Loading Roster Data...";
                     const userId = user.uid;
 
-                    // Define collection paths based on user
-                    // Using public data path for this multi-user roster
+                    // Define collection paths. 
+                    // This uses a public path that works in both environments.
+                    // The 'appId' variable will be unique to Canvas or set to 'roster-app-standalone'
                     employeesCollection = collection(db, `artifacts/${appId}/public/data/employees`);
                     rosterCollection = collection(db, `artifacts/${appId}/public/data/roster`);
                     
@@ -760,9 +776,11 @@
 
             try {
                 if (initialAuthToken) {
+                    // This will run in Canvas
                     console.log("Signing in with custom token...");
                     await signInWithCustomToken(auth, initialAuthToken);
                 } else {
+                    // This will run on github.io
                     console.log("Signing in anonymously...");
                     await signInAnonymously(auth);
                 }
