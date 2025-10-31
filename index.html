@@ -630,7 +630,8 @@
             const sortedTeams = [...teamsMap.values()].sort((a, b) => a.name.localeCompare(b.name));
             sortedTeams.forEach(team => {
                 const option = document.createElement('option');
-                option.value = team.id; // This should be the docId
+                option.value = team.docId; // Use the docId as the value
+                option.textContent = team.name; // ##### THIS WAS THE BUG. IT'S NOW FIXED. #####
                 teamSelect.appendChild(option);
             });
             addEmployeeModal.classList.remove('hidden');
