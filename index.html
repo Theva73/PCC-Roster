@@ -10,7 +10,6 @@
         body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
         .sticky-col { position: -webkit-sticky; position: sticky; left: 0; z-index: 10; background-color: #ffffff; }
         .header-cell { position: -webkit-sticky; position: sticky; top: 0; z-index: 5; background-color: #f8fafc; }
-        /* Updated z-index to be highest */
         .sticky-header-col { top: 0; left: 0; z-index: 15; background-color: #f1f5f9; }
         
         .roster-container::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -27,17 +26,9 @@
             to { opacity: 1; transform: scale(1); }
         }
         
-        /* Shift that comes from the team pattern, not a manual override */
-        .pattern-shift { opacity: 0.6; }
-        .pattern-shift:hover { opacity: 1; }
-
-        /* Toggle Switch */
-        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #4f46e5; }
-        input:checked + .slider:before { transform: translateX(26px); }
+        /* Shift that comes from the auto-pattern */
+        .auto-shift { opacity: 0.6; }
+        .auto-shift:hover { opacity: 1; }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -59,14 +50,6 @@
             </div>
             
             <div class="flex items-center space-x-4">
-                <div class="flex items-center space-x-2">
-                    <label for="pattern-edit-toggle" class="text-sm font-medium text-gray-700">Edit Team Patterns</label>
-                    <label class="switch">
-                        <input type="checkbox" id="pattern-edit-toggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                
                 <!-- Action buttons container -->
                 <div id="header-actions" class="flex space-x-2">
                     <button id="manage-teams-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition duration-150">
@@ -98,8 +81,9 @@
         </div>
     </div>
 
-    <!-- MODALS (omitted for brevity, they are the same as V5) -->
-    <!-- Shift Selector Modal -->
+    <!-- MODALS -->
+
+    <!-- Shift Selector Modal (Main) -->
     <div id="shift-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
             <div class="flex justify-between items-center mb-4">
@@ -113,6 +97,20 @@
             <button id="set-auto-shift-btn" class="w-full mt-4 px-4 py-2 bg-gray-600 text-white rounded-lg shadow hover:bg-gray-700 transition duration-150">
                 Set to Auto (Remove Override)
             </button>
+        </div>
+    </div>
+    
+    <!-- Shift Selector Modal (for Pattern Builder) -->
+    <div id="pattern-shift-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[60] hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">Set Pattern Shift</h3>
+                 <button id="close-pattern-modal" class="text-gray-400 hover:text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <p class="mb-4 text-gray-600">Select shift for <strong id="pattern-modal-day">Day X</strong> of the pattern.</p>
+            <div id="pattern-shift-options" class="grid grid-cols-4 gap-3"></div>
         </div>
     </div>
 
@@ -206,7 +204,50 @@
         </div>
     </div>
 
-    <!-- Edit Team Modal is REMOVED -->
+    <!-- Edit Team (Visual Pattern Builder) Modal -->
+    <div id="edit-team-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-[55] hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-2xl mx-4 modal-fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">Edit Team & Pattern</h3>
+                <button id="close-edit-team-modal" class="text-gray-400 hover:text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <form id="edit-team-form">
+                <input type="hidden" id="edit-team-id">
+                <div class="space-y-4">
+                    <div>
+                        <label for="edit-team-name" class="block text-sm font-medium text-gray-700">Team Name</label>
+                        <input type="text" id="edit-team-name" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm" required>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="edit-team-pattern-length" class="block text-sm font-medium text-gray-700">Pattern Length</label>
+                            <input type="number" id="edit-team-pattern-length" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm" min="1" max="31" value="6">
+                        </div>
+                        <div>
+                            <label for="edit-team-anchor-date" class="block text-sm font-medium text-gray-700">Pattern Anchor Date</label>
+                            <input type="date" id="edit-team-anchor-date" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm" required>
+                            <p class="mt-1 text-xs text-gray-500">The "Day 1" of the rotation.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Visual Pattern</label>
+                        <p class="mt-1 text-xs text-gray-500">Click the cells below to set the repeating pattern.</p>
+                        <div id="visual-pattern-cells" class="mt-2 flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border">
+                            <!-- Cells generated by JS -->
+                        </div>
+                    </div>
+                    <div id="edit-team-error" class="text-red-600 text-sm"></div>
+                    <div class="text-right">
+                        <button type="submit" class="px-5 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
     <!-- Delete Team Confirmation Modal -->
     <div id="delete-team-confirm-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
@@ -257,16 +298,15 @@
         setLogLevel('Debug');
 
         // Firestore collection references
-        let teamsCollection, employeesCollection, rosterCollection, teamPatternsCollection;
+        let teamsCollection, employeesCollection, rosterCollection;
 
         // Local data cache
-        let teamsMap = new Map(); // Stores the full team object
+        let teamsMap = new Map(); // Stores the full team object (id, name, pattern, anchorDate)
         let employeeData = [];
         let rosterData = {}; // Manual Overrides for employees
-        let teamPatternsData = {}; // Master patterns for teams
         let isDataLoaded = false;
         let selectedEmployeeIds = new Set();
-        let isPatternEditMode = false;
+        let tempPatternArray = []; // For the visual pattern builder
         
         // --- 1. DATA DEFINITIONS ---
         const shiftCodes = {
@@ -283,75 +323,53 @@
             '':     { text: '',     color: 'bg-gray-50', textColor: 'text-gray-400' } // Empty
         };
         
+        const patternAnchorDate = '2025-01-01'; // Default genesis date
+        const defaultPattern = ['1', '1', '2', '2', 'OFF', 'OFF']; // 6-day
+        
         // --- 2. STATE & CONSTANTS ---
         let currentYear = 2025;
         let currentMonth = 10; // 0-indexed (10 = November)
         const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
         
         let currentCellElement = null;
-        let currentId = null; // Can be emp_id or team_id
+        let currentEmployeeId = null;
         let currentFullDate = null;
-        let currentName = null; // Can be emp_name or team_name
-        let currentModalType = 'employee'; // 'employee' or 'pattern'
-        
+        let currentEmployeeName = null;
         let employeeIdToDelete = null;
         let teamIdToDelete = null;
 
-        // --- 3. DOM ELEMENTS ---
-        const grid = document.getElementById('roster-grid');
-        const monthYearEl = document.getElementById('current-month-year');
-        const prevMonthBtn = document.getElementById('prev-month');
-        const nextMonthBtn = document.getElementById('next-month');
-        const loadingState = document.getElementById('loading-state');
-        const rosterContainer = document.getElementById('roster-container');
-
-        const patternEditToggle = document.getElementById('pattern-edit-toggle');
-        const headerActions = document.getElementById('header-actions');
-        const batchDeleteContainer = document.getElementById('batch-delete-container');
-        const batchDeleteBtn = document.getElementById('batch-delete-btn');
-        const batchDeleteConfirmModal = document.getElementById('batch-delete-confirm-modal');
-        const batchDeleteCount = document.getElementById('batch-delete-count');
-        const batchDeleteList = document.getElementById('batch-delete-list');
-        const cancelBatchDeleteBtn = document.getElementById('cancel-batch-delete-btn');
-        const confirmBatchDeleteBtn = document.getElementById('confirm-batch-delete-btn');
-        
-        const modal = document.getElementById('shift-modal');
-        const closeModalBtn = document.getElementById('close-modal');
-        const shiftOptionsContainer = document.getElementById('shift-options');
-        const modalEmployeeName = document.getElementById('modal-employee-name');
-        const modalDate = document.getElementById('modal-date');
-        const setAutoShiftBtn = document.getElementById('set-auto-shift-btn');
-
-        const addEmployeeBtn = document.getElementById('add-employee-btn');
-        const addEmployeeModal = document.getElementById('add-employee-modal');
-        const closeAddModalBtn = document.getElementById('close-add-modal');
-        const addEmployeeForm = document.getElementById('add-employee-form');
-        const teamSelect = document.getElementById('emp-team-select');
-        const addError = document.getElementById('add-error');
-
-        const deleteConfirmModal = document.getElementById('delete-confirm-modal');
-        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
-        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-        const deleteModalName = document.getElementById('delete-modal-name');
-        const deleteModalId = document.getElementById('delete-modal-id');
-
-        const manageTeamsBtn = document.getElementById('manage-teams-btn');
-        const manageTeamsModal = document.getElementById('manage-teams-modal');
-        const closeTeamsModalBtn = document.getElementById('close-teams-modal');
-        const addTeamForm = document.getElementById('add-team-form');
-        const newTeamNameInput = document.getElementById('new-team-name');
-        const addTeamError = document.getElementById('add-team-error');
-        const deleteTeamError = document.getElementById('delete-team-error');
-        const teamListUl = document.getElementById('team-list-ul');
-
-        // Edit Team Modal is gone
-        
-        const deleteTeamConfirmModal = document.getElementById('delete-team-confirm-modal');
-        const cancelDeleteTeamBtn = document.getElementById('cancel-delete-team-btn');
-        const confirmDeleteTeamBtn = document.getElementById('confirm-delete-team-btn');
-        const deleteTeamModalName = document.getElementById('delete-team-modal-name');
+        // --- 3. DOM ELEMENTS (Declared here, assigned in DOMContentLoaded) ---
+        let grid, monthYearEl, prevMonthBtn, nextMonthBtn, loadingState, rosterContainer,
+            headerActions, batchDeleteContainer, batchDeleteBtn, batchDeleteConfirmModal,
+            batchDeleteCount, batchDeleteList, cancelBatchDeleteBtn, confirmBatchDeleteBtn,
+            modal, closeModalBtn, shiftOptionsContainer, modalEmployeeName, modalDate,
+            setAutoShiftBtn, patternShiftModal, closePatternModalBtn, patternShiftOptionsContainer,
+            patternModalDay, addEmployeeBtn, addEmployeeModal, closeAddModalBtn,
+            addEmployeeForm, teamSelect, addError, deleteConfirmModal, cancelDeleteBtn,
+            confirmDeleteBtn, deleteModalName, deleteModalId, manageTeamsBtn,
+            manageTeamsModal, closeTeamsModalBtn, addTeamForm, newTeamNameInput,
+            addTeamError, deleteTeamError, teamListUl, editTeamModal, closeEditTeamModalBtn,
+            editTeamForm, editTeamId, editTeamName, editTeamPatternLength,
+            editTeamAnchorDate, visualPatternCells, editTeamError, deleteTeamConfirmModal,
+            cancelDeleteTeamBtn, confirmDeleteTeamBtn, deleteTeamModalName;
 
         // --- 4. HELPER FUNCTIONS ---
+        function getDaysBetween(dateString1, dateString2) {
+            try {
+                const date1 = new Date(dateString1 + 'T00:00:00');
+                const date2 = new Date(dateString2 + 'T00:00:00');
+                if (isNaN(date1) || isNaN(date2)) {
+                   console.error("Invalid date in getDaysBetween", dateString1, dateString2);
+                   return 0;
+                }
+                const diffTime = date1 - date2;
+                return Math.round(diffTime / (1000 * 60 * 60 * 24));
+            } catch (e) {
+                console.error("Error in getDaysBetween", e);
+                return 0;
+            }
+        }
+
         function createCell(text, classes) {
             const cell = document.createElement('div');
             cell.className = classes;
@@ -359,25 +377,10 @@
             return cell;
         }
 
-        function setEditMode(isEditing) {
-            isPatternEditMode = isEditing;
-            if (isEditing) {
-                headerActions.classList.add('hidden');
-                batchDeleteContainer.classList.add('hidden');
-            } else {
-                headerActions.classList.remove('hidden');
-                // Batch delete UI will be updated by its own logic
-                updateBatchDeleteUI();
-            }
-            // Clear selections when switching modes
-            selectedEmployeeIds.clear();
-            renderRoster();
-        }
-
         // --- 5. CORE FUNCTIONS ---
 
         function renderRoster() {
-            if (!isDataLoaded) return;
+            if (!isDataLoaded || !grid) return;
             grid.innerHTML = '';
             
             const date = new Date(currentYear, currentMonth);
@@ -385,68 +388,6 @@
             monthYearEl.textContent = `${monthName} ${currentYear}`;
             
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            
-            if (isPatternEditMode) {
-                renderPatternEditor(daysInMonth);
-            } else {
-                renderEmployeeRoster(daysInMonth);
-            }
-        }
-        
-        function renderPatternEditor(daysInMonth) {
-            const gridCols = 1 + daysInMonth;
-            grid.style.gridTemplateColumns = `minmax(250px, 1fr) repeat(${daysInMonth}, minmax(60px, 1fr))`;
-            
-            // A. Render Header Row
-            const nameHeader = createCell('Team Master Pattern', 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200');
-            nameHeader.style.minWidth = '250px';
-            grid.appendChild(nameHeader);
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                const d = new Date(currentYear, currentMonth, day);
-                const dayName = weekdays[d.getDay()];
-                const headerCell = document.createElement('div');
-                headerCell.className = 'header-cell text-center p-2 border-b border-l border-gray-200';
-                const dayNumSpan = document.createElement('span');
-                dayNumSpan.className = 'text-lg font-bold block';
-                dayNumSpan.textContent = day;
-                const dayNameSpan = document.createElement('span');
-                dayNameSpan.className = 'text-xs text-gray-500 font-medium block';
-                dayNameSpan.textContent = dayName;
-                if (dayName === 'SAT' || dayName === 'SUN') {
-                    dayNumSpan.classList.add('text-red-500');
-                }
-                headerCell.appendChild(dayNumSpan);
-                headerCell.appendChild(dayNameSpan);
-                grid.appendChild(headerCell);
-            }
-            
-            // B. Render Team Pattern Rows
-            const sortedTeams = [...teamsMap.values()].sort((a, b) => a.name.localeCompare(b.name));
-            
-            sortedTeams.forEach(team => {
-                const teamPattern = teamPatternsData[team.id] || {};
-
-                const nameCell = createCell(team.name, 'sticky-col text-sm p-3 border-b border-gray-200 text-gray-700 font-bold');
-                nameCell.style.minWidth = '250px';
-                grid.appendChild(nameCell);
-                
-                // C. DYNAMIC PATTERN CELLS
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const fullDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    const shift = teamPattern[fullDate] || '';
-                    const shiftInfo = shiftCodes[shift] || shiftCodes[''];
-
-                    const dataCell = createCell(shiftInfo.text, `text-center p-3 border-b border-l border-gray-200 cursor-pointer hover:bg-gray-100 transition duration-150 font-semibold ${shiftInfo.color} ${shiftInfo.textColor}`);
-                    dataCell.addEventListener('click', () => {
-                        openModal(dataCell, team.id, team.name, fullDate, 'pattern');
-                    });
-                    grid.appendChild(dataCell);
-                }
-            });
-        }
-        
-        function renderEmployeeRoster(daysInMonth) {
             const gridCols = 3 + daysInMonth;
             grid.style.gridTemplateColumns = `minmax(250px, 1fr) 80px 100px repeat(${daysInMonth}, minmax(60px, 1fr))`;
 
@@ -482,7 +423,6 @@
                 const dayName = weekdays[d.getDay()];
                 const headerCell = document.createElement('div');
                 headerCell.className = 'header-cell text-center p-2 border-b border-l border-gray-200';
-                // ... (rest of day header code) ...
                 const dayNumSpan = document.createElement('span');
                 dayNumSpan.className = 'text-lg font-bold block';
                 dayNumSpan.textContent = day;
@@ -560,24 +500,44 @@
                 rowCells.push(idCell);
 
                 // C. DYNAMIC ROSTER CELLS
-                const teamPattern = teamPatternsData[emp.team_id] || {};
-                
                 for (let day = 1; day <= daysInMonth; day++) {
                     const fullDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    
-                    const manualShift = rosterData[emp.id]?.[fullDate];
-                    const patternShift = teamPattern[fullDate];
-                    
-                    const finalShift = manualShift ?? patternShift ?? '';
-                    const shiftInfo = shiftCodes[finalShift] || shiftCodes[''];
-                    const isFromPattern = (manualShift === undefined && patternShift !== undefined);
+                    const empRoster = rosterData[emp.id] || {};
+                    const manualShift = empRoster[fullDate]; 
+
+                    let shift = '';
+                    let shiftInfo = null;
+                    let isAuto = false;
+
+                    if (manualShift !== undefined) {
+                        shift = manualShift;
+                        shiftInfo = shiftCodes[shift] || shiftCodes[''];
+                    } else {
+                        // This is the V4/V7 logic
+                        if (team && team.shiftPattern && team.shiftPattern.length > 0) {
+                            const pattern = team.shiftPattern;
+                            const anchorDate = team.patternStartDate || patternAnchorDate;
+                            const employeeOffset = emp.patternOffset || 0;
+                            
+                            const daysSinceAnchor = getDaysBetween(fullDate, anchorDate);
+                            const totalOffset = daysSinceAnchor + employeeOffset;
+                            const patternIndex = (totalOffset % pattern.length + pattern.length) % pattern.length;
+                            
+                            const generatedShift = pattern[patternIndex];
+                            shift = generatedShift;
+                            shiftInfo = shiftCodes[shift] || shiftCodes[''];
+                            isAuto = true;
+                        } else {
+                            shiftInfo = shiftCodes[''];
+                        }
+                    }
 
                     const dataCell = createCell(shiftInfo.text, `employee-row text-center p-3 border-b border-l border-gray-200 cursor-pointer hover:bg-gray-100 transition duration-150 font-semibold ${shiftInfo.color} ${shiftInfo.textColor}`);
-                    if (isFromPattern) {
-                        dataCell.classList.add('pattern-shift');
+                    if (isAuto) {
+                        dataCell.classList.add('auto-shift');
                     }
                     dataCell.addEventListener('click', () => {
-                        openModal(dataCell, emp.id, emp.name, fullDate, 'employee');
+                        openModal(dataCell, emp.id, emp.name, fullDate);
                     });
                     grid.appendChild(dataCell);
                     rowCells.push(dataCell);
@@ -594,16 +554,14 @@
             });
             updateSelectAllCheckbox();
         }
-
         
-        function openModal(cellElement, id, name, fullDate, type = 'employee') {
+        function openModal(cellElement, empId, empName, fullDate) {
             currentCellElement = cellElement;
-            currentId = id;
+            currentEmployeeId = empId;
             currentFullDate = fullDate;
-            currentName = name;
-            currentModalType = type;
+            currentEmployeeName = empName;
             
-            modalEmployeeName.textContent = name;
+            modalEmployeeName.textContent = empName;
             modalDate.textContent = new Date(fullDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
             
             shiftOptionsContainer.innerHTML = '';
@@ -616,13 +574,7 @@
                 shiftOptionsContainer.appendChild(button);
             });
             
-            // "Set to Auto" only makes sense for employee overrides
-            if (type === 'employee') {
-                setAutoShiftBtn.classList.remove('hidden');
-            } else {
-                setAutoShiftBtn.classList.add('hidden');
-            }
-            
+            setAutoShiftBtn.classList.remove('hidden');
             modal.classList.remove('hidden');
         }
 
@@ -631,30 +583,23 @@
         }
 
         async function selectShift(shiftCode) {
-            if (!currentId || !currentFullDate) return;
+            if (!currentEmployeeId || !currentFullDate) return;
+            const rosterDocRef = doc(rosterCollection, currentEmployeeId);
             
-            let docRef;
-            let data;
-            
-            if (currentModalType === 'employee') {
-                docRef = doc(rosterCollection, currentId);
+            try {
                 if (shiftCode === 'AUTO') {
-                    // Remove the override field
-                    data = { [currentFullDate]: deleteField() };
-                    await updateDoc(docRef, data); // Use updateDoc for deleteField
+                    // Remove the manual override
+                    await updateDoc(rosterDocRef, {
+                        [currentFullDate]: deleteField()
+                    });
                 } else {
-                    // Set the override field
-                    data = { [currentFullDate]: shiftCode };
-                    await setDoc(docRef, data, { merge: true });
+                    // Set the manual override
+                    await setDoc(rosterDocRef, { [currentFullDate]: shiftCode }, { merge: true });
                 }
-            } else if (currentModalType === 'pattern') {
-                docRef = doc(teamPatternsCollection, currentId);
-                // Set the pattern field
-                data = { [currentFullDate]: shiftCode };
-                await setDoc(docRef, data, { merge: true });
+                closeModal();
+            } catch (error) {
+                console.error("Error saving shift: ", error);
             }
-            
-            closeModal();
         }
         
         function changeMonth(direction) {
@@ -688,12 +633,17 @@
             e.preventDefault();
             addError.textContent = '';
             
+            const team_id = document.getElementById('emp-team-select').value;
+            // Re-introduce staggering logic
+            const employeesOnTeam = employeeData.filter(emp => emp.team_id === team_id).length;
+            const newPatternOffset = employeesOnTeam; 
+
             const newEmployee = {
-                team_id: document.getElementById('emp-team-select').value,
+                team_id: team_id,
                 id: document.getElementById('emp-id').value.trim(),
                 rank: document.getElementById('emp-rank').value.trim(),
-                name: document.getElementById('emp-name').value.trim()
-                // `patternOffset` is no longer needed
+                name: document.getElementById('emp-name').value.trim(),
+                patternOffset: newPatternOffset
             };
 
             if (!newEmployee.team_id) {
@@ -725,9 +675,7 @@
             if (!employeeIdToDelete) return;
             try {
                 const batch = writeBatch(db);
-                // Delete employee doc
                 batch.delete(doc(employeesCollection, employeeIdToDelete));
-                // Delete roster doc
                 batch.delete(doc(rosterCollection, employeeIdToDelete));
                 await batch.commit();
                 
@@ -777,13 +725,6 @@
         }
 
         function updateBatchDeleteUI() {
-            // Don't show batch delete in pattern edit mode
-            if (isPatternEditMode) {
-                 headerActions.classList.add('hidden');
-                 batchDeleteContainer.classList.add('hidden');
-                 return;
-            }
-            
             const count = selectedEmployeeIds.size;
             if (count > 0) {
                 headerActions.classList.add('hidden');
@@ -834,7 +775,7 @@
             }
         }
         
-        // --- Team Management Functions (Simplified) ---
+        // --- Team Management Functions (V7) ---
         
         function openManageTeamsModal() {
             deleteTeamError.textContent = '';
@@ -844,17 +785,20 @@
         }
         function closeManageTeamsModal() { manageTeamsModal.classList.add('hidden'); }
         
+        // ##### BUG FIX IS HERE #####
         function populateManageTeamsModal() {
             if (!teamListUl) return; 
             teamListUl.innerHTML = '';
-            const sortedTeams = [...teamsMap.values()].sort((a, b) => a.name.localeCompare(b.name));
+            
+            // Sort by team name (value) but keep the docId (key)
+            const sortedTeams = [...teamsMap.entries()].sort((a, b) => a[1].name.localeCompare(b[1].name));
 
             if (sortedTeams.length === 0) {
                 teamListUl.innerHTML = '<li class="p-3 text-gray-500 italic">No teams found.</li>';
                 return;
             }
             
-            sortedTeams.forEach(team => {
+            sortedTeams.forEach(([docId, team]) => { // Destructure into [docId, teamObject]
                 const li = document.createElement('li');
                 li.className = 'team-li flex justify-between items-center p-3';
                 
@@ -865,13 +809,17 @@
                 const buttonContainer = document.createElement('div');
                 buttonContainer.className = 'flex items-center';
 
-                // Edit button is removed
-                
+                const editBtn = document.createElement('button');
+                editBtn.textContent = 'Edit';
+                editBtn.className = 'edit-team-btn text-sm text-indigo-600 hover:text-indigo-800 font-medium mr-3 opacity-100 transition-opacity';
+                editBtn.onclick = () => openEditTeamModal(docId); // FIX: Pass the document ID
+                buttonContainer.appendChild(editBtn); 
+
                 const deleteBtn = document.createElement('button');
                 deleteBtn.innerHTML = '&#215;';
                 deleteBtn.className = 'text-red-400 hover:text-red-700 font-bold text-xl p-0 rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-100';
                 deleteBtn.title = `Delete ${team.name}`;
-                deleteBtn.onclick = () => checkAndDeleteTeam(team.id, team.name);
+                deleteBtn.onclick = () => checkAndDeleteTeam(docId, team.name); // FIX: Pass the document ID
                 buttonContainer.appendChild(deleteBtn); 
 
                 li.appendChild(buttonContainer); 
@@ -879,6 +827,7 @@
                 teamListUl.appendChild(li);
             });
         }
+        // ##### END OF BUG FIX #####
         
         async function handleAddTeam(e) {
             e.preventDefault();
@@ -892,9 +841,10 @@
             }
             try {
                 const newTeam = { 
-                    id: newTeamId, 
-                    name: newTeamName
-                    // Pattern fields are no longer needed here
+                    id: newTeamId, // This is the internal ID, which is fine
+                    name: newTeamName,
+                    shiftPattern: defaultPattern, // All new teams get 6-day default
+                    patternStartDate: patternAnchorDate
                 };
                 await setDoc(doc(teamsCollection, newTeamId), newTeam);
                 newTeamNameInput.value = '';
@@ -904,27 +854,136 @@
             }
         }
 
+        // --- Edit Team & Visual Pattern Builder ---
+        function openEditTeamModal(teamId) {
+            const team = teamsMap.get(teamId); // This now works, as teamId is the docId (map key)
+            if (!team) {
+                console.error("Could not find team with ID:", teamId);
+                return;
+            }
+
+            editTeamId.value = teamId; // Store the docId
+            editTeamName.value = team.name;
+            editTeamAnchorDate.value = team.patternStartDate || patternAnchorDate;
+            
+            tempPatternArray = [...(team.shiftPattern || defaultPattern)];
+            editTeamPatternLength.value = tempPatternArray.length;
+            
+            renderVisualPatternCells();
+            
+            editTeamError.textContent = '';
+            editTeamModal.classList.remove('hidden');
+        }
+        
+        function renderVisualPatternCells() {
+            const len = parseInt(editTeamPatternLength.value) || 0;
+            
+            // Ensure tempPatternArray matches the new length
+            while (tempPatternArray.length < len) {
+                tempPatternArray.push(''); // Add empty shifts
+            }
+            if (tempPatternArray.length > len) {
+                tempPatternArray = tempPatternArray.slice(0, len); // Truncate
+            }
+            
+            visualPatternCells.innerHTML = '';
+            for (let i = 0; i < len; i++) {
+                const shiftCode = tempPatternArray[i] || '';
+                const shiftInfo = shiftCodes[shiftCode] || shiftCodes[''];
+                
+                const cell = document.createElement('div');
+                cell.className = `w-16 h-16 flex flex-col items-center justify-center rounded-lg border-2 cursor-pointer ${shiftInfo.color} ${shiftInfo.textColor} hover:shadow-md`;
+                cell.dataset.index = i;
+                
+                const daySpan = document.createElement('span');
+                daySpan.className = 'text-xs font-medium text-gray-500';
+                daySpan.textContent = `Day ${i + 1}`;
+                
+                const shiftSpan = document.createElement('span');
+                shiftSpan.className = 'text-lg font-bold';
+                shiftSpan.textContent = shiftInfo.text || '...';
+                
+                cell.appendChild(daySpan);
+                cell.appendChild(shiftSpan);
+                
+                cell.addEventListener('click', () => openPatternShiftModal(i));
+                visualPatternCells.appendChild(cell);
+            }
+        }
+        
+        function openPatternShiftModal(index) {
+            patternModalDay.textContent = `Day ${index + 1}`;
+            patternShiftOptionsContainer.innerHTML = '';
+            
+            Object.keys(shiftCodes).forEach(code => {
+                const shiftInfo = shiftCodes[code];
+                const button = document.createElement('button');
+                button.textContent = shiftInfo.text || 'Empty';
+                button.className = `p-3 rounded-lg border font-medium transition duration-150 ${shiftInfo.color} ${shiftInfo.textColor} hover:shadow-md hover:ring-2 hover:ring-indigo-400`;
+                button.addEventListener('click', () => {
+                    tempPatternArray[index] = code;
+                    renderVisualPatternCells(); // Re-render cells to show new shift
+                    closePatternShiftModal();
+                });
+                patternShiftOptionsContainer.appendChild(button);
+            });
+            
+            patternShiftModal.classList.remove('hidden');
+        }
+        
+        function closePatternShiftModal() {
+            patternShiftModal.classList.add('hidden');
+        }
+
+        function closeEditTeamModal() {
+            editTeamModal.classList.add('hidden');
+            editTeamForm.reset();
+        }
+
+        async function handleEditTeam(e) {
+            e.preventDefault();
+            editTeamError.textContent = '';
+            const teamId = editTeamId.value; // This is the docId
+            
+            if (tempPatternArray.some(code => code === undefined || code === null)) {
+                editTeamError.textContent = 'All pattern days must have a shift selected.';
+                return;
+            }
+
+            const updatedData = {
+                name: editTeamName.value.trim(),
+                shiftPattern: tempPatternArray,
+                patternStartDate: editTeamAnchorDate.value
+            };
+
+            try {
+                const teamRef = doc(teamsCollection, teamId);
+                // We must merge, not overwrite, in case other properties exist
+                await updateDoc(teamRef, updatedData);
+                closeEditTeamModal();
+            } catch (error) {
+                console.error("Error updating team: ", error);
+                editTeamError.textContent = 'Error saving changes.';
+            }
+        }
+
         // --- Delete Team Functions ---
-        function checkAndDeleteTeam(teamId, teamName) {
+        function checkAndDeleteTeam(teamId, teamName) { // teamId is now the docId
             deleteTeamError.textContent = '';
             const employeesOnTeam = employeeData.filter(emp => emp.team_id === teamId);
+            
             if (employeesOnTeam.length > 0) {
                 deleteTeamError.textContent = `Cannot delete "${teamName}". ${employeesOnTeam.length} employee(s) are still assigned.`;
                 return;
             }
-            teamIdToDelete = teamId;
+            teamIdToDelete = teamId; // This is the docId
             deleteTeamModalName.textContent = teamName;
             deleteTeamConfirmModal.classList.remove('hidden');
         }
         async function performDeleteTeam() {
             if (!teamIdToDelete) return;
             try {
-                // Also delete the team's pattern
-                const batch = writeBatch(db);
-                batch.delete(doc(teamsCollection, teamIdToDelete));
-                batch.delete(doc(teamPatternsCollection, teamIdToDelete));
-                await batch.commit();
-
+                await deleteDoc(doc(teamsCollection, teamIdToDelete)); // This now works
             } catch (error) {
                 console.error("Error deleting team: ", error);
                 deleteTeamError.textContent = 'Error deleting team.';
@@ -939,27 +998,57 @@
         // --- Firebase Init & MIGRATION ---
         
         async function migrateDataModel() {
-            console.log("Checking data model (V6)...");
+            console.log("Checking data model (V7)...");
             loadingState.textContent = "Checking for system updates...";
             const batch = writeBatch(db);
             let requiresMigration = false;
             
-            // This migration just removes old fields. It's non-destructive.
-            // We'll just ignore them, it's safer.
-            console.log("Data model V6 uses new logic, ignoring old fields.");
-            
-            // We just need to ensure the teams exist from V5.
+            // 1. Check and Migrate Teams
             const teamsSnap = await getDocs(teamsCollection);
-            if (teamsSnap.empty) {
-                console.log("No teams found, creating defaults...");
-                // This seems like a first-time setup, let's add some teams
-                const defaultTeams = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Foyer', 'Support'];
-                for (const teamName of defaultTeams) {
-                    const teamId = teamName.toLowerCase() + '_' + Date.now();
-                    batch.set(doc(teamsCollection, teamId), { id: teamId, name: teamName });
+            const teamData = [];
+            teamsSnap.forEach(doc => teamData.push({docId: doc.id, ...doc.data()}));
+
+            for (const team of teamData) {
+                if (!team.shiftPattern) {
+                    console.log(`Migrating team: ${team.name} to new pattern system.`);
+                    batch.update(doc(teamsCollection, team.docId), {
+                        shiftPattern: defaultPattern,
+                        patternStartDate: patternAnchorDate
+                    });
+                    requiresMigration = true;
                 }
+                // Also, let's fix the employee team_id if it's wrong
+                // This is a new check
+                if (team.id && team.id !== team.docId) {
+                    console.warn(`Team ${team.name} has mismatched internal ID. This might cause issues.`);
+                }
+            }
+            
+            // 2. Check and Migrate Employees
+            loadingState.textContent = "Updating employee schedules...";
+            const empSnap = await getDocs(employeesCollection);
+            const teamCounts = {};
+            
+            empSnap.forEach(doc => {
+                const emp = doc.data();
+                if (emp.patternOffset === undefined) {
+                    const team_id = emp.team_id;
+                    const offset = teamCounts[team_id] || 0;
+                    
+                    console.log(`Adding patternOffset ${offset} to ${emp.name}`);
+                    batch.update(doc.ref, { patternOffset: offset });
+                    teamCounts[team_id] = offset + 1;
+                    requiresMigration = true;
+                }
+            });
+
+            if (requiresMigration) {
+                console.log("Committing data model migration...");
+                loadingState.textContent = "Finishing updates...";
                 await batch.commit();
-                console.log("Default teams created.");
+                console.log("Migration complete!");
+            } else {
+                console.log("Data model is up to date.");
             }
         }
 
@@ -968,7 +1057,7 @@
                 console.log("Teams data updated from Firestore.");
                 teamsMap.clear();
                 snapshot.forEach((doc) => {
-                    teamsMap.set(doc.id, doc.data()); 
+                    teamsMap.set(doc.id, doc.data()); // Key: docId, Value: {name, pattern, etc}
                 });
                 if (isDataLoaded) renderRoster();
                 populateManageTeamsModal(); 
@@ -978,7 +1067,7 @@
                 console.log("Employee data updated from Firestore.");
                 employeeData = [];
                 snapshot.forEach((doc) => {
-                    employeeData.push(doc.data());
+                    employeeData.push({docId: doc.id, ...doc.data()}); // Store docId just in case
                 });
                 // When employee data changes, clear selection
                 selectedEmployeeIds.clear();
@@ -994,16 +1083,6 @@
                 });
                 if (isDataLoaded) renderRoster();
             });
-            
-            // NEW LISTENER for Team Patterns
-            onSnapshot(query(teamPatternsCollection), (snapshot) => {
-                 console.log("Team Pattern data updated from Firestore.");
-                teamPatternsData = {};
-                snapshot.forEach((doc) => {
-                    teamPatternsData[doc.id] = doc.data();
-                });
-                if (isDataLoaded) renderRoster();
-            });
         }
         
         async function initFirebase() {
@@ -1014,7 +1093,6 @@
                     teamsCollection = collection(db, "teams");
                     employeesCollection = collection(db, "employees");
                     rosterCollection = collection(db, "roster");
-                    teamPatternsCollection = collection(db, "teamPatterns"); // New collection
                     
                     try {
                         await migrateDataModel();
@@ -1025,7 +1103,7 @@
                         isDataLoaded = true;
                         loadingState.classList.add('hidden');
                         rosterContainer.classList.remove('hidden');
-                        // RenderRoster will be called by listeners
+                        renderRoster(); // Initial render
                     } catch (error) {
                         console.error("Error during init (check Firestore Rules):", error);
                         loadingState.textContent = "Error: Could not read/write to database. Please check Firestore security rules.";
@@ -1050,42 +1128,112 @@
         }
 
         // --- 6. EVENT LISTENERS (DOM) ---
-        patternEditToggle.addEventListener('change', (e) => setEditMode(e.target.checked));
+        function assignDOMListeners() {
+            prevMonthBtn.addEventListener('click', () => changeMonth(-1));
+            nextMonthBtn.addEventListener('click', () => changeMonth(1));
+            
+            closeModalBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+            setAutoShiftBtn.addEventListener('click', () => selectShift('AUTO'));
+
+            closePatternModalBtn.addEventListener('click', closePatternShiftModal);
+            patternShiftModal.addEventListener('click', (e) => { if (e.target === patternShiftModal) closePatternShiftModal(); });
+
+            addEmployeeBtn.addEventListener('click', openAddModal);
+            closeAddModalBtn.addEventListener('click', closeAddModal);
+            addEmployeeForm.addEventListener('submit', handleAddEmployee);
+            addEmployeeModal.addEventListener('click', (e) => { if (e.target === addEmployeeModal) closeAddModal(); });
+
+            cancelDeleteBtn.addEventListener('click', closeDeleteModal);
+            confirmDeleteBtn.addEventListener('click', handleDeleteEmployee);
+            deleteConfirmModal.addEventListener('click', (e) => { if (e.target === deleteConfirmModal) closeDeleteModal(); });
+            
+            batchDeleteBtn.addEventListener('click', openBatchDeleteModal);
+            cancelBatchDeleteBtn.addEventListener('click', closeBatchDeleteModal);
+            confirmBatchDeleteBtn.addEventListener('click', handleBatchDelete);
+            batchDeleteConfirmModal.addEventListener('click', (e) => { if (e.target === batchDeleteConfirmModal) closeBatchDeleteModal(); });
+
+            manageTeamsBtn.addEventListener('click', openManageTeamsModal);
+            closeTeamsModalBtn.addEventListener('click', closeManageTeamsModal);
+            manageTeamsModal.addEventListener('click', (e) => { if (e.target === manageTeamsModal) closeManageTeamsModal(); });
+            addTeamForm.addEventListener('submit', handleAddTeam);
+
+            closeEditTeamModalBtn.addEventListener('click', closeEditTeamModal);
+            editTeamForm.addEventListener('submit', handleEditTeam);
+            editTeamModal.addEventListener('click', (e) => { if (e.target === editTeamModal) closeEditTeamModal(); });
+            editTeamPatternLength.addEventListener('change', renderVisualPatternCells);
+            
+            cancelDeleteTeamBtn.addEventListener('click', closeDeleteTeamModal);
+            confirmDeleteTeamBtn.addEventListener('click', performDeleteTeam);
+            deleteTeamConfirmModal.addEventListener('click', (e) => { if (e.target === deleteTeamConfirmModal) closeDeleteTeamModal(); });
+        }
         
-        prevMonthBtn.addEventListener('click', () => changeMonth(-1));
-        nextMonthBtn.addEventListener('click', () => changeMonth(1));
-        
-        closeModalBtn.addEventListener('click', closeModal);
-        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-        setAutoShiftBtn.addEventListener('click', () => selectShift('AUTO'));
-
-        addEmployeeBtn.addEventListener('click', openAddModal);
-        closeAddModalBtn.addEventListener('click', closeAddModal);
-        addEmployeeForm.addEventListener('submit', handleAddEmployee);
-        addEmployeeModal.addEventListener('click', (e) => { if (e.target === addEmployeeModal) closeAddModal(); });
-
-        cancelDeleteBtn.addEventListener('click', closeDeleteModal);
-        confirmDeleteBtn.addEventListener('click', handleDeleteEmployee);
-        deleteConfirmModal.addEventListener('click', (e) => { if (e.target === deleteConfirmModal) closeDeleteModal(); });
-        
-        batchDeleteBtn.addEventListener('click', openBatchDeleteModal);
-        cancelBatchDeleteBtn.addEventListener('click', closeBatchDeleteModal);
-        confirmBatchDeleteBtn.addEventListener('click', handleBatchDelete);
-        batchDeleteConfirmModal.addEventListener('click', (e) => { if (e.target === batchDeleteConfirmModal) closeBatchDeleteModal(); });
-
-        manageTeamsBtn.addEventListener('click', openManageTeamsModal);
-        closeTeamsModalBtn.addEventListener('click', closeManageTeamsModal);
-        manageTeamsModal.addEventListener('click', (e) => { if (e.target === manageTeamsModal) closeManageTeamsModal(); });
-        addTeamForm.addEventListener('submit', handleAddTeam);
-
-        // Edit Team listeners are removed
-
-        cancelDeleteTeamBtn.addEventListener('click', closeDeleteTeamModal);
-        confirmDeleteTeamBtn.addEventListener('click', performDeleteTeam);
-        deleteTeamConfirmModal.addEventListener('click', (e) => { if (e.target === deleteTeamConfirmModal) closeDeleteTeamModal(); });
+        function assignDOMElements() {
+            grid = document.getElementById('roster-grid');
+            monthYearEl = document.getElementById('current-month-year');
+            prevMonthBtn = document.getElementById('prev-month');
+            nextMonthBtn = document.getElementById('next-month');
+            loadingState = document.getElementById('loading-state');
+            rosterContainer = document.getElementById('roster-container');
+            headerActions = document.getElementById('header-actions');
+            batchDeleteContainer = document.getElementById('batch-delete-container');
+            batchDeleteBtn = document.getElementById('batch-delete-btn');
+            batchDeleteConfirmModal = document.getElementById('batch-delete-confirm-modal');
+            batchDeleteCount = document.getElementById('batch-delete-count');
+            batchDeleteList = document.getElementById('batch-delete-list');
+            cancelBatchDeleteBtn = document.getElementById('cancel-batch-delete-btn');
+            confirmBatchDeleteBtn = document.getElementById('confirm-batch-delete-btn');
+            modal = document.getElementById('shift-modal');
+            closeModalBtn = document.getElementById('close-modal');
+            shiftOptionsContainer = document.getElementById('shift-options');
+            modalEmployeeName = document.getElementById('modal-employee-name');
+            modalDate = document.getElementById('modal-date');
+            setAutoShiftBtn = document.getElementById('set-auto-shift-btn');
+            patternShiftModal = document.getElementById('pattern-shift-modal');
+            closePatternModalBtn = document.getElementById('close-pattern-modal');
+            patternShiftOptionsContainer = document.getElementById('pattern-shift-options');
+            patternModalDay = document.getElementById('pattern-modal-day');
+            addEmployeeBtn = document.getElementById('add-employee-btn');
+            addEmployeeModal = document.getElementById('add-employee-modal');
+            closeAddModalBtn = document.getElementById('close-add-modal');
+            addEmployeeForm = document.getElementById('add-employee-form');
+            teamSelect = document.getElementById('emp-team-select');
+            addError = document.getElementById('add-error');
+            deleteConfirmModal = document.getElementById('delete-confirm-modal');
+            cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+            confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+            deleteModalName = document.getElementById('delete-modal-name');
+            deleteModalId = document.getElementById('delete-modal-id');
+            manageTeamsBtn = document.getElementById('manage-teams-btn');
+            manageTeamsModal = document.getElementById('manage-teams-modal');
+            closeTeamsModalBtn = document.getElementById('close-teams-modal');
+            addTeamForm = document.getElementById('add-team-form');
+            newTeamNameInput = document.getElementById('new-team-name');
+            addTeamError = document.getElementById('add-team-error');
+            deleteTeamError = document.getElementById('delete-team-error');
+            teamListUl = document.getElementById('team-list-ul');
+            editTeamModal = document.getElementById('edit-team-modal');
+            closeEditTeamModalBtn = document.getElementById('close-edit-team-modal');
+            editTeamForm = document.getElementById('edit-team-form');
+            editTeamId = document.getElementById('edit-team-id');
+            editTeamName = document.getElementById('edit-team-name');
+            editTeamPatternLength = document.getElementById('edit-team-pattern-length');
+            editTeamAnchorDate = document.getElementById('edit-team-anchor-date');
+            visualPatternCells = document.getElementById('visual-pattern-cells');
+            editTeamError = document.getElementById('edit-team-error');
+            deleteTeamConfirmModal = document.getElementById('delete-team-confirm-modal');
+            cancelDeleteTeamBtn = document.getElementById('cancel-delete-team-btn');
+            confirmDeleteTeamBtn = document.getElementById('confirm-delete-team-btn');
+            deleteTeamModalName = document.getElementById('delete-team-modal-name');
+        }
 
         // --- 7. INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', initFirebase);
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM Loaded. Assigning elements and listeners.");
+            assignDOMElements();
+            assignDOMListeners();
+            initFirebase();
+        });
 
     </script>
 </body>
