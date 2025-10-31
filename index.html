@@ -57,6 +57,15 @@
         .employee-row:hover .delete-btn {
             opacity: 1;
         }
+
+        /* Simple animation for modal */
+        .modal-fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -80,8 +89,8 @@
                 </button>
             </div>
             <div class="flex space-x-2">
-                 <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition duration-150">
-                    Manage Shifts
+                 <button id="manage-teams-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition duration-150">
+                    Manage Teams
                 </button>
                 <button id="add-employee-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition duration-150">
                     Add Employee
@@ -102,9 +111,11 @@
         </div>
     </div>
 
+    <!-- MODALS -->
+
     <!-- Shift Selector Modal -->
     <div id="shift-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Select Shift</h3>
                 <button id="close-modal" class="text-gray-400 hover:text-gray-600">
@@ -114,17 +125,15 @@
                 </button>
             </div>
             <p class="mb-4 text-gray-600">Assign shift for <strong id="modal-employee-name"></strong> on <strong id="modal-date"></strong>.</p>
-            
-            <!-- Shift codes will be populated here -->
             <div id="shift-options" class="grid grid-cols-4 gap-3">
-                <!-- Example: <button class="p-3 rounded-lg border">OFF</button> -->
+                <!-- Shift codes will be populated here -->
             </div>
         </div>
     </div>
 
     <!-- Add Employee Modal -->
     <div id="add-employee-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Add New Employee</h3>
                 <button id="close-add-modal" class="text-gray-400 hover:text-gray-600">
@@ -136,11 +145,10 @@
             <form id="add-employee-form">
                 <div class="space-y-4">
                     <div>
-                        <label for="emp-team" class="block text-sm font-medium text-gray-700">Team</label>
-                        <input type="text" id="emp-team" list="team-list" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
-                        <datalist id="team-list">
-                            <!-- Options will be populated by JS -->
-                        </datalist>
+                        <label for="emp-team-select" class="block text-sm font-medium text-gray-700">Team</label>
+                        <select id="emp-team-select" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                            <option value="">Select a team...</option>
+                        </select>
                     </div>
                     <div>
                         <label for="emp-id" class="block text-sm font-medium text-gray-700">Employee ID</label>
@@ -163,14 +171,55 @@
         </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
+    <!-- Delete Employee Confirmation Modal -->
     <div id="delete-confirm-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
             <h3 class="text-xl font-semibold text-red-700">Confirm Deletion</h3>
             <p class="my-4 text-gray-600">Are you sure you want to delete <strong id="delete-modal-name"></strong> (ID: <strong id="delete-modal-id"></strong>)? This will also delete all their roster data.</p>
             <div class="flex justify-end space-x-3">
                 <button id="cancel-delete-btn" class="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Cancel</button>
                 <button id="confirm-delete-btn" class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Confirm Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage Teams Modal -->
+    <div id="manage-teams-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">Manage Teams</h3>
+                <button id="close-teams-modal" class="text-gray-400 hover:text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="mb-6">
+                <h4 class="text-lg font-medium text-gray-800 mb-2">Add New Team</h4>
+                <form id="add-team-form" class="flex space-x-2">
+                    <input type="text" id="new-team-name" class="flex-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="New team name" required>
+                    <button type="submit" class="px-5 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition">Add</button>
+                </form>
+                <div id="add-team-error" class="text-red-600 text-sm mt-1"></div>
+            </div>
+            <div>
+                <h4 class="text-lg font-medium text-gray-800 mb-2">Current Teams</h4>
+                <div id="delete-team-error" class="text-red-600 text-sm mb-2"></div>
+                <ul id="team-list-ul" class="divide-y divide-gray-200 h-48 overflow-y-auto border rounded-lg p-2 bg-gray-50">
+                    <!-- Team list will be populated by JS -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- **NEW** Delete Team Confirmation Modal -->
+    <div id="delete-team-confirm-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
+            <h3 class="text-xl font-semibold text-red-700">Confirm Team Deletion</h3>
+            <p class="my-4 text-gray-600">Are you sure you want to delete the team <strong id="delete-team-modal-name"></strong>? This action cannot be undone.</p>
+            <div class="flex justify-end space-x-3">
+                <button id="cancel-delete-team-btn" class="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Cancel</button>
+                <button id="confirm-delete-team-btn" class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Confirm Delete</button>
             </div>
         </div>
     </div>
@@ -200,14 +249,7 @@
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- 0. FIREBASE SETUP ---
-
-        // This logic makes the app portable.
-        // 1. Check for the environment-injected config (for Canvas)
-        // 2. If not found, fall back to the hardcoded config (for github.io etc.)
-        
         let firebaseConfig;
-        
-        // This is the hardcoded config you provided
         const standaloneConfig = {
             apiKey: "AIzaSyAP7b4KcwRYPMZjNc2TWsNqMvC3ywImhOM",
             authDomain: "roster-4a997.firebaseapp.com",
@@ -218,40 +260,31 @@
         };
 
         if (typeof __firebase_config !== 'undefined') {
-            // We are in the Canvas environment
             console.log("Using environment-provided Firebase config.");
             firebaseConfig = JSON.parse(__firebase_config);
         } else {
-            // We are on an external site (like github.io)
             console.log("Using standalone Firebase config.");
             firebaseConfig = standaloneConfig;
         }
 
-        // Canvas-provided variables, with fallbacks for standalone mode
-        // **REMOVED app_id logic from collection path**
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        setLogLevel('Debug'); // Enable detailed Firestore logs
+        setLogLevel('Debug');
 
         // Firestore collection references
-        // **FIX:** Using simple root-level collections for the user's personal project
-        let employeesCollection, rosterCollection;
+        let teamsCollection, employeesCollection, rosterCollection;
 
-        // Local data cache, populated from Firestore
+        // Local data cache
+        let teamsData = [];
+        let teamsMap = new Map();
         let employeeData = [];
         let rosterData = {};
         let isDataLoaded = false;
         
         // --- 1. DATA DEFINITIONS ---
-
-        /**
-         * Defines the shift codes and their associated styles.
-         * This is easily maintainable.
-         */
         const shiftCodes = {
             '1':    { text: '1',    color: 'bg-white', textColor: 'text-gray-800' },
             '2':    { text: '2',    color: 'bg-white', textColor: 'text-gray-800' },
@@ -265,43 +298,45 @@
             'BCLS': { text: 'BCLS', color: 'bg-red-200', textColor: 'text-red-800' },
             '':     { text: '',     color: 'bg-gray-50', textColor: 'text-gray-400' } // Empty
         };
-
-        /**
-         * Initial data to populate on first load.
-         */
-        const initialEmployeeData = [
-            { team: 'Team ALFA / APOs', id: '2500135', rank: 'SGT', name: 'SGT (APF) A...' },
-            { team: 'Team ALFA / APOs', id: '2501066', rank: 'L/CPL', name: 'L/CPL (APF) CHE...' },
-            { team: 'Team ALFA / APOs', id: '2501193', rank: 'SGT', name: 'SGT (APF) CHUA...' },
-            { team: 'Team ALFA / APOs', id: '2500533', rank: 'CPL', name: 'CPL (APF) S... V...' },
-            { team: 'Team ALFA / APOs', id: '2500549', rank: 'CPL', name: 'CPL (APF) L...' },
-            { team: 'Team ALFA / APOs', id: '2510533', rank: 'L/CPL', name: 'L/CPL (APF) B...' },
-            { team: 'Team ALFA / APOs', id: '2500454', rank: 'CPL', name: 'CPL (APF) M... R...' },
-            { team: 'Team ALFA / APOs', id: '2501254', rank: 'L/CPL', name: 'L/CPL (APF) A... M...' },
-            { team: 'Team ALFA / APOs', id: '2501420', rank: 'PC', name: 'PC (APF) J... M...' },
-            { team: 'Team ALFA / APOs', id: '2501595', rank: 'CPL', name: 'CPL (APF) K... A...' },
-            { team: 'Team ALFA / APOs', id: '2501267', rank: 'SGT', name: 'SGT (APF) B... T...' },
-            { team: 'Team BRAVO / IL APOs', id: '2500705', rank: 'SGT', name: 'SGT (APF) LEE...' },
-            { team: 'Team BRAVO / IL APOs', id: '2500805', rank: 'SGT', name: 'SGT (APF) T...' },
-            { team: 'Team BRAVO / IL APOs', id: '25001731', rank: 'SGT', name: 'SGT (APF) HO...' },
-            { team: 'Team BRAVO / IL APOs', id: '2500421', rank: 'CPL', name: 'CPL (APF) T... A...' },
-            { team: 'Team BRAVO / IL APOs', id: '2501182', rank: 'SGT', name: 'SGT (APF) SIM...' },
-            { team: 'Team BRAVO / IL APOs', id: '2501619', rank: 'IV/CPL', name: 'IV/CPL (APF) J... W...' },
-            { team: 'Team BRAVO / IL APOs', id: '2500230', rank: 'CPL', name: 'CPL (APF) K... D...' },
-            { team: 'Team BRAVO / IL APOs', id: '2500356', rank: 'CPL', name: 'CPL (APF) CHUA...' },
-            { team: 'Team BRAVO / IL APOs', id: '2501033', rank: 'CPL', name: 'CPL (APF) S... A...' },
-            { team: 'Team BRAVO / IL APOs', id: '2501334', rank: 'SGT', name: 'SGT (APF) V... S...' },
+        
+        const initialTeamData = [
+            { id: 'team_alfa_apos', name: 'Team ALFA / APOs' },
+            { id: 'team_bravo_ilos', name: 'Team BRAVO / IL APOs' },
         ];
+
+        const initialEmployeeData = [
+            { team_id: 'team_alfa_apos', id: '2500135', rank: 'SGT', name: 'SGT (APF) A...' },
+            { team_id: 'team_alfa_apos', id: '2501066', rank: 'L/CPL', name: 'L/CPL (APF) CHE...' },
+            { team_id: 'team_alfa_apos', id: '2501193', rank: 'SGT', name: 'SGT (APF) CHUA...' },
+            { team_id: 'team_alfa_apos', id: '2500533', rank: 'CPL', name: 'CPL (APF) S... V...' },
+            { team_id: 'team_alfa_apos', id: '2500549', rank: 'CPL', name: 'CPL (APF) L...' },
+            { team_id: 'team_alfa_apos', id: '2510533', rank: 'L/CPL', name: 'L/CPL (APF) B...' },
+            { team_id: 'team_alfa_apos', id: '2500454', rank: 'CPL', name: 'CPL (APF) M... R...' },
+            { team_id: 'team_alfa_apos', id: '2501254', rank: 'L/CPL', name: 'L/CPL (APF) A... M...' },
+            { team_id: 'team_alfa_apos', id: '2501420', rank: 'PC', name: 'PC (APF) J... M...' },
+            { team_id: 'team_alfa_apos', id: '2501595', rank: 'CPL', name: 'CPL (APF) K... A...' },
+            { team_id: 'team_alfa_apos', id: '2501267', rank: 'SGT', name: 'SGT (APF) B... T...' },
+            { team_id: 'team_bravo_ilos', id: '2500705', rank: 'SGT', name: 'SGT (APF) LEE...' },
+            { team_id: 'team_bravo_ilos', id: '2500805', rank: 'SGT', name: 'SGT (APF) T...' },
+            { team_id: 'team_bravo_ilos', id: '25001731', rank: 'SGT', name: 'SGT (APF) HO...' },
+            { team_id: 'team_bravo_ilos', id: '2500421', rank: 'CPL', name: 'CPL (APF) T... A...' },
+            { team_id: 'team_bravo_ilos', id: '2501182', rank: 'SGT', name: 'SGT (APF) SIM...' },
+            { team_id: 'team_bravo_ilos', id: '2501619', rank: 'IV/CPL', name: 'IV/CPL (APF) J... W...' },
+            { team_id: 'team_bravo_ilos', id: '2500230', rank: 'CPL', name: 'CPL (APF) K... D...' },
+            { team_id: 'team_bravo_ilos', id: '2500356', rank: 'CPL', name: 'CPL (APF) CHUA...' },
+            { team_id: 'team_bravo_ilos', id: '2501033', rank: 'CPL', name: 'CPL (APF) S... A...' },
+            { team_id: 'team_bravo_ilos', id: '2501334', rank: 'SGT', name: 'SGT (APF) V... S...' },
+        ];
+        
         const initialRosterData = {
             '2500135': { '2025-10-01': 'OFF', '2025-10-02': '1', '2025-10-03': '1', '2025-10-04': '2', '2025-10-05': '2', '2025-10-06': 'OFF', '2025-10-07': 'OFF', '2025-10-08': 'AL', '2025-10-09': 'AL', '2025-10-10': '1', '2025-10-11': '1', '2025-10-12': '2', '2025-10-13': '2', '2025-10-14': 'OFF', '2025-10-15': 'OFF', '2025-10-16': 'AL', '2025-10-17': 'AL', '2025-10-18': 'PPT', '2025-10-19': 'PPT', '2025-10-20': '1', '2025-10-21': '1', '2025-10-22': '2', '2025-10-23': '2', '2025-10-24': '2N', '2025-10-25': '2N', '2025-10-26': 'OFF', '2025-10-27': 'OFF', '2025-10-28': '1', '2025-10-29': '1', '2025-10-30': '2' },
-            '2501066': { '2025-10-01': 'OFF', '2025-10-02': '1', '2025-10-03': '1', '2025-10-04': '2', '2025-10-05': '2', '2025-10-06': '2N', '2025-10-07': '2N', '2025-10-08': 'OFF', '2025-10-09': 'OFF', '2025-10-10': '1', '2025-10-11': '1', '2025-10-12': '2', '2025-10-13': '2', '2025-10-14': 'OFF', '2025-10-15': 'OFF', '2025-10-16': '1', '2025-10-17': '1', '2025-10-18': 'OFF', '2025-10-19': 'OFF', '2025-10-20': '1', '2025-10-21': '1', '2025-10-22': '2', '2025-10-23': '2', '2025-10-24': 'OFF', '2025-10-25': 'OFF', '2025-10-26': '1', '2025-10-27': '1', '2025-1T-28': '2', '2025-10-29': '2', '2025-10-30': 'OFF' },
+            '2501066': { '2025-10-01': 'OFF', '2025-10-02': '1', '2025-10-03': '1', '2025-10-04': '2', '2025-10-05': '2', '2025-10-06': '2N', '2025-10-07': '2N', '2025-10-08': 'OFF', '2025-10-09': 'OFF', '2025-10-10': '1', '2025-10-11': '1', '2025-10-12': '2', '2025-10-13': '2', '2025-10-14': 'OFF', '2025-10-15': 'OFF', '2025-10-16': '1', '2025-10-17': '1', '2025-10-18': 'OFF', '2025-10-19': 'OFF', '2025-1t-20': '1', '2025-10-21': '1', '2025-10-22': '2', '2025-10-23': '2', '2025-10-24': 'OFF', '2025-10-25': 'OFF', '2025-10-26': '1', '2025-10-27': '1', '2025-10-28': '2', '2025-10-29': '2', '2025-10-30': 'OFF' },
             '2500549': { '2025-10-01': '2N', '2025-10-02': '2N', '2025-10-03': 'OFF', '2025-10-04': 'OFF', '2025-10-05': 'AL', '2025-10-06': 'AL', '2025-10-07': 'AL', '2025-10-08': 'AL', '2025-10-09': 'AL', '2025-10-10': 'OFF', '2025-10-11': 'OFF', '2025-10-12': '1', '2025-10-13': '1', '2025-10-14': '2', '2025-10-15': '2', '2025-10-16': '2N', '2025-10-17': '2N', '2025-10-18': 'OFF', '2025-10-19': 'OFF', '2025-10-20': '1', '2025-10-21': '1', '2025-10-22': '2', '2025-10-23': '2', '2025-10-24': 'PCT', '2025-10-25': 'PCT', '2025-10-26': '2N', '2025-10-27': '2N', '2025-10-28': 'OFF', '2025-10-29': 'OFF', '2025-10-30': 'AL' },
             '2500705': { '2025-10-01': 'AL', '2025-10-02': 'OFF', '2025-10-03': 'OFF', '2025-10-04': '1', '2025-10-05': '1', '2025-10-06': '2', '2025-10-07': '2', '2025-10-08': '2N', '2025-10-09': '2N', '2025-10-10': 'OFF', '2025-10-11': 'OFF', '2025-10-12': '1A', '2025-10-13': '1A', '2025-10-14': '1', '2025-10-15': '1', '2025-10-16': '2', '2025-10-17': '2', '2025-10-18': '2N', '2025-10-19': '2N', '2025-10-20': 'OFF', '2025-10-21': 'OFF', '2025-10-22': '1', '2025-10-23': '1', '2025-10-24': '2', '2025-10-25': '2N', '2025-10-26': '2N', '2025-10-27': 'OFF', '2025-10-28': 'OFF', '2025-10-29': '1', '2025-10-30': '1' },
             '2501182': { '2025-10-01': '1A', '2025-10-02': '1', '2025-10-03': '1', '2025-10-04': '2', '2025-10-05': '2', '2025-10-06': '2N', '2025-10-07': '2N', '2025-10-08': 'OFF', '2025-10-09': 'OFF', '2025-10-10': '1A', '2025-10-11': '1A', '2025-10-12': '1', '2025-10-13': '1', '2025-10-14': '2', '2025-10-15': '2', '2025-10-16': 'OFF', '2025-10-17': 'OFF', '2025-10-18': 'AL', '2025-10-19': 'AL', '2025-10-20': 'OFF', '2025-10-21': 'OFF', '2025-10-22': '1A', '2025-10-23': '1A', '2025-10-24': 'PCT', '2025-10-25': 'PCT', '2025-10-26': 'OFF', '2025-10-27': 'OFF', '2025-10-28': '1', '2025-10-29': '1', '2025-10-30': '2' },
         };
         
         // --- 2. STATE & CONSTANTS ---
-        
         let currentYear = 2025;
         let currentMonth = 9; // 0-indexed (9 = October)
         const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -314,9 +349,9 @@
         
         // Delete state
         let employeeIdToDelete = null;
+        let teamIdToDelete = null; // **NEW**
 
         // --- 3. DOM ELEMENTS ---
-        
         const grid = document.getElementById('roster-grid');
         const monthYearEl = document.getElementById('current-month-year');
         const prevMonthBtn = document.getElementById('prev-month');
@@ -336,83 +371,88 @@
         const addEmployeeModal = document.getElementById('add-employee-modal');
         const closeAddModalBtn = document.getElementById('close-add-modal');
         const addEmployeeForm = document.getElementById('add-employee-form');
-        const teamDataList = document.getElementById('team-list');
+        const teamSelect = document.getElementById('emp-team-select');
         const addError = document.getElementById('add-error');
 
-        // Delete Confirm Modal
+        // Delete Employee Confirm Modal
         const deleteConfirmModal = document.getElementById('delete-confirm-modal');
         const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
         const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
         const deleteModalName = document.getElementById('delete-modal-name');
         const deleteModalId = document.getElementById('delete-modal-id');
 
+        // Manage Teams Modal
+        const manageTeamsBtn = document.getElementById('manage-teams-btn');
+        const manageTeamsModal = document.getElementById('manage-teams-modal');
+        const closeTeamsModalBtn = document.getElementById('close-teams-modal');
+        const addTeamForm = document.getElementById('add-team-form');
+        const newTeamNameInput = document.getElementById('new-team-name');
+        const addTeamError = document.getElementById('add-team-error');
+        const deleteTeamError = document.getElementById('delete-team-error');
+        const teamListUl = document.getElementById('team-list-ul');
+
+        // **NEW** Delete Team Confirm Modal
+        const deleteTeamConfirmModal = document.getElementById('delete-team-confirm-modal');
+        const cancelDeleteTeamBtn = document.getElementById('cancel-delete-team-btn');
+        const confirmDeleteTeamBtn = document.getElementById('confirm-delete-team-btn');
+        const deleteTeamModalName = document.getElementById('delete-team-modal-name');
+
         // --- 4. CORE FUNCTIONS ---
 
-        /**
-         * Renders the entire roster grid.
-         * Now reads from the global 'employeeData' and 'rosterData' variables.
-         */
         function renderRoster() {
-            if (!isDataLoaded) return; // Don't render if data isn't loaded
-
-            grid.innerHTML = ''; // Clear existing grid
+            if (!isDataLoaded) return;
+            grid.innerHTML = '';
             
             const date = new Date(currentYear, currentMonth);
             const monthName = date.toLocaleString('default', { month: 'long' });
             monthYearEl.textContent = `${monthName} ${currentYear}`;
             
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            
-            // --- Setup Grid Columns ---
             const gridCols = 3 + daysInMonth;
             grid.style.gridTemplateColumns = `minmax(200px, 1fr) 80px 100px repeat(${daysInMonth}, minmax(60px, 1fr))`;
 
-            // --- A. Render Header Row ---
+            // Render Header
             const nameHeader = createCell('Employee Name', 'sticky-header-col font-semibold text-sm text-gray-700');
             nameHeader.style.minWidth = '200px';
             grid.appendChild(nameHeader);
-            
             const rankHeader = createCell('Rank', 'sticky-header-col font-semibold text-sm text-gray-700');
             rankHeader.style.minWidth = '80px';
             grid.appendChild(rankHeader);
-            
             const idHeader = createCell('ID', 'sticky-header-col font-semibold text-sm text-gray-700');
             idHeader.style.minWidth = '100px';
             grid.appendChild(idHeader);
 
-            // Day and Date headers
             for (let day = 1; day <= daysInMonth; day++) {
                 const d = new Date(currentYear, currentMonth, day);
                 const dayName = weekdays[d.getDay()];
-                
                 const headerCell = document.createElement('div');
                 headerCell.className = 'header-cell text-center p-2 border-b border-l border-gray-200';
-                
                 const dayNumSpan = document.createElement('span');
                 dayNumSpan.className = 'text-lg font-bold block';
                 dayNumSpan.textContent = day;
-                
                 const dayNameSpan = document.createElement('span');
                 dayNameSpan.className = 'text-xs text-gray-500 font-medium block';
                 dayNameSpan.textContent = dayName;
-                
                 if (dayName === 'SAT' || dayName === 'SUN') {
                     dayNumSpan.classList.add('text-red-500');
                 }
-                
                 headerCell.appendChild(dayNumSpan);
                 headerCell.appendChild(dayNameSpan);
                 grid.appendChild(headerCell);
             }
             
-            // --- B. Render Employee Rows ---
+            // Render Employee Rows
             let currentTeam = '';
-            // Sort data by team, then name, before rendering
-            employeeData.sort((a, b) => a.team.localeCompare(b.team) || a.name.localeCompare(b.name));
+            employeeData.sort((a, b) => {
+                const teamAName = teamsMap.get(a.team_id) || 'Unassigned';
+                const teamBName = teamsMap.get(b.team_id) || 'Unassigned';
+                return teamAName.localeCompare(teamBName) || a.name.localeCompare(b.name);
+            });
             
             employeeData.forEach(emp => {
-                if (emp.team !== currentTeam) {
-                    currentTeam = emp.team;
+                const teamName = teamsMap.get(emp.team_id) || 'Unassigned';
+                if (teamName !== currentTeam) {
+                    currentTeam = teamName;
                     const teamHeader = createCell(currentTeam, 'header-cell text-left p-3 font-bold text-base text-indigo-700 bg-indigo-50 border-t border-b border-indigo-200');
                     teamHeader.style.gridColumn = `span ${gridCols}`;
                     grid.appendChild(teamHeader);
@@ -429,7 +469,7 @@
                 nameCell.appendChild(nameSpan);
 
                 const deleteBtn = document.createElement('button');
-                deleteBtn.innerHTML = '&#215;'; // 'x'
+                deleteBtn.innerHTML = '&#215;';
                 deleteBtn.className = 'delete-btn text-red-400 hover:text-red-700 font-bold text-xl ml-2 p-0 leading-none rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-100 opacity-0 transition-opacity duration-150';
                 deleteBtn.title = `Delete ${emp.name}`;
                 deleteBtn.addEventListener('click', () => {
@@ -452,20 +492,15 @@
                 grid.appendChild(idCell);
                 rowCells.push(idCell);
 
-                // Roster Data Cells
                 for (let day = 1; day <= daysInMonth; day++) {
                     const fullDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    
                     const empRoster = rosterData[emp.id] || {};
-                    const shift = empRoster[fullDate] || ''; // Default to empty
+                    const shift = empRoster[fullDate] || '';
                     const shiftInfo = shiftCodes[shift] || shiftCodes[''];
-                    
                     const dataCell = createCell(shiftInfo.text, `employee-row text-center p-3 border-b border-l border-gray-200 cursor-pointer hover:bg-gray-100 transition duration-150 font-semibold ${shiftInfo.color} ${shiftInfo.textColor}`);
-                    
                     dataCell.addEventListener('click', () => {
                         openModal(dataCell, emp.id, emp.name, fullDate);
                     });
-                    
                     grid.appendChild(dataCell);
                     rowCells.push(dataCell);
                 }
@@ -483,9 +518,6 @@
             });
         }
         
-        /**
-         * Helper to create a grid cell.
-         */
         function createCell(text, classes) {
             const cell = document.createElement('div');
             cell.className = classes;
@@ -493,9 +525,6 @@
             return cell;
         }
 
-        /**
-         * Opens the shift selector modal.
-         */
         function openModal(cellElement, empId, empName, fullDate) {
             currentCellElement = cellElement;
             currentEmployeeId = empId;
@@ -506,61 +535,34 @@
             modalDate.textContent = new Date(fullDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
             
             shiftOptionsContainer.innerHTML = '';
-            
             Object.keys(shiftCodes).forEach(code => {
                 const shiftInfo = shiftCodes[code];
                 const button = document.createElement('button');
                 button.textContent = shiftInfo.text || 'Empty';
                 button.className = `p-3 rounded-lg border font-medium transition duration-150 ${shiftInfo.color} ${shiftInfo.textColor} hover:shadow-md hover:ring-2 hover:ring-indigo-400`;
-                
-                button.addEventListener('click', () => {
-                    selectShift(code);
-                });
+                button.addEventListener('click', () => selectShift(code));
                 shiftOptionsContainer.appendChild(button);
             });
             
             modal.classList.remove('hidden');
         }
 
-        /**
-         * Closes the shift selector modal.
-         */
         function closeModal() {
             modal.classList.add('hidden');
-            currentCellElement = null;
-            currentEmployeeId = null;
-            currentFullDate = null;
-            currentEmployeeName = null;
         }
 
-        /**
-         * Handles the selection of a new shift from the modal.
-         * Saves the change to Firestore.
-         */
         async function selectShift(shiftCode) {
             if (!currentCellElement || !currentEmployeeId || !currentFullDate) return;
-            
-            // 1. Save to Firestore
             const rosterDocRef = doc(rosterCollection, currentEmployeeId);
             try {
-                // Use { merge: true } to only update/add this one date
                 await setDoc(rosterDocRef, { [currentFullDate]: shiftCode }, { merge: true });
                 console.log(`Updated ${currentEmployeeName} on ${currentFullDate} to ${shiftCode}`);
-                
-                // 2. Close the modal
                 closeModal();
-                
-                // 3. UI update will be handled by the onSnapshot listener
-                
             } catch (error) {
                 console.error("Error saving shift: ", error);
-                // Optionally show an error message to the user
             }
         }
         
-        /**
-         * Changes the current month and re-renders the roster.
-         */
         function changeMonth(direction) {
             currentMonth += direction;
             if (currentMonth > 11) {
@@ -574,70 +576,55 @@
             renderRoster();
         }
 
-        // --- NEW/MODIFIED Functions for Firestore ---
-
-        /**
-         * Opens the Add Employee modal and populates team datalist.
-         */
+        // --- Add/Delete Employee Functions ---
         function openAddModal() {
             addError.textContent = '';
-            teamDataList.innerHTML = '';
-            const teams = [...new Set(employeeData.map(emp => emp.team))];
-            teams.forEach(team => {
+            teamSelect.innerHTML = '<option value="">Select a team...</option>';
+            teamsData.forEach(team => {
                 const option = document.createElement('option');
-                option.value = team;
-                teamDataList.appendChild(option);
+                option.value = team.id;
+                option.textContent = team.name;
+                teamSelect.appendChild(option);
             });
             addEmployeeModal.classList.remove('hidden');
         }
 
-        /**
-         * Closes the Add Employee modal and resets the form.
-         */
         function closeAddModal() {
             addEmployeeModal.classList.add('hidden');
             addEmployeeForm.reset();
             addError.textContent = '';
         }
 
-        /**
-         * Handles the submission of the new employee form.
-         * Saves the new employee to Firestore.
-         */
         async function handleAddEmployee(e) {
             e.preventDefault();
             addError.textContent = '';
             
             const newEmployee = {
-                team: document.getElementById('emp-team').value.trim(),
+                team_id: document.getElementById('emp-team-select').value,
                 id: document.getElementById('emp-id').value.trim(),
                 rank: document.getElementById('emp-rank').value.trim(),
                 name: document.getElementById('emp-name').value.trim(),
             };
 
-            // Check for duplicate ID locally first
+            if (!newEmployee.team_id) {
+                addError.textContent = 'Error: Please select a team.';
+                return;
+            }
             if (employeeData.some(emp => emp.id === newEmployee.id)) {
                 addError.textContent = 'Error: Employee ID already exists.';
                 return;
             }
 
-            // Save to Firestore using the employee ID as the document ID
             try {
                 const empDocRef = doc(employeesCollection, newEmployee.id);
                 await setDoc(empDocRef, newEmployee);
-                
-                // UI update will be handled by onSnapshot
                 closeAddModal();
-
             } catch (error) {
                  console.error("Error adding employee: ", error);
                  addError.textContent = 'Error saving employee. Please try again.';
             }
         }
 
-        /**
-         * Opens the delete confirmation modal.
-         */
         function openDeleteModal(id, name) {
             employeeIdToDelete = id;
             deleteModalName.textContent = name;
@@ -645,63 +632,161 @@
             deleteConfirmModal.classList.remove('hidden');
         }
 
-        /**
-         * Closes the delete confirmation modal.
-         */
         function closeDeleteModal() {
             employeeIdToDelete = null;
             deleteConfirmModal.classList.add('hidden');
         }
 
-        /**
-         * Performs the actual deletion of the employee from Firestore.
-         */
         async function handleDeleteEmployee() {
             if (!employeeIdToDelete) return;
-            
             try {
-                // 1. Delete employee document
                 const empDocRef = doc(employeesCollection, employeeIdToDelete);
                 await deleteDoc(empDocRef);
-
-                // 2. Delete corresponding roster document
                 const rosterDocRef = doc(rosterCollection, employeeIdToDelete);
-                // Check if roster doc exists before deleting
                 const rosterSnap = await getDoc(rosterDocRef);
                 if (rosterSnap.exists()) {
                     await deleteDoc(rosterDocRef);
                 }
-                
-                // UI update handled by onSnapshot
                 closeDeleteModal();
-
             } catch (error) {
                 console.error("Error deleting employee: ", error);
-                // Optionally show an error
+            }
+        }
+        
+        // --- Team Management Functions (MODIFIED) ---
+
+        function openManageTeamsModal() {
+            deleteTeamError.textContent = '';
+            addTeamError.textContent = '';
+            manageTeamsModal.classList.remove('hidden');
+            populateManageTeamsModal();
+        }
+
+        function closeManageTeamsModal() {
+            manageTeamsModal.classList.add('hidden');
+        }
+
+        function populateManageTeamsModal() {
+            if (!teamListUl) return; 
+
+            teamListUl.innerHTML = '';
+            if (teamsData.length === 0) {
+                teamListUl.innerHTML = '<li class="p-3 text-gray-500 italic">No teams found. Add one above!</li>';
+                return;
+            }
+
+            teamsData.forEach(team => {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center p-3';
+                
+                const span = document.createElement('span');
+                span.textContent = team.name;
+                li.appendChild(span);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = '&#215;';
+                deleteBtn.className = 'text-red-400 hover:text-red-700 font-bold text-xl p-0 leading-none rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-100';
+                deleteBtn.title = `Delete ${team.name}`;
+                deleteBtn.addEventListener('click', () => {
+                    // **MODIFIED:** Call the pre-delete check first
+                    checkAndDeleteTeam(team.id, team.name);
+                });
+                li.appendChild(deleteBtn);
+                
+                teamListUl.appendChild(li);
+            });
+        }
+
+        async function handleAddTeam(e) {
+            e.preventDefault();
+            addTeamError.textContent = '';
+            const newTeamName = newTeamNameInput.value.trim();
+            
+            if (!newTeamName) {
+                addTeamError.textContent = 'Please enter a name.';
+                return;
+            }
+
+            const newTeamId = newTeamName.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_{2,}/g, '_') + '_' + Date.now();
+            if (teamsData.some(team => team.name.toLowerCase() === newTeamName.toLowerCase())) {
+                addTeamError.textContent = 'A team with this name already exists.';
+                return;
+            }
+
+            try {
+                const newTeam = { id: newTeamId, name: newTeamName };
+                await setDoc(doc(teamsCollection, newTeamId), newTeam);
+                newTeamNameInput.value = '';
+            } catch (error) {
+                console.error("Error adding team: ", error);
+                addTeamError.textContent = 'Error saving team.';
             }
         }
 
         /**
-         * Populates Firestore with initial data if the employees collection is empty.
+         * **MODIFIED:** This function checks if a team can be deleted,
+         * then opens the new confirmation modal.
          */
+        function checkAndDeleteTeam(teamId, teamName) {
+            deleteTeamError.textContent = '';
+            
+            const employeesOnTeam = employeeData.filter(emp => emp.team_id === teamId);
+            
+            if (employeesOnTeam.length > 0) {
+                deleteTeamError.textContent = `Cannot delete "${teamName}". ${employeesOnTeam.length} employee(s) are still assigned to it. Please reassign them first.`;
+                return;
+            }
+            
+            // **NEW:** Open the new confirmation modal
+            teamIdToDelete = teamId; // Store the ID
+            deleteTeamModalName.textContent = teamName;
+            deleteTeamConfirmModal.classList.remove('hidden');
+        }
+
+        /**
+         * **NEW:** Actually performs the team deletion.
+         */
+        async function performDeleteTeam() {
+            if (!teamIdToDelete) return;
+
+            try {
+                await deleteDoc(doc(teamsCollection, teamIdToDelete));
+                console.log(`Deleted team with ID: ${teamIdToDelete}`);
+            } catch (error) {
+                console.error("Error deleting team: ", error);
+                deleteTeamError.textContent = 'Error deleting team.';
+            }
+            
+            closeDeleteTeamModal();
+        }
+
+        /**
+         * **NEW:** Closes the delete team confirmation modal.
+         */
+        function closeDeleteTeamModal() {
+            teamIdToDelete = null;
+            deleteTeamConfirmModal.classList.add('hidden');
+        }
+
+
+        // --- Firebase Init & Data Loading ---
         async function populateInitialData() {
             console.log("Checking for initial data...");
-            // **FIX:** Check the 'employees' collection
-            const querySnapshot = await getDocs(employeesCollection);
+            const querySnapshot = await getDocs(teamsCollection);
+            
             if (querySnapshot.empty) {
-                console.log("No employees found. Populating initial data...");
+                console.log("Empty database. Populating ALL initial data (Teams, Employees, Roster)...");
                 const batch = writeBatch(db);
                 
-                // Add employees
+                initialTeamData.forEach(team => {
+                    const teamDocRef = doc(teamsCollection, team.id);
+                    batch.set(teamDocRef, team);
+                });
                 initialEmployeeData.forEach(emp => {
-                    // **FIX:** Use 'employees' collection
                     const empDocRef = doc(employeesCollection, emp.id);
                     batch.set(empDocRef, emp);
                 });
-                
-                // Add roster data
                 Object.keys(initialRosterData).forEach(empId => {
-                    // **FIX:** Use 'roster' collection
                     const rosterDocRef = doc(rosterCollection, empId);
                     batch.set(rosterDocRef, initialRosterData[empId]);
                 });
@@ -713,60 +798,55 @@
             }
         }
 
-        /**
-         * Sets up real-time listeners for roster data.
-         */
         function setupDataListeners() {
-            // 1. Listen for Employee changes
-            // **FIX:** Use 'employees' collection
+            onSnapshot(query(teamsCollection), (snapshot) => {
+                console.log("Teams data updated from Firestore.");
+                teamsData = [];
+                teamsMap.clear();
+                snapshot.forEach((doc) => {
+                    const team = doc.data();
+                    teamsData.push(team);
+                    teamsMap.set(team.id, team.name);
+                });
+                teamsData.sort((a,b) => a.name.localeCompare(b.name));
+                
+                if (isDataLoaded) renderRoster();
+                populateManageTeamsModal();
+            });
+
             onSnapshot(query(employeesCollection), (snapshot) => {
                 console.log("Employee data updated from Firestore.");
                 employeeData = [];
                 snapshot.forEach((doc) => {
                     employeeData.push(doc.data());
                 });
-                
-                if (isDataLoaded) {
-                    renderRoster(); // Re-render if data is already loaded
-                }
+                if (isDataLoaded) renderRoster();
             });
 
-            // 2. Listen for Roster changes
-            // **FIX:** Use 'roster' collection
             onSnapshot(query(rosterCollection), (snapshot) => {
                  console.log("Roster data updated from Firestore.");
                 rosterData = {};
                 snapshot.forEach((doc) => {
                     rosterData[doc.id] = doc.data();
                 });
-                
-                if (isDataLoaded) {
-                    renderRoster(); // Re-render if data is already loaded
-                }
+                if (isDataLoaded) renderRoster();
             });
         }
         
-        /**
-         * Initializes Firebase auth and loads all data.
-         */
         async function initFirebase() {
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     console.log("User authenticated:", user.uid);
                     loadingState.textContent = "Loading Roster Data...";
                     
-                    // **FIX:** Define collection paths to root-level
+                    teamsCollection = collection(db, "teams");
                     employeesCollection = collection(db, "employees");
                     rosterCollection = collection(db, "roster");
                     
                     try {
-                        // Check if we need to populate initial data (one-time check)
                         await populateInitialData();
-                        
-                        // Setup listeners to get and sync data
                         setupDataListeners();
                         
-                        // Mark data as loaded and render
                         isDataLoaded = true;
                         loadingState.classList.add('hidden');
                         rosterContainer.classList.remove('hidden');
@@ -784,11 +864,9 @@
 
             try {
                 if (initialAuthToken) {
-                    // This will run in Canvas
                     console.log("Signing in with custom token...");
                     await signInWithCustomToken(auth, initialAuthToken);
                 } else {
-                    // This will run on github.io
                     console.log("Signing in anonymously...");
                     await signInAnonymously(auth);
                 }
@@ -798,37 +876,38 @@
             }
         }
 
-
         // --- 5. EVENT LISTENERS (DOM) ---
-        
-        // Month navigation
         prevMonthBtn.addEventListener('click', () => changeMonth(-1));
         nextMonthBtn.addEventListener('click', () => changeMonth(1));
         
         // Shift modal
         closeModalBtn.addEventListener('click', closeModal);
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
         // Add Employee modal
         addEmployeeBtn.addEventListener('click', openAddModal);
         closeAddModalBtn.addEventListener('click', closeAddModal);
         addEmployeeForm.addEventListener('submit', handleAddEmployee);
-        addEmployeeModal.addEventListener('click', (e) => {
-            if (e.target === addEmployeeModal) closeAddModal();
-        });
+        addEmployeeModal.addEventListener('click', (e) => { if (e.target === addEmployeeModal) closeAddModal(); });
 
         // Delete Employee modal
         cancelDeleteBtn.addEventListener('click', closeDeleteModal);
         confirmDeleteBtn.addEventListener('click', handleDeleteEmployee);
-        deleteConfirmModal.addEventListener('click', (e) => {
-            if (e.target === deleteConfirmModal) closeDeleteModal();
-        });
+        deleteConfirmModal.addEventListener('click', (e) => { if (e.target === deleteConfirmModal) closeDeleteModal(); });
+
+        // Manage Teams modal
+        manageTeamsBtn.addEventListener('click', openManageTeamsModal);
+        closeTeamsModalBtn.addEventListener('click', closeManageTeamsModal);
+        manageTeamsModal.addEventListener('click', (e) => { if (e.target === manageTeamsModal) closeManageTeamsModal(); });
+        addTeamForm.addEventListener('submit', handleAddTeam);
+
+        // **NEW** Delete Team modal listeners
+        cancelDeleteTeamBtn.addEventListener('click', closeDeleteTeamModal);
+        confirmDeleteTeamBtn.addEventListener('click', performDeleteTeam);
+        deleteTeamConfirmModal.addEventListener('click', (e) => { if (e.target === deleteTeamConfirmModal) closeDeleteTeamModal(); });
+
 
         // --- 6. INITIALIZATION ---
-        
-        // Start the Firebase connection and data loading process
         document.addEventListener('DOMContentLoaded', initFirebase);
 
     </script>
