@@ -4,97 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Roster System</title>
-    <!-- Using Tailwind CSS for modern styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Custom styles */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f4f7f6;
-        }
-        /* Make the first column (employee name) sticky */
-        .sticky-col {
-            position: -webkit-sticky;
-            position: sticky;
-            left: 0;
-            z-index: 10;
-            background-color: #ffffff; /* Match cell bg */
-        }
-        /* Style for the table header (dates) */
-        .header-cell {
-            position: -webkit-sticky;
-            position: sticky;
-            top: 0;
-            z-index: 5;
-            background-color: #f8fafc; /* Light gray bg for header */
-        }
-        /* Ensure header name cell is on top */
-        .sticky-header-col {
-            top: 0;
-            left: 0;
-            z-index: 15;
-            background-color: #f1f5f9; /* Darker gray for corner */
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
+        .sticky-col { position: -webkit-sticky; position: sticky; left: 0; z-index: 10; background-color: #ffffff; }
+        .header-cell { position: -webkit-sticky; position: sticky; top: 0; z-index: 5; background-color: #f8fafc; }
+        /* Updated z-index to be highest */
+        .sticky-header-col { top: 0; left: 0; z-index: 15; background-color: #f1f5f9; }
         
-        /* Custom scrollbars for a cleaner look */
-        .roster-container::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        .roster-container::-webkit-scrollbar-track {
-            background: #f1f1ff;
-            border-radius: 10px;
-        }
-        .roster-container::-webkit-scrollbar-thumb {
-            background: #a8a29e;
-            border-radius: 10px;
-        }
-        .roster-container::-webkit-scrollbar-thumb:hover {
-            background: #78716c;
-        }
+        .roster-container::-webkit-scrollbar { width: 8px; height: 8px; }
+        .roster-container::-webkit-scrollbar-track { background: #f1f1ff; border-radius: 10px; }
+        .roster-container::-webkit-scrollbar-thumb { background: #a8a29e; border-radius: 10px; }
+        .roster-container::-webkit-scrollbar-thumb:hover { background: #78716c; }
 
-        /* Show delete button on row hover */
-        .employee-row:hover .delete-btn {
-            opacity: 1;
-        }
+        .team-li:hover .edit-team-btn { opacity: 1; }
+        .employee-row:hover .delete-btn { opacity: 1; }
 
-        /* Simple animation for modal */
-        .modal-fade-in {
-            animation: fadeIn 0.3s ease-out;
-        }
+        .modal-fade-in { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
         }
+        
+        /* Shift that comes from the team pattern, not a manual override */
+        .pattern-shift { opacity: 0.6; }
+        .pattern-shift:hover { opacity: 1; }
+
+        /* Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #4f46e5; }
+        input:checked + .slider:before { transform: translateX(26px); }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
     <div class="max-w-full mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
         
-        <!-- Header: Title and Month Navigation -->
-        <header class="p-5 border-b border-gray-200 bg-gray-50 flex flex-col md:flex-row justify-between items-center flex-wrap">
+        <!-- Header -->
+        <header class="p-5 border-b border-gray-200 bg-gray-50 flex flex-col md:flex-row justify-between items-center flex-wrap gap-4">
             <h1 class="text-2xl font-bold text-gray-800">PCC/APOs Roster</h1>
+            
             <div class="flex items-center space-x-2 my-4 md:my-0">
                 <button id="prev-month" class="p-2 rounded-lg hover:bg-gray-200 transition duration-150">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
                 </button>
-                <span id="current-month-year" class="text-xl font-semibold text-indigo-600 w-48 text-center">October 2025</span>
+                <span id="current-month-year" class="text-xl font-semibold text-indigo-600 w-48 text-center">November 2025</span>
                 <button id="next-month" class="p-2 rounded-lg hover:bg-gray-200 transition duration-150">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                 </button>
             </div>
-            <div class="flex space-x-2">
-                 <button id="manage-teams-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition duration-150">
-                    Manage Teams
-                </button>
-                <button id="add-employee-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition duration-150">
-                    Add Employee
-                </button>
+            
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <label for="pattern-edit-toggle" class="text-sm font-medium text-gray-700">Edit Team Patterns</label>
+                    <label class="switch">
+                        <input type="checkbox" id="pattern-edit-toggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <!-- Action buttons container -->
+                <div id="header-actions" class="flex space-x-2">
+                    <button id="manage-teams-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition duration-150">
+                        Manage Teams
+                    </button>
+                    <button id="add-employee-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition duration-150">
+                        Add Employee
+                    </button>
+                </div>
+                <!-- Batch delete button (initially hidden) -->
+                <div id="batch-delete-container" class="hidden">
+                    <button id="batch-delete-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg shadow hover:bg-red-700 transition duration-150">
+                        Delete Selected (0)
+                    </button>
+                </div>
             </div>
         </header>
 
@@ -111,23 +98,21 @@
         </div>
     </div>
 
-    <!-- MODALS -->
-
+    <!-- MODALS (omitted for brevity, they are the same as V5) -->
     <!-- Shift Selector Modal -->
     <div id="shift-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Select Shift</h3>
                 <button id="close-modal" class="text-gray-400 hover:text-gray-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
             <p class="mb-4 text-gray-600">Assign shift for <strong id="modal-employee-name"></strong> on <strong id="modal-date"></strong>.</p>
-            <div id="shift-options" class="grid grid-cols-4 gap-3">
-                <!-- Shift codes will be populated here -->
-            </div>
+            <div id="shift-options" class="grid grid-cols-4 gap-3"></div>
+            <button id="set-auto-shift-btn" class="w-full mt-4 px-4 py-2 bg-gray-600 text-white rounded-lg shadow hover:bg-gray-700 transition duration-150">
+                Set to Auto (Remove Override)
+            </button>
         </div>
     </div>
 
@@ -137,18 +122,14 @@
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Add New Employee</h3>
                 <button id="close-add-modal" class="text-gray-400 hover:text-gray-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
             <form id="add-employee-form">
                 <div class="space-y-4">
                     <div>
                         <label for="emp-team-select" class="block text-sm font-medium text-gray-700">Team</label>
-                        <select id="emp-team-select" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
-                            <option value="">Select a team...</option>
-                        </select>
+                        <select id="emp-team-select" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required></select>
                     </div>
                     <div>
                         <label for="emp-id" class="block text-sm font-medium text-gray-700">Employee ID</label>
@@ -175,7 +156,7 @@
     <div id="delete-confirm-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
             <h3 class="text-xl font-semibold text-red-700">Confirm Deletion</h3>
-            <p class="my-4 text-gray-600">Are you sure you want to delete <strong id="delete-modal-name"></strong> (ID: <strong id="delete-modal-id"></strong>)? This will also delete all their roster data.</p>
+            <p class="my-4 text-gray-600">Are you sure you want to delete <strong id="delete-modal-name"></strong> (ID: <strong id="delete-modal-id"></strong>)?</p>
             <div class="flex justify-end space-x-3">
                 <button id="cancel-delete-btn" class="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Cancel</button>
                 <button id="confirm-delete-btn" class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Confirm Delete</button>
@@ -183,21 +164,34 @@
         </div>
     </div>
 
+    <!-- BATCH Delete Employee Confirmation Modal -->
+    <div id="batch-delete-confirm-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
+            <h3 class="text-xl font-semibold text-red-700">Confirm Batch Deletion</h3>
+            <p class="my-4 text-gray-600">Are you sure you want to delete the following <strong id="batch-delete-count">0</strong> employees?</p>
+            <ul id="batch-delete-list" class="mb-4 max-h-48 overflow-y-auto text-sm text-gray-500 list-disc list-inside bg-gray-50 p-3 rounded-lg">
+                <!-- List of employees to delete will be populated here -->
+            </ul>
+            <div class="flex justify-end space-x-3">
+                <button id="cancel-batch-delete-btn" class="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Cancel</button>
+                <button id="confirm-batch-delete-btn" class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Confirm Delete</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Manage Teams Modal -->
     <div id="manage-teams-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
-            <div class="flex justify-between items-center mb-4">
+             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Manage Teams</h3>
                 <button id="close-teams-modal" class="text-gray-400 hover:text-gray-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
             <div class="mb-6">
                 <h4 class="text-lg font-medium text-gray-800 mb-2">Add New Team</h4>
                 <form id="add-team-form" class="flex space-x-2">
-                    <input type="text" id="new-team-name" class="flex-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="New team name" required>
+                    <input type="text" id="new-team-name" class="flex-1 block w-full rounded-lg border-gray-300 shadow-sm" placeholder="New team name" required>
                     <button type="submit" class="px-5 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition">Add</button>
                 </form>
                 <div id="add-team-error" class="text-red-600 text-sm mt-1"></div>
@@ -205,18 +199,19 @@
             <div>
                 <h4 class="text-lg font-medium text-gray-800 mb-2">Current Teams</h4>
                 <div id="delete-team-error" class="text-red-600 text-sm mb-2"></div>
-                <ul id="team-list-ul" class="divide-y divide-gray-200 h-48 overflow-y-auto border rounded-lg p-2 bg-gray-50">
+                <ul id="team-list-ul" class="divide-y divide-gray-200 h-64 overflow-y-auto border rounded-lg p-2 bg-gray-50">
                     <!-- Team list will be populated by JS -->
                 </ul>
             </div>
         </div>
     </div>
 
-    <!-- **NEW** Delete Team Confirmation Modal -->
+    <!-- Edit Team Modal is REMOVED -->
+    <!-- Delete Team Confirmation Modal -->
     <div id="delete-team-confirm-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
             <h3 class="text-xl font-semibold text-red-700">Confirm Team Deletion</h3>
-            <p class="my-4 text-gray-600">Are you sure you want to delete the team <strong id="delete-team-modal-name"></strong>? This action cannot be undone.</p>
+            <p class="my-4 text-gray-600">Are you sure you want to delete <strong id="delete-team-modal-name"></strong>?</p>
             <div class="flex justify-end space-x-3">
                 <button id="cancel-delete-team-btn" class="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Cancel</button>
                 <button id="confirm-delete-team-btn" class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Confirm Delete</button>
@@ -228,24 +223,11 @@
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { 
-            getAuth, 
-            signInAnonymously, 
-            signInWithCustomToken, 
-            onAuthStateChanged 
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { 
-            getFirestore, 
-            doc, 
-            getDoc, 
-            setDoc, 
-            deleteDoc, 
-            onSnapshot, 
-            collection, 
-            query,
-            getDocs,
-            writeBatch,
-            setLogLevel
+            getFirestore, doc, getDoc, setDoc, deleteDoc, onSnapshot, 
+            collection, query, getDocs, writeBatch, setLogLevel,
+            updateDoc, deleteField
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- 0. FIREBASE SETUP ---
@@ -275,14 +257,16 @@
         setLogLevel('Debug');
 
         // Firestore collection references
-        let teamsCollection, employeesCollection, rosterCollection;
+        let teamsCollection, employeesCollection, rosterCollection, teamPatternsCollection;
 
         // Local data cache
-        let teamsData = [];
-        let teamsMap = new Map();
+        let teamsMap = new Map(); // Stores the full team object
         let employeeData = [];
-        let rosterData = {};
+        let rosterData = {}; // Manual Overrides for employees
+        let teamPatternsData = {}; // Master patterns for teams
         let isDataLoaded = false;
+        let selectedEmployeeIds = new Set();
+        let isPatternEditMode = false;
         
         // --- 1. DATA DEFINITIONS ---
         const shiftCodes = {
@@ -299,57 +283,19 @@
             '':     { text: '',     color: 'bg-gray-50', textColor: 'text-gray-400' } // Empty
         };
         
-        const initialTeamData = [
-            { id: 'team_alfa_apos', name: 'Team ALFA / APOs' },
-            { id: 'team_bravo_ilos', name: 'Team BRAVO / IL APOs' },
-        ];
-
-        const initialEmployeeData = [
-            { team_id: 'team_alfa_apos', id: '2500135', rank: 'SGT', name: 'SGT (APF) A...' },
-            { team_id: 'team_alfa_apos', id: '2501066', rank: 'L/CPL', name: 'L/CPL (APF) CHE...' },
-            { team_id: 'team_alfa_apos', id: '2501193', rank: 'SGT', name: 'SGT (APF) CHUA...' },
-            { team_id: 'team_alfa_apos', id: '2500533', rank: 'CPL', name: 'CPL (APF) S... V...' },
-            { team_id: 'team_alfa_apos', id: '2500549', rank: 'CPL', name: 'CPL (APF) L...' },
-            { team_id: 'team_alfa_apos', id: '2510533', rank: 'L/CPL', name: 'L/CPL (APF) B...' },
-            { team_id: 'team_alfa_apos', id: '2500454', rank: 'CPL', name: 'CPL (APF) M... R...' },
-            { team_id: 'team_alfa_apos', id: '2501254', rank: 'L/CPL', name: 'L/CPL (APF) A... M...' },
-            { team_id: 'team_alfa_apos', id: '2501420', rank: 'PC', name: 'PC (APF) J... M...' },
-            { team_id: 'team_alfa_apos', id: '2501595', rank: 'CPL', name: 'CPL (APF) K... A...' },
-            { team_id: 'team_alfa_apos', id: '2501267', rank: 'SGT', name: 'SGT (APF) B... T...' },
-            { team_id: 'team_bravo_ilos', id: '2500705', rank: 'SGT', name: 'SGT (APF) LEE...' },
-            { team_id: 'team_bravo_ilos', id: '2500805', rank: 'SGT', name: 'SGT (APF) T...' },
-            { team_id: 'team_bravo_ilos', id: '25001731', rank: 'SGT', name: 'SGT (APF) HO...' },
-            { team_id: 'team_bravo_ilos', id: '2500421', rank: 'CPL', name: 'CPL (APF) T... A...' },
-            { team_id: 'team_bravo_ilos', id: '2501182', rank: 'SGT', name: 'SGT (APF) SIM...' },
-            { team_id: 'team_bravo_ilos', id: '2501619', rank: 'IV/CPL', name: 'IV/CPL (APF) J... W...' },
-            { team_id: 'team_bravo_ilos', id: '2500230', rank: 'CPL', name: 'CPL (APF) K... D...' },
-            { team_id: 'team_bravo_ilos', id: '2500356', rank: 'CPL', name: 'CPL (APF) CHUA...' },
-            { team_id: 'team_bravo_ilos', id: '2501033', rank: 'CPL', name: 'CPL (APF) S... A...' },
-            { team_id: 'team_bravo_ilos', id: '2501334', rank: 'SGT', name: 'SGT (APF) V... S...' },
-        ];
-        
-        const initialRosterData = {
-            '2500135': { '2025-10-01': 'OFF', '2025-10-02': '1', '2025-10-03': '1', '2025-10-04': '2', '2025-10-05': '2', '2025-10-06': 'OFF', '2025-10-07': 'OFF', '2025-10-08': 'AL', '2025-10-09': 'AL', '2025-10-10': '1', '2025-10-11': '1', '2025-10-12': '2', '2025-10-13': '2', '2025-10-14': 'OFF', '2025-10-15': 'OFF', '2025-10-16': 'AL', '2025-10-17': 'AL', '2025-10-18': 'PPT', '2025-10-19': 'PPT', '2025-10-20': '1', '2025-10-21': '1', '2025-10-22': '2', '2025-10-23': '2', '2025-10-24': '2N', '2025-10-25': '2N', '2025-10-26': 'OFF', '2025-10-27': 'OFF', '2025-10-28': '1', '2025-10-29': '1', '2025-10-30': '2' },
-            '2501066': { '2025-10-01': 'OFF', '2025-10-02': '1', '2025-10-03': '1', '2025-10-04': '2', '2025-10-05': '2', '2025-10-06': '2N', '2025-10-07': '2N', '2025-10-08': 'OFF', '2025-10-09': 'OFF', '2025-10-10': '1', '2025-10-11': '1', '2025-10-12': '2', '2025-10-13': '2', '2025-10-14': 'OFF', '2025-10-15': 'OFF', '2025-10-16': '1', '2025-10-17': '1', '2025-10-18': 'OFF', '2025-10-19': 'OFF', '2025-1t-20': '1', '2025-10-21': '1', '2025-10-22': '2', '2025-10-23': '2', '2025-10-24': 'OFF', '2025-10-25': 'OFF', '2025-10-26': '1', '2025-10-27': '1', '2025-10-28': '2', '2025-10-29': '2', '2025-10-30': 'OFF' },
-            '2500549': { '2025-10-01': '2N', '2025-10-02': '2N', '2025-10-03': 'OFF', '2025-10-04': 'OFF', '2025-10-05': 'AL', '2025-10-06': 'AL', '2025-10-07': 'AL', '2025-10-08': 'AL', '2025-10-09': 'AL', '2025-10-10': 'OFF', '2025-10-11': 'OFF', '2025-10-12': '1', '2025-10-13': '1', '2025-10-14': '2', '2025-10-15': '2', '2025-10-16': '2N', '2025-10-17': '2N', '2025-10-18': 'OFF', '2025-10-19': 'OFF', '2025-10-20': '1', '2025-10-21': '1', '2025-10-22': '2', '2025-10-23': '2', '2025-10-24': 'PCT', '2025-10-25': 'PCT', '2025-10-26': '2N', '2025-10-27': '2N', '2025-10-28': 'OFF', '2025-10-29': 'OFF', '2025-10-30': 'AL' },
-            '2500705': { '2025-10-01': 'AL', '2025-10-02': 'OFF', '2025-10-03': 'OFF', '2025-10-04': '1', '2025-10-05': '1', '2025-10-06': '2', '2025-10-07': '2', '2025-10-08': '2N', '2025-10-09': '2N', '2025-10-10': 'OFF', '2025-10-11': 'OFF', '2025-10-12': '1A', '2025-10-13': '1A', '2025-10-14': '1', '2025-10-15': '1', '2025-10-16': '2', '2025-10-17': '2', '2025-10-18': '2N', '2025-10-19': '2N', '2025-10-20': 'OFF', '2025-10-21': 'OFF', '2025-10-22': '1', '2025-10-23': '1', '2025-10-24': '2', '2025-10-25': '2N', '2025-10-26': '2N', '2025-10-27': 'OFF', '2025-10-28': 'OFF', '2025-10-29': '1', '2025-10-30': '1' },
-            '2501182': { '2025-10-01': '1A', '2025-10-02': '1', '2025-10-03': '1', '2025-10-04': '2', '2025-10-05': '2', '2025-10-06': '2N', '2025-10-07': '2N', '2025-10-08': 'OFF', '2025-10-09': 'OFF', '2025-10-10': '1A', '2025-10-11': '1A', '2025-10-12': '1', '2025-10-13': '1', '2025-10-14': '2', '2025-10-15': '2', '2025-10-16': 'OFF', '2025-10-17': 'OFF', '2025-10-18': 'AL', '2025-10-19': 'AL', '2025-10-20': 'OFF', '2025-10-21': 'OFF', '2025-10-22': '1A', '2025-10-23': '1A', '2025-10-24': 'PCT', '2025-10-25': 'PCT', '2025-10-26': 'OFF', '2025-10-27': 'OFF', '2025-10-28': '1', '2025-10-29': '1', '2025-10-30': '2' },
-        };
-        
         // --- 2. STATE & CONSTANTS ---
         let currentYear = 2025;
-        let currentMonth = 9; // 0-indexed (9 = October)
+        let currentMonth = 10; // 0-indexed (10 = November)
         const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
         
-        // Modal state
         let currentCellElement = null;
-        let currentEmployeeId = null;
+        let currentId = null; // Can be emp_id or team_id
         let currentFullDate = null;
-        let currentEmployeeName = null;
+        let currentName = null; // Can be emp_name or team_name
+        let currentModalType = 'employee'; // 'employee' or 'pattern'
         
-        // Delete state
         let employeeIdToDelete = null;
-        let teamIdToDelete = null; // **NEW**
+        let teamIdToDelete = null;
 
         // --- 3. DOM ELEMENTS ---
         const grid = document.getElementById('roster-grid');
@@ -358,15 +304,24 @@
         const nextMonthBtn = document.getElementById('next-month');
         const loadingState = document.getElementById('loading-state');
         const rosterContainer = document.getElementById('roster-container');
+
+        const patternEditToggle = document.getElementById('pattern-edit-toggle');
+        const headerActions = document.getElementById('header-actions');
+        const batchDeleteContainer = document.getElementById('batch-delete-container');
+        const batchDeleteBtn = document.getElementById('batch-delete-btn');
+        const batchDeleteConfirmModal = document.getElementById('batch-delete-confirm-modal');
+        const batchDeleteCount = document.getElementById('batch-delete-count');
+        const batchDeleteList = document.getElementById('batch-delete-list');
+        const cancelBatchDeleteBtn = document.getElementById('cancel-batch-delete-btn');
+        const confirmBatchDeleteBtn = document.getElementById('confirm-batch-delete-btn');
         
-        // Shift Modal
         const modal = document.getElementById('shift-modal');
         const closeModalBtn = document.getElementById('close-modal');
         const shiftOptionsContainer = document.getElementById('shift-options');
         const modalEmployeeName = document.getElementById('modal-employee-name');
         const modalDate = document.getElementById('modal-date');
+        const setAutoShiftBtn = document.getElementById('set-auto-shift-btn');
 
-        // Add Employee Modal
         const addEmployeeBtn = document.getElementById('add-employee-btn');
         const addEmployeeModal = document.getElementById('add-employee-modal');
         const closeAddModalBtn = document.getElementById('close-add-modal');
@@ -374,14 +329,12 @@
         const teamSelect = document.getElementById('emp-team-select');
         const addError = document.getElementById('add-error');
 
-        // Delete Employee Confirm Modal
         const deleteConfirmModal = document.getElementById('delete-confirm-modal');
         const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
         const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
         const deleteModalName = document.getElementById('delete-modal-name');
         const deleteModalId = document.getElementById('delete-modal-id');
 
-        // Manage Teams Modal
         const manageTeamsBtn = document.getElementById('manage-teams-btn');
         const manageTeamsModal = document.getElementById('manage-teams-modal');
         const closeTeamsModalBtn = document.getElementById('close-teams-modal');
@@ -391,13 +344,37 @@
         const deleteTeamError = document.getElementById('delete-team-error');
         const teamListUl = document.getElementById('team-list-ul');
 
-        // **NEW** Delete Team Confirm Modal
+        // Edit Team Modal is gone
+        
         const deleteTeamConfirmModal = document.getElementById('delete-team-confirm-modal');
         const cancelDeleteTeamBtn = document.getElementById('cancel-delete-team-btn');
         const confirmDeleteTeamBtn = document.getElementById('confirm-delete-team-btn');
         const deleteTeamModalName = document.getElementById('delete-team-modal-name');
 
-        // --- 4. CORE FUNCTIONS ---
+        // --- 4. HELPER FUNCTIONS ---
+        function createCell(text, classes) {
+            const cell = document.createElement('div');
+            cell.className = classes;
+            cell.textContent = text;
+            return cell;
+        }
+
+        function setEditMode(isEditing) {
+            isPatternEditMode = isEditing;
+            if (isEditing) {
+                headerActions.classList.add('hidden');
+                batchDeleteContainer.classList.add('hidden');
+            } else {
+                headerActions.classList.remove('hidden');
+                // Batch delete UI will be updated by its own logic
+                updateBatchDeleteUI();
+            }
+            // Clear selections when switching modes
+            selectedEmployeeIds.clear();
+            renderRoster();
+        }
+
+        // --- 5. CORE FUNCTIONS ---
 
         function renderRoster() {
             if (!isDataLoaded) return;
@@ -408,19 +385,22 @@
             monthYearEl.textContent = `${monthName} ${currentYear}`;
             
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            const gridCols = 3 + daysInMonth;
-            grid.style.gridTemplateColumns = `minmax(200px, 1fr) 80px 100px repeat(${daysInMonth}, minmax(60px, 1fr))`;
-
-            // Render Header
-            const nameHeader = createCell('Employee Name', 'sticky-header-col font-semibold text-sm text-gray-700');
-            nameHeader.style.minWidth = '200px';
+            
+            if (isPatternEditMode) {
+                renderPatternEditor(daysInMonth);
+            } else {
+                renderEmployeeRoster(daysInMonth);
+            }
+        }
+        
+        function renderPatternEditor(daysInMonth) {
+            const gridCols = 1 + daysInMonth;
+            grid.style.gridTemplateColumns = `minmax(250px, 1fr) repeat(${daysInMonth}, minmax(60px, 1fr))`;
+            
+            // A. Render Header Row
+            const nameHeader = createCell('Team Master Pattern', 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200');
+            nameHeader.style.minWidth = '250px';
             grid.appendChild(nameHeader);
-            const rankHeader = createCell('Rank', 'sticky-header-col font-semibold text-sm text-gray-700');
-            rankHeader.style.minWidth = '80px';
-            grid.appendChild(rankHeader);
-            const idHeader = createCell('ID', 'sticky-header-col font-semibold text-sm text-gray-700');
-            idHeader.style.minWidth = '100px';
-            grid.appendChild(idHeader);
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const d = new Date(currentYear, currentMonth, day);
@@ -441,65 +421,163 @@
                 grid.appendChild(headerCell);
             }
             
-            // Render Employee Rows
-            let currentTeam = '';
+            // B. Render Team Pattern Rows
+            const sortedTeams = [...teamsMap.values()].sort((a, b) => a.name.localeCompare(b.name));
+            
+            sortedTeams.forEach(team => {
+                const teamPattern = teamPatternsData[team.id] || {};
+
+                const nameCell = createCell(team.name, 'sticky-col text-sm p-3 border-b border-gray-200 text-gray-700 font-bold');
+                nameCell.style.minWidth = '250px';
+                grid.appendChild(nameCell);
+                
+                // C. DYNAMIC PATTERN CELLS
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const fullDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const shift = teamPattern[fullDate] || '';
+                    const shiftInfo = shiftCodes[shift] || shiftCodes[''];
+
+                    const dataCell = createCell(shiftInfo.text, `text-center p-3 border-b border-l border-gray-200 cursor-pointer hover:bg-gray-100 transition duration-150 font-semibold ${shiftInfo.color} ${shiftInfo.textColor}`);
+                    dataCell.addEventListener('click', () => {
+                        openModal(dataCell, team.id, team.name, fullDate, 'pattern');
+                    });
+                    grid.appendChild(dataCell);
+                }
+            });
+        }
+        
+        function renderEmployeeRoster(daysInMonth) {
+            const gridCols = 3 + daysInMonth;
+            grid.style.gridTemplateColumns = `minmax(250px, 1fr) 80px 100px repeat(${daysInMonth}, minmax(60px, 1fr))`;
+
+            // A. Render Header Row
+            const nameHeader = document.createElement('div');
+            nameHeader.className = 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 flex items-center space-x-3';
+            nameHeader.style.minWidth = '250px';
+            
+            const selectAllCheckbox = document.createElement('input');
+            selectAllCheckbox.type = 'checkbox';
+            selectAllCheckbox.id = 'select-all-checkbox';
+            selectAllCheckbox.className = 'rounded border-gray-300 text-indigo-600 focus:ring-indigo-500';
+            selectAllCheckbox.addEventListener('change', (e) => handleSelectAll(e.target.checked));
+            
+            const nameLabel = document.createElement('label');
+            nameLabel.htmlFor = 'select-all-checkbox';
+            nameLabel.textContent = 'Employee Name';
+            nameLabel.className = 'cursor-pointer';
+            
+            nameHeader.appendChild(selectAllCheckbox);
+            nameHeader.appendChild(nameLabel);
+            grid.appendChild(nameHeader);
+            
+            const rankHeader = createCell('Rank', 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200');
+            rankHeader.style.minWidth = '80px';
+            grid.appendChild(rankHeader);
+            const idHeader = createCell('ID', 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200');
+            idHeader.style.minWidth = '100px';
+            grid.appendChild(idHeader);
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const d = new Date(currentYear, currentMonth, day);
+                const dayName = weekdays[d.getDay()];
+                const headerCell = document.createElement('div');
+                headerCell.className = 'header-cell text-center p-2 border-b border-l border-gray-200';
+                // ... (rest of day header code) ...
+                const dayNumSpan = document.createElement('span');
+                dayNumSpan.className = 'text-lg font-bold block';
+                dayNumSpan.textContent = day;
+                const dayNameSpan = document.createElement('span');
+                dayNameSpan.className = 'text-xs text-gray-500 font-medium block';
+                dayNameSpan.textContent = dayName;
+                if (dayName === 'SAT' || dayName === 'SUN') {
+                    dayNumSpan.classList.add('text-red-500');
+                }
+                headerCell.appendChild(dayNumSpan);
+                headerCell.appendChild(dayNameSpan);
+                grid.appendChild(headerCell);
+            }
+            
+            // B. Render Employee Rows
+            let currentTeamName = '';
             employeeData.sort((a, b) => {
-                const teamAName = teamsMap.get(a.team_id) || 'Unassigned';
-                const teamBName = teamsMap.get(b.team_id) || 'Unassigned';
+                const teamAName = teamsMap.get(a.team_id)?.name || 'Unassigned';
+                const teamBName = teamsMap.get(b.team_id)?.name || 'Unassigned';
                 return teamAName.localeCompare(teamBName) || a.name.localeCompare(b.name);
             });
             
             employeeData.forEach(emp => {
-                const teamName = teamsMap.get(emp.team_id) || 'Unassigned';
-                if (teamName !== currentTeam) {
-                    currentTeam = teamName;
-                    const teamHeader = createCell(currentTeam, 'header-cell text-left p-3 font-bold text-base text-indigo-700 bg-indigo-50 border-t border-b border-indigo-200');
+                const team = teamsMap.get(emp.team_id);
+                const teamName = team?.name || 'Unassigned';
+
+                if (teamName !== currentTeamName) {
+                    currentTeamName = teamName;
+                    const teamHeader = createCell(currentTeamName, 'header-cell text-left p-3 font-bold text-base text-indigo-700 bg-indigo-50 border-t border-b border-indigo-200');
                     teamHeader.style.gridColumn = `span ${gridCols}`;
                     grid.appendChild(teamHeader);
                 }
                 
                 const rowCells = [];
                 
+                // Name, Rank, ID Cells
                 const nameCell = document.createElement('div');
                 nameCell.className = 'employee-row sticky-col text-sm p-3 border-b border-gray-200 text-gray-700 font-medium flex justify-between items-center';
-                nameCell.style.minWidth = '200px';
+                nameCell.style.minWidth = '250px';
+                
+                const nameContainer = document.createElement('div');
+                nameContainer.className = 'flex items-center space-x-3';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'emp-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500';
+                checkbox.dataset.empId = emp.id;
+                checkbox.checked = selectedEmployeeIds.has(emp.id);
+                checkbox.addEventListener('change', (e) => handleSelectEmployee(emp.id, e.target.checked));
                 
                 const nameSpan = document.createElement('span');
                 nameSpan.textContent = emp.name;
-                nameCell.appendChild(nameSpan);
-
+                nameContainer.appendChild(checkbox);
+                nameContainer.appendChild(nameSpan);
+                nameCell.appendChild(nameContainer);
+                
                 const deleteBtn = document.createElement('button');
                 deleteBtn.innerHTML = '&#215;';
                 deleteBtn.className = 'delete-btn text-red-400 hover:text-red-700 font-bold text-xl ml-2 p-0 leading-none rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-100 opacity-0 transition-opacity duration-150';
                 deleteBtn.title = `Delete ${emp.name}`;
-                deleteBtn.addEventListener('click', () => {
-                    openDeleteModal(emp.id, emp.name);
-                });
-                
+                deleteBtn.addEventListener('click', () => { openDeleteModal(emp.id, emp.name); });
                 nameCell.appendChild(deleteBtn);
                 grid.appendChild(nameCell);
                 rowCells.push(nameCell);
-
+                
                 const rankCell = createCell(emp.rank, 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600');
                 rankCell.style.minWidth = '80px';
-                rankCell.style.left = '200px';
+                rankCell.style.left = '250px'; // Adjusted for wider name column
                 grid.appendChild(rankCell);
                 rowCells.push(rankCell);
                 
                 const idCell = createCell(emp.id, 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600');
                 idCell.style.minWidth = '100px';
-                idCell.style.left = '280px';
+                idCell.style.left = '330px'; // Adjusted for wider name column
                 grid.appendChild(idCell);
                 rowCells.push(idCell);
 
+                // C. DYNAMIC ROSTER CELLS
+                const teamPattern = teamPatternsData[emp.team_id] || {};
+                
                 for (let day = 1; day <= daysInMonth; day++) {
                     const fullDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    const empRoster = rosterData[emp.id] || {};
-                    const shift = empRoster[fullDate] || '';
-                    const shiftInfo = shiftCodes[shift] || shiftCodes[''];
+                    
+                    const manualShift = rosterData[emp.id]?.[fullDate];
+                    const patternShift = teamPattern[fullDate];
+                    
+                    const finalShift = manualShift ?? patternShift ?? '';
+                    const shiftInfo = shiftCodes[finalShift] || shiftCodes[''];
+                    const isFromPattern = (manualShift === undefined && patternShift !== undefined);
+
                     const dataCell = createCell(shiftInfo.text, `employee-row text-center p-3 border-b border-l border-gray-200 cursor-pointer hover:bg-gray-100 transition duration-150 font-semibold ${shiftInfo.color} ${shiftInfo.textColor}`);
+                    if (isFromPattern) {
+                        dataCell.classList.add('pattern-shift');
+                    }
                     dataCell.addEventListener('click', () => {
-                        openModal(dataCell, emp.id, emp.name, fullDate);
+                        openModal(dataCell, emp.id, emp.name, fullDate, 'employee');
                     });
                     grid.appendChild(dataCell);
                     rowCells.push(dataCell);
@@ -508,30 +586,24 @@
                 rowCells.forEach(cell => {
                     cell.addEventListener('mouseenter', () => {
                         rowCells.forEach(c => c.classList.add('bg-gray-50'));
-                        deleteBtn.style.opacity = '1';
                     });
                      cell.addEventListener('mouseleave', () => {
                         rowCells.forEach(c => c.classList.remove('bg-gray-50'));
-                        deleteBtn.style.opacity = '0';
                     });
                 });
             });
-        }
-        
-        function createCell(text, classes) {
-            const cell = document.createElement('div');
-            cell.className = classes;
-            cell.textContent = text;
-            return cell;
+            updateSelectAllCheckbox();
         }
 
-        function openModal(cellElement, empId, empName, fullDate) {
+        
+        function openModal(cellElement, id, name, fullDate, type = 'employee') {
             currentCellElement = cellElement;
-            currentEmployeeId = empId;
+            currentId = id;
             currentFullDate = fullDate;
-            currentEmployeeName = empName;
+            currentName = name;
+            currentModalType = type;
             
-            modalEmployeeName.textContent = empName;
+            modalEmployeeName.textContent = name;
             modalDate.textContent = new Date(fullDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
             
             shiftOptionsContainer.innerHTML = '';
@@ -544,6 +616,13 @@
                 shiftOptionsContainer.appendChild(button);
             });
             
+            // "Set to Auto" only makes sense for employee overrides
+            if (type === 'employee') {
+                setAutoShiftBtn.classList.remove('hidden');
+            } else {
+                setAutoShiftBtn.classList.add('hidden');
+            }
+            
             modal.classList.remove('hidden');
         }
 
@@ -552,35 +631,45 @@
         }
 
         async function selectShift(shiftCode) {
-            if (!currentCellElement || !currentEmployeeId || !currentFullDate) return;
-            const rosterDocRef = doc(rosterCollection, currentEmployeeId);
-            try {
-                await setDoc(rosterDocRef, { [currentFullDate]: shiftCode }, { merge: true });
-                console.log(`Updated ${currentEmployeeName} on ${currentFullDate} to ${shiftCode}`);
-                closeModal();
-            } catch (error) {
-                console.error("Error saving shift: ", error);
+            if (!currentId || !currentFullDate) return;
+            
+            let docRef;
+            let data;
+            
+            if (currentModalType === 'employee') {
+                docRef = doc(rosterCollection, currentId);
+                if (shiftCode === 'AUTO') {
+                    // Remove the override field
+                    data = { [currentFullDate]: deleteField() };
+                    await updateDoc(docRef, data); // Use updateDoc for deleteField
+                } else {
+                    // Set the override field
+                    data = { [currentFullDate]: shiftCode };
+                    await setDoc(docRef, data, { merge: true });
+                }
+            } else if (currentModalType === 'pattern') {
+                docRef = doc(teamPatternsCollection, currentId);
+                // Set the pattern field
+                data = { [currentFullDate]: shiftCode };
+                await setDoc(docRef, data, { merge: true });
             }
+            
+            closeModal();
         }
         
         function changeMonth(direction) {
             currentMonth += direction;
-            if (currentMonth > 11) {
-                currentMonth = 0;
-                currentYear++;
-            }
-            if (currentMonth < 0) {
-                currentMonth = 11;
-                currentYear--;
-            }
+            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
             renderRoster();
         }
 
-        // --- Add/Delete Employee Functions ---
+        // --- Add/Delete Employee ---
         function openAddModal() {
             addError.textContent = '';
             teamSelect.innerHTML = '<option value="">Select a team...</option>';
-            teamsData.forEach(team => {
+            const sortedTeams = [...teamsMap.values()].sort((a, b) => a.name.localeCompare(b.name));
+            sortedTeams.forEach(team => {
                 const option = document.createElement('option');
                 option.value = team.id;
                 option.textContent = team.name;
@@ -603,16 +692,15 @@
                 team_id: document.getElementById('emp-team-select').value,
                 id: document.getElementById('emp-id').value.trim(),
                 rank: document.getElementById('emp-rank').value.trim(),
-                name: document.getElementById('emp-name').value.trim(),
+                name: document.getElementById('emp-name').value.trim()
+                // `patternOffset` is no longer needed
             };
 
             if (!newEmployee.team_id) {
-                addError.textContent = 'Error: Please select a team.';
-                return;
+                addError.textContent = 'Error: Please select a team.'; return;
             }
             if (employeeData.some(emp => emp.id === newEmployee.id)) {
-                addError.textContent = 'Error: Employee ID already exists.';
-                return;
+                addError.textContent = 'Error: Employee ID already exists.'; return;
             }
 
             try {
@@ -631,90 +719,183 @@
             deleteModalId.textContent = id;
             deleteConfirmModal.classList.remove('hidden');
         }
-
-        function closeDeleteModal() {
-            employeeIdToDelete = null;
-            deleteConfirmModal.classList.add('hidden');
-        }
+        function closeDeleteModal() { deleteConfirmModal.classList.add('hidden'); }
 
         async function handleDeleteEmployee() {
             if (!employeeIdToDelete) return;
             try {
-                const empDocRef = doc(employeesCollection, employeeIdToDelete);
-                await deleteDoc(empDocRef);
-                const rosterDocRef = doc(rosterCollection, employeeIdToDelete);
-                const rosterSnap = await getDoc(rosterDocRef);
-                if (rosterSnap.exists()) {
-                    await deleteDoc(rosterDocRef);
-                }
+                const batch = writeBatch(db);
+                // Delete employee doc
+                batch.delete(doc(employeesCollection, employeeIdToDelete));
+                // Delete roster doc
+                batch.delete(doc(rosterCollection, employeeIdToDelete));
+                await batch.commit();
+                
                 closeDeleteModal();
             } catch (error) {
                 console.error("Error deleting employee: ", error);
             }
         }
-        
-        // --- Team Management Functions (MODIFIED) ---
 
+        // --- Batch Delete ---
+        function handleSelectEmployee(empId, isChecked) {
+            if (isChecked) {
+                selectedEmployeeIds.add(empId);
+            } else {
+                selectedEmployeeIds.delete(empId);
+            }
+            updateBatchDeleteUI();
+            updateSelectAllCheckbox();
+        }
+
+        function handleSelectAll(isChecked) {
+            const allCheckboxes = document.querySelectorAll('.emp-checkbox');
+            if (isChecked) {
+                employeeData.forEach(emp => selectedEmployeeIds.add(emp.id));
+                allCheckboxes.forEach(cb => cb.checked = true);
+            } else {
+                selectedEmployeeIds.clear();
+                allCheckboxes.forEach(cb => cb.checked = false);
+            }
+            updateBatchDeleteUI();
+        }
+        
+        function updateSelectAllCheckbox() {
+            const selectAll = document.getElementById('select-all-checkbox');
+            if (!selectAll) return;
+            const totalEmployees = employeeData.length;
+            if (totalEmployees > 0 && selectedEmployeeIds.size === totalEmployees) {
+                selectAll.checked = true;
+                selectAll.indeterminate = false;
+            } else if (selectedEmployeeIds.size > 0) {
+                selectAll.checked = false;
+                selectAll.indeterminate = true;
+            } else {
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+            }
+        }
+
+        function updateBatchDeleteUI() {
+            // Don't show batch delete in pattern edit mode
+            if (isPatternEditMode) {
+                 headerActions.classList.add('hidden');
+                 batchDeleteContainer.classList.add('hidden');
+                 return;
+            }
+            
+            const count = selectedEmployeeIds.size;
+            if (count > 0) {
+                headerActions.classList.add('hidden');
+                batchDeleteContainer.classList.remove('hidden');
+                batchDeleteBtn.textContent = `Delete Selected (${count})`;
+            } else {
+                headerActions.classList.remove('hidden');
+                batchDeleteContainer.classList.add('hidden');
+            }
+        }
+        
+        function openBatchDeleteModal() {
+            const count = selectedEmployeeIds.size;
+            batchDeleteCount.textContent = count;
+            batchDeleteList.innerHTML = '';
+            
+            selectedEmployeeIds.forEach(id => {
+                const emp = employeeData.find(e => e.id === id);
+                if (emp) {
+                    const li = document.createElement('li');
+                    li.textContent = `${emp.name} (ID: ${emp.id})`;
+                    batchDeleteList.appendChild(li);
+                }
+            });
+            batchDeleteConfirmModal.classList.remove('hidden');
+        }
+        
+        function closeBatchDeleteModal() {
+            batchDeleteConfirmModal.classList.add('hidden');
+        }
+
+        async function handleBatchDelete() {
+            if (selectedEmployeeIds.size === 0) return;
+            
+            try {
+                const batch = writeBatch(db);
+                selectedEmployeeIds.forEach(id => {
+                    batch.delete(doc(employeesCollection, id));
+                    batch.delete(doc(rosterCollection, id));
+                });
+                await batch.commit();
+                
+                selectedEmployeeIds.clear();
+                updateBatchDeleteUI();
+                closeBatchDeleteModal();
+            } catch (error) {
+                console.error("Error batch deleting employees: ", error);
+            }
+        }
+        
+        // --- Team Management Functions (Simplified) ---
+        
         function openManageTeamsModal() {
             deleteTeamError.textContent = '';
             addTeamError.textContent = '';
-            manageTeamsModal.classList.remove('hidden');
             populateManageTeamsModal();
+            manageTeamsModal.classList.remove('hidden');
         }
-
-        function closeManageTeamsModal() {
-            manageTeamsModal.classList.add('hidden');
-        }
-
+        function closeManageTeamsModal() { manageTeamsModal.classList.add('hidden'); }
+        
         function populateManageTeamsModal() {
             if (!teamListUl) return; 
-
             teamListUl.innerHTML = '';
-            if (teamsData.length === 0) {
-                teamListUl.innerHTML = '<li class="p-3 text-gray-500 italic">No teams found. Add one above!</li>';
+            const sortedTeams = [...teamsMap.values()].sort((a, b) => a.name.localeCompare(b.name));
+
+            if (sortedTeams.length === 0) {
+                teamListUl.innerHTML = '<li class="p-3 text-gray-500 italic">No teams found.</li>';
                 return;
             }
-
-            teamsData.forEach(team => {
+            
+            sortedTeams.forEach(team => {
                 const li = document.createElement('li');
-                li.className = 'flex justify-between items-center p-3';
+                li.className = 'team-li flex justify-between items-center p-3';
                 
                 const span = document.createElement('span');
                 span.textContent = team.name;
                 li.appendChild(span);
 
+                const buttonContainer = document.createElement('div');
+                buttonContainer.className = 'flex items-center';
+
+                // Edit button is removed
+                
                 const deleteBtn = document.createElement('button');
                 deleteBtn.innerHTML = '&#215;';
-                deleteBtn.className = 'text-red-400 hover:text-red-700 font-bold text-xl p-0 leading-none rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-100';
+                deleteBtn.className = 'text-red-400 hover:text-red-700 font-bold text-xl p-0 rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-100';
                 deleteBtn.title = `Delete ${team.name}`;
-                deleteBtn.addEventListener('click', () => {
-                    // **MODIFIED:** Call the pre-delete check first
-                    checkAndDeleteTeam(team.id, team.name);
-                });
-                li.appendChild(deleteBtn);
+                deleteBtn.onclick = () => checkAndDeleteTeam(team.id, team.name);
+                buttonContainer.appendChild(deleteBtn); 
+
+                li.appendChild(buttonContainer); 
                 
                 teamListUl.appendChild(li);
             });
         }
-
+        
         async function handleAddTeam(e) {
             e.preventDefault();
             addTeamError.textContent = '';
             const newTeamName = newTeamNameInput.value.trim();
-            
-            if (!newTeamName) {
-                addTeamError.textContent = 'Please enter a name.';
-                return;
-            }
-
+            if (!newTeamName) { addTeamError.textContent = 'Please enter a name.'; return; }
             const newTeamId = newTeamName.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_{2,}/g, '_') + '_' + Date.now();
-            if (teamsData.some(team => team.name.toLowerCase() === newTeamName.toLowerCase())) {
+            if ([...teamsMap.values()].some(team => team.name.toLowerCase() === newTeamName.toLowerCase())) {
                 addTeamError.textContent = 'A team with this name already exists.';
                 return;
             }
-
             try {
-                const newTeam = { id: newTeamId, name: newTeamName };
+                const newTeam = { 
+                    id: newTeamId, 
+                    name: newTeamName
+                    // Pattern fields are no longer needed here
+                };
                 await setDoc(doc(teamsCollection, newTeamId), newTeam);
                 newTeamNameInput.value = '';
             } catch (error) {
@@ -723,95 +904,74 @@
             }
         }
 
-        /**
-         * **MODIFIED:** This function checks if a team can be deleted,
-         * then opens the new confirmation modal.
-         */
+        // --- Delete Team Functions ---
         function checkAndDeleteTeam(teamId, teamName) {
             deleteTeamError.textContent = '';
-            
             const employeesOnTeam = employeeData.filter(emp => emp.team_id === teamId);
-            
             if (employeesOnTeam.length > 0) {
-                deleteTeamError.textContent = `Cannot delete "${teamName}". ${employeesOnTeam.length} employee(s) are still assigned to it. Please reassign them first.`;
+                deleteTeamError.textContent = `Cannot delete "${teamName}". ${employeesOnTeam.length} employee(s) are still assigned.`;
                 return;
             }
-            
-            // **NEW:** Open the new confirmation modal
-            teamIdToDelete = teamId; // Store the ID
+            teamIdToDelete = teamId;
             deleteTeamModalName.textContent = teamName;
             deleteTeamConfirmModal.classList.remove('hidden');
         }
-
-        /**
-         * **NEW:** Actually performs the team deletion.
-         */
         async function performDeleteTeam() {
             if (!teamIdToDelete) return;
-
             try {
-                await deleteDoc(doc(teamsCollection, teamIdToDelete));
-                console.log(`Deleted team with ID: ${teamIdToDelete}`);
+                // Also delete the team's pattern
+                const batch = writeBatch(db);
+                batch.delete(doc(teamsCollection, teamIdToDelete));
+                batch.delete(doc(teamPatternsCollection, teamIdToDelete));
+                await batch.commit();
+
             } catch (error) {
                 console.error("Error deleting team: ", error);
                 deleteTeamError.textContent = 'Error deleting team.';
             }
-            
             closeDeleteTeamModal();
         }
-
-        /**
-         * **NEW:** Closes the delete team confirmation modal.
-         */
         function closeDeleteTeamModal() {
             teamIdToDelete = null;
             deleteTeamConfirmModal.classList.add('hidden');
         }
 
-
-        // --- Firebase Init & Data Loading ---
-        async function populateInitialData() {
-            console.log("Checking for initial data...");
-            const querySnapshot = await getDocs(teamsCollection);
+        // --- Firebase Init & MIGRATION ---
+        
+        async function migrateDataModel() {
+            console.log("Checking data model (V6)...");
+            loadingState.textContent = "Checking for system updates...";
+            const batch = writeBatch(db);
+            let requiresMigration = false;
             
-            if (querySnapshot.empty) {
-                console.log("Empty database. Populating ALL initial data (Teams, Employees, Roster)...");
-                const batch = writeBatch(db);
-                
-                initialTeamData.forEach(team => {
-                    const teamDocRef = doc(teamsCollection, team.id);
-                    batch.set(teamDocRef, team);
-                });
-                initialEmployeeData.forEach(emp => {
-                    const empDocRef = doc(employeesCollection, emp.id);
-                    batch.set(empDocRef, emp);
-                });
-                Object.keys(initialRosterData).forEach(empId => {
-                    const rosterDocRef = doc(rosterCollection, empId);
-                    batch.set(rosterDocRef, initialRosterData[empId]);
-                });
-                
+            // This migration just removes old fields. It's non-destructive.
+            // We'll just ignore them, it's safer.
+            console.log("Data model V6 uses new logic, ignoring old fields.");
+            
+            // We just need to ensure the teams exist from V5.
+            const teamsSnap = await getDocs(teamsCollection);
+            if (teamsSnap.empty) {
+                console.log("No teams found, creating defaults...");
+                // This seems like a first-time setup, let's add some teams
+                const defaultTeams = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Foyer', 'Support'];
+                for (const teamName of defaultTeams) {
+                    const teamId = teamName.toLowerCase() + '_' + Date.now();
+                    batch.set(doc(teamsCollection, teamId), { id: teamId, name: teamName });
+                }
                 await batch.commit();
-                console.log("Initial data populated.");
-            } else {
-                console.log("Existing data found. Skipping population.");
+                console.log("Default teams created.");
             }
         }
 
         function setupDataListeners() {
             onSnapshot(query(teamsCollection), (snapshot) => {
                 console.log("Teams data updated from Firestore.");
-                teamsData = [];
                 teamsMap.clear();
                 snapshot.forEach((doc) => {
-                    const team = doc.data();
-                    teamsData.push(team);
-                    teamsMap.set(team.id, team.name);
+                    teamsMap.set(doc.id, doc.data()); 
                 });
-                teamsData.sort((a,b) => a.name.localeCompare(b.name));
-                
                 if (isDataLoaded) renderRoster();
-                populateManageTeamsModal();
+                populateManageTeamsModal(); 
             });
 
             onSnapshot(query(employeesCollection), (snapshot) => {
@@ -820,14 +980,27 @@
                 snapshot.forEach((doc) => {
                     employeeData.push(doc.data());
                 });
+                // When employee data changes, clear selection
+                selectedEmployeeIds.clear();
+                updateBatchDeleteUI();
                 if (isDataLoaded) renderRoster();
             });
 
             onSnapshot(query(rosterCollection), (snapshot) => {
-                 console.log("Roster data updated from Firestore.");
+                 console.log("Roster override data updated from Firestore.");
                 rosterData = {};
                 snapshot.forEach((doc) => {
                     rosterData[doc.id] = doc.data();
+                });
+                if (isDataLoaded) renderRoster();
+            });
+            
+            // NEW LISTENER for Team Patterns
+            onSnapshot(query(teamPatternsCollection), (snapshot) => {
+                 console.log("Team Pattern data updated from Firestore.");
+                teamPatternsData = {};
+                snapshot.forEach((doc) => {
+                    teamPatternsData[doc.id] = doc.data();
                 });
                 if (isDataLoaded) renderRoster();
             });
@@ -837,23 +1010,25 @@
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     console.log("User authenticated:", user.uid);
-                    loadingState.textContent = "Loading Roster Data...";
                     
                     teamsCollection = collection(db, "teams");
                     employeesCollection = collection(db, "employees");
                     rosterCollection = collection(db, "roster");
+                    teamPatternsCollection = collection(db, "teamPatterns"); // New collection
                     
                     try {
-                        await populateInitialData();
+                        await migrateDataModel();
+                        
+                        loadingState.textContent = "Loading Roster Data...";
                         setupDataListeners();
                         
                         isDataLoaded = true;
                         loadingState.classList.add('hidden');
                         rosterContainer.classList.remove('hidden');
-                        renderRoster();
+                        // RenderRoster will be called by listeners
                     } catch (error) {
-                        console.error("Error loading initial data (check Firestore Rules):", error);
-                        loadingState.textContent = "Error: Could not read from database. Please check Firestore security rules.";
+                        console.error("Error during init (check Firestore Rules):", error);
+                        loadingState.textContent = "Error: Could not read/write to database. Please check Firestore security rules.";
                     }
 
                 } else {
@@ -864,10 +1039,8 @@
 
             try {
                 if (initialAuthToken) {
-                    console.log("Signing in with custom token...");
                     await signInWithCustomToken(auth, initialAuthToken);
                 } else {
-                    console.log("Signing in anonymously...");
                     await signInAnonymously(auth);
                 }
             } catch (error) {
@@ -876,38 +1049,42 @@
             }
         }
 
-        // --- 5. EVENT LISTENERS (DOM) ---
+        // --- 6. EVENT LISTENERS (DOM) ---
+        patternEditToggle.addEventListener('change', (e) => setEditMode(e.target.checked));
+        
         prevMonthBtn.addEventListener('click', () => changeMonth(-1));
         nextMonthBtn.addEventListener('click', () => changeMonth(1));
         
-        // Shift modal
         closeModalBtn.addEventListener('click', closeModal);
         modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+        setAutoShiftBtn.addEventListener('click', () => selectShift('AUTO'));
 
-        // Add Employee modal
         addEmployeeBtn.addEventListener('click', openAddModal);
         closeAddModalBtn.addEventListener('click', closeAddModal);
         addEmployeeForm.addEventListener('submit', handleAddEmployee);
         addEmployeeModal.addEventListener('click', (e) => { if (e.target === addEmployeeModal) closeAddModal(); });
 
-        // Delete Employee modal
         cancelDeleteBtn.addEventListener('click', closeDeleteModal);
         confirmDeleteBtn.addEventListener('click', handleDeleteEmployee);
         deleteConfirmModal.addEventListener('click', (e) => { if (e.target === deleteConfirmModal) closeDeleteModal(); });
+        
+        batchDeleteBtn.addEventListener('click', openBatchDeleteModal);
+        cancelBatchDeleteBtn.addEventListener('click', closeBatchDeleteModal);
+        confirmBatchDeleteBtn.addEventListener('click', handleBatchDelete);
+        batchDeleteConfirmModal.addEventListener('click', (e) => { if (e.target === batchDeleteConfirmModal) closeBatchDeleteModal(); });
 
-        // Manage Teams modal
         manageTeamsBtn.addEventListener('click', openManageTeamsModal);
         closeTeamsModalBtn.addEventListener('click', closeManageTeamsModal);
         manageTeamsModal.addEventListener('click', (e) => { if (e.target === manageTeamsModal) closeManageTeamsModal(); });
         addTeamForm.addEventListener('submit', handleAddTeam);
 
-        // **NEW** Delete Team modal listeners
+        // Edit Team listeners are removed
+
         cancelDeleteTeamBtn.addEventListener('click', closeDeleteTeamModal);
         confirmDeleteTeamBtn.addEventListener('click', performDeleteTeam);
         deleteTeamConfirmModal.addEventListener('click', (e) => { if (e.target === deleteTeamConfirmModal) closeDeleteTeamModal(); });
 
-
-        // --- 6. INITIALIZATION ---
+        // --- 7. INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', initFirebase);
 
     </script>
