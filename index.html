@@ -130,15 +130,15 @@
                         <select id="emp-team-select" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required></select>
                     </div>
                     <div>
-                        <label for="emp-id" class="block text-sm font-medium text-gray-700">Employee ID</label>
-                        <input type="text" id="emp-id" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                        <label for="emp-service-id" class="block text-sm font-medium text-gray-700">Service ID (e.g., 25...)</label>
+                        <input type="text" id="emp-service-id" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
                     </div>
                     <div>
-                        <label for="emp-rank" class="block text-sm font-medium text-gray-700">Rank</label>
-                        <input type="text" id="emp-rank" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                        <label for="emp-short-id" class="block text-sm font-medium text-gray-700">Emp ID (e.g., 11997)</label>
+                        <input type="text" id="emp-short-id" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
                     </div>
                     <div>
-                        <label for="emp-name" class="block text-sm font-medium text-gray-700">Name</label>
+                        <label for="emp-name" class="block text-sm font-medium text-gray-700">Name (e.g., SGT (APF) CHEW...)</label>
                         <input type="text" id="emp-name" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
                     </div>
                     <div id="add-error" class="text-red-600 text-sm"></div>
@@ -154,7 +154,7 @@
     <div id="delete-confirm-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
             <h3 class="text-xl font-semibold text-red-700">Confirm Deletion</h3>
-            <p class="my-4 text-gray-600">Are you sure you want to delete <strong id="delete-modal-name"></strong> (ID: <strong id="delete-modal-id"></strong>)?</p>
+            <p class="my-4 text-gray-600">Are you sure you want to delete <strong id="delete-modal-name"></strong> (Service ID: <strong id="delete-modal-id"></strong>)?</p>
             <div class="flex justify-end space-x-3">
                 <button id="cancel-delete-btn" class="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Cancel</button>
                 <button id="confirm-delete-btn" class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Confirm Delete</button>
@@ -388,10 +388,23 @@
             monthYearEl.textContent = `${monthName} ${currentYear}`;
             
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            
+            // ### DATAMODEL CHANGE ###
+            // We now have 3 info cols + daysInMonth
             const gridCols = 3 + daysInMonth;
-            grid.style.gridTemplateColumns = `minmax(250px, 1fr) 80px 100px repeat(${daysInMonth}, minmax(60px, 1fr))`;
+            // Service ID (120px), Emp ID (100px), Name (250px min)
+            grid.style.gridTemplateColumns = `120px 100px minmax(250px, 1fr) repeat(${daysInMonth}, minmax(60px, 1fr))`;
 
             // A. Render Header Row
+            const serviceIdHeader = createCell('Service ID', 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200');
+            serviceIdHeader.style.minWidth = '120px';
+            grid.appendChild(serviceIdHeader);
+
+            const empIdHeader = createCell('Emp ID', 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200');
+            empIdHeader.style.minWidth = '100px';
+            grid.appendChild(empIdHeader);
+            
+            // Name header now contains the select-all checkbox
             const nameHeader = document.createElement('div');
             nameHeader.className = 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 flex items-center space-x-3';
             nameHeader.style.minWidth = '250px';
@@ -411,12 +424,7 @@
             nameHeader.appendChild(nameLabel);
             grid.appendChild(nameHeader);
             
-            const rankHeader = createCell('Rank', 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200');
-            rankHeader.style.minWidth = '80px';
-            grid.appendChild(rankHeader);
-            const idHeader = createCell('ID', 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200');
-            idHeader.style.minWidth = '100px';
-            grid.appendChild(idHeader);
+            // ### END HEADER CHANGE ###
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const d = new Date(currentYear, currentMonth, day);
@@ -458,10 +466,26 @@
                 
                 const rowCells = [];
                 
-                // Name, Rank, ID Cells
+                // ### EMPLOYEE ROW CHANGE ###
+                
+                // Service ID Cell
+                const serviceIdCell = createCell(emp.id, 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600');
+                serviceIdCell.style.minWidth = '120px';
+                grid.appendChild(serviceIdCell);
+                rowCells.push(serviceIdCell);
+
+                // Emp ID Cell
+                const empIdCell = createCell(emp.emp_id || '', 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600');
+                empIdCell.style.minWidth = '100px';
+                empIdCell.style.left = '120px'; // Adjusted for Service ID col
+                grid.appendChild(empIdCell);
+                rowCells.push(empIdCell);
+                
+                // Name Cell (with checkbox and delete)
                 const nameCell = document.createElement('div');
                 nameCell.className = 'employee-row sticky-col text-sm p-3 border-b border-gray-200 text-gray-700 font-medium flex justify-between items-center';
                 nameCell.style.minWidth = '250px';
+                nameCell.style.left = '220px'; // Adjusted for two ID cols
                 
                 const nameContainer = document.createElement('div');
                 nameContainer.className = 'flex items-center space-x-3';
@@ -487,17 +511,7 @@
                 grid.appendChild(nameCell);
                 rowCells.push(nameCell);
                 
-                const rankCell = createCell(emp.rank, 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600');
-                rankCell.style.minWidth = '80px';
-                rankCell.style.left = '250px'; // Adjusted for wider name column
-                grid.appendChild(rankCell);
-                rowCells.push(rankCell);
-                
-                const idCell = createCell(emp.id, 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600');
-                idCell.style.minWidth = '100px';
-                idCell.style.left = '330px'; // Adjusted for wider name column
-                grid.appendChild(idCell);
-                rowCells.push(idCell);
+                // ### END EMPLOYEE ROW CHANGE ###
 
                 // C. DYNAMIC ROSTER CELLS
                 for (let day = 1; day <= daysInMonth; day++) {
@@ -616,8 +630,7 @@
             const sortedTeams = [...teamsMap.values()].sort((a, b) => a.name.localeCompare(b.name));
             sortedTeams.forEach(team => {
                 const option = document.createElement('option');
-                option.value = team.id;
-                option.textContent = team.name;
+                option.value = team.id; // This should be the docId
                 teamSelect.appendChild(option);
             });
             addEmployeeModal.classList.remove('hidden');
@@ -637,11 +650,12 @@
             // Re-introduce staggering logic
             const employeesOnTeam = employeeData.filter(emp => emp.team_id === team_id).length;
             const newPatternOffset = employeesOnTeam; 
-
+            
+            // ### DATAMODEL CHANGE ###
             const newEmployee = {
                 team_id: team_id,
-                id: document.getElementById('emp-id').value.trim(),
-                rank: document.getElementById('emp-rank').value.trim(),
+                id: document.getElementById('emp-service-id').value.trim(),
+                emp_id: document.getElementById('emp-short-id').value.trim(),
                 name: document.getElementById('emp-name').value.trim(),
                 patternOffset: newPatternOffset
             };
@@ -649,11 +663,16 @@
             if (!newEmployee.team_id) {
                 addError.textContent = 'Error: Please select a team.'; return;
             }
+            // Use Service ID (the long one) as the unique identifier
             if (employeeData.some(emp => emp.id === newEmployee.id)) {
-                addError.textContent = 'Error: Employee ID already exists.'; return;
+                addError.textContent = 'Error: Service ID already exists.'; return;
+            }
+            if (!newEmployee.id || !newEmployee.emp_id || !newEmployee.name) {
+                addError.textContent = 'Error: All fields are required.'; return;
             }
 
             try {
+                // The document ID will be the Service ID
                 const empDocRef = doc(employeesCollection, newEmployee.id);
                 await setDoc(empDocRef, newEmployee);
                 closeAddModal();
@@ -675,6 +694,7 @@
             if (!employeeIdToDelete) return;
             try {
                 const batch = writeBatch(db);
+                // Delete employee doc and roster doc, both keyed by the Service ID
                 batch.delete(doc(employeesCollection, employeeIdToDelete));
                 batch.delete(doc(rosterCollection, employeeIdToDelete));
                 await batch.commit();
@@ -785,7 +805,6 @@
         }
         function closeManageTeamsModal() { manageTeamsModal.classList.add('hidden'); }
         
-        // ##### BUG FIX IS HERE #####
         function populateManageTeamsModal() {
             if (!teamListUl) return; 
             teamListUl.innerHTML = '';
@@ -812,14 +831,14 @@
                 const editBtn = document.createElement('button');
                 editBtn.textContent = 'Edit';
                 editBtn.className = 'edit-team-btn text-sm text-indigo-600 hover:text-indigo-800 font-medium mr-3 opacity-100 transition-opacity';
-                editBtn.onclick = () => openEditTeamModal(docId); // FIX: Pass the document ID
+                editBtn.onclick = () => openEditTeamModal(docId); // Pass the document ID
                 buttonContainer.appendChild(editBtn); 
 
                 const deleteBtn = document.createElement('button');
                 deleteBtn.innerHTML = '&#215;';
                 deleteBtn.className = 'text-red-400 hover:text-red-700 font-bold text-xl p-0 rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-100';
                 deleteBtn.title = `Delete ${team.name}`;
-                deleteBtn.onclick = () => checkAndDeleteTeam(docId, team.name); // FIX: Pass the document ID
+                deleteBtn.onclick = () => checkAndDeleteTeam(docId, team.name); // Pass the document ID
                 buttonContainer.appendChild(deleteBtn); 
 
                 li.appendChild(buttonContainer); 
@@ -827,26 +846,26 @@
                 teamListUl.appendChild(li);
             });
         }
-        // ##### END OF BUG FIX #####
         
         async function handleAddTeam(e) {
             e.preventDefault();
             addTeamError.textContent = '';
             const newTeamName = newTeamNameInput.value.trim();
             if (!newTeamName) { addTeamError.textContent = 'Please enter a name.'; return; }
-            const newTeamId = newTeamName.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_{2,}/g, '_') + '_' + Date.now();
+            // The document ID
+            const newTeamDocId = newTeamName.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_{2,}/g, '_') + '_' + Date.now();
             if ([...teamsMap.values()].some(team => team.name.toLowerCase() === newTeamName.toLowerCase())) {
                 addTeamError.textContent = 'A team with this name already exists.';
                 return;
             }
             try {
                 const newTeam = { 
-                    id: newTeamId, // This is the internal ID, which is fine
+                    id: newTeamDocId, // Store the doc ID as the internal ID
                     name: newTeamName,
                     shiftPattern: defaultPattern, // All new teams get 6-day default
                     patternStartDate: patternAnchorDate
                 };
-                await setDoc(doc(teamsCollection, newTeamId), newTeam);
+                await setDoc(doc(teamsCollection, newTeamDocId), newTeam);
                 newTeamNameInput.value = '';
             } catch (error) {
                 console.error("Error adding team: ", error);
@@ -998,12 +1017,12 @@
         // --- Firebase Init & MIGRATION ---
         
         async function migrateDataModel() {
-            console.log("Checking data model (V7)...");
+            console.log("Checking data model (V8)...");
             loadingState.textContent = "Checking for system updates...";
             const batch = writeBatch(db);
             let requiresMigration = false;
             
-            // 1. Check and Migrate Teams
+            // 1. Check and Migrate Teams (V7 check)
             const teamsSnap = await getDocs(teamsCollection);
             const teamData = [];
             teamsSnap.forEach(doc => teamData.push({docId: doc.id, ...doc.data()}));
@@ -1017,28 +1036,44 @@
                     });
                     requiresMigration = true;
                 }
-                // Also, let's fix the employee team_id if it's wrong
-                // This is a new check
-                if (team.id && team.id !== team.docId) {
-                    console.warn(`Team ${team.name} has mismatched internal ID. This might cause issues.`);
+                // Fix team.id if it's missing (from old data)
+                if (!team.id) {
+                     batch.update(doc(teamsCollection, team.docId), { id: team.docId });
+                     requiresMigration = true;
                 }
             }
             
-            // 2. Check and Migrate Employees
-            loadingState.textContent = "Updating employee schedules...";
+            // 2. Check and Migrate Employees (V8 check)
+            loadingState.textContent = "Updating employee data model...";
             const empSnap = await getDocs(employeesCollection);
             const teamCounts = {};
             
             empSnap.forEach(doc => {
                 const emp = doc.data();
+                let employeeUpdate = {};
+                
+                // Add patternOffset (from V7)
                 if (emp.patternOffset === undefined) {
                     const team_id = emp.team_id;
                     const offset = teamCounts[team_id] || 0;
-                    
-                    console.log(`Adding patternOffset ${offset} to ${emp.name}`);
-                    batch.update(doc.ref, { patternOffset: offset });
+                    employeeUpdate.patternOffset = offset;
                     teamCounts[team_id] = offset + 1;
                     requiresMigration = true;
+                }
+                
+                // Add emp_id and remove rank (from V8)
+                if (emp.rank !== undefined) {
+                    employeeUpdate.rank = deleteField();
+                    requiresMigration = true;
+                }
+                if (emp.emp_id === undefined) {
+                    employeeUpdate.emp_id = ''; // Add new field as empty
+                    requiresMigration = true;
+                }
+
+                if (Object.keys(employeeUpdate).length > 0) {
+                    console.log(`Migrating employee ${emp.name}`, employeeUpdate);
+                    batch.update(doc.ref, employeeUpdate);
                 }
             });
 
@@ -1057,17 +1092,19 @@
                 console.log("Teams data updated from Firestore.");
                 teamsMap.clear();
                 snapshot.forEach((doc) => {
-                    teamsMap.set(doc.id, doc.data()); // Key: docId, Value: {name, pattern, etc}
+                    teamsMap.set(doc.id, {docId: doc.id, ...doc.data()}); // Key: docId, Value: {docId, name, pattern, etc}
                 });
                 if (isDataLoaded) renderRoster();
-                populateManageTeamsModal(); 
+                if (manageTeamsModal && !manageTeamsModal.classList.contains('hidden')) {
+                    populateManageTeamsModal(); 
+                }
             });
 
             onSnapshot(query(employeesCollection), (snapshot) => {
                 console.log("Employee data updated from Firestore.");
                 employeeData = [];
                 snapshot.forEach((doc) => {
-                    employeeData.push({docId: doc.id, ...doc.data()}); // Store docId just in case
+                    employeeData.push({docId: doc.id, ...doc.data()});
                 });
                 // When employee data changes, clear selection
                 selectedEmployeeIds.clear();
