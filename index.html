@@ -8,9 +8,19 @@
     <style>
         /* Custom styles */
         body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
-        .sticky-col { position: -webkit-sticky; position: sticky; left: 0; z-index: 10; background-color: #ffffff; }
-        .header-cell { position: -webkit-sticky; position: sticky; top: 0; z-index: 5; background-color: #f8fafc; }
-        .sticky-header-col { top: 0; left: 0; z-index: 15; background-color: #f1f5f9; }
+        
+        /* STICKY HEADER FIX: 
+           - .header-cell (Dates) z-index must be HIGHER than .sticky-col (Names).
+           - .sticky-header-col (Corner) z-index must be the HIGHEST.
+        */
+        .sticky-col { position: -webkit-sticky; position: sticky; left: 0; z-index: 10; background-color: #ffffff; } /* Employee Names */
+        .header-cell { position: -webkit-sticky; position: sticky; top: 0; z-index: 15; background-color: #f8fafc; } /* Dates (FIXED from z-5) */
+        .sticky-header-col { top: 0; left: 0; z-index: 20; background-color: #f1f5f9; } /* Corner (FIXED from z-15) */
+        
+        /* NEW: Team header row, NOT sticky */
+        .team-header-row {
+            /* This class intentionally does NOT have position:sticky */
+        }
         
         .roster-container::-webkit-scrollbar { width: 8px; height: 8px; }
         .roster-container::-webkit-scrollbar-track { background: #f1f1ff; border-radius: 10px; }
@@ -530,7 +540,8 @@
 
                 if (teamName !== currentTeamName) {
                     currentTeamName = teamName;
-                    const teamHeader = createCell(currentTeamName, 'header-cell text-left p-3 font-bold text-base text-indigo-700 bg-indigo-50 border-t border-b border-indigo-200');
+                    // ### BUG FIX: Replaced 'header-cell' with 'team-header-row' ###
+                    const teamHeader = createCell(currentTeamName, 'team-header-row text-left p-3 font-bold text-base text-indigo-700 bg-indigo-50 border-t border-b border-indigo-200');
                     teamHeader.style.gridColumn = `span ${gridCols}`;
                     grid.appendChild(teamHeader);
                 }
@@ -1375,8 +1386,6 @@
             addLabelError = document.getElementById('add-label-error');
             deleteLabelError = document.getElementById('delete-label-error');
             labelListUl = document.getElementById('label-list-ul');
-
-            // ### BUG FIX: Removed typo line ###
         }
 
         // --- 7. INITIALIZATION ---
