@@ -351,27 +351,41 @@
             addTeamError, deleteTeamError, teamListUl, editTeamModal, closeEditTeamModalBtn,
             editTeamForm, editTeamId, editTeamName, editTeamPatternLength,
             editTeamAnchorDate, visualPatternCells, editTeamError, deleteTeamConfirmModal,
-            // ### BUG FIX 2 START: Declare separate variables for team delete buttons
             cancelDeleteTeamBtn_TEAM, confirmDeleteTeamBtn_TEAM, 
-            // ### BUG FIX 2 END
             deleteTeamModalName;
 
         // --- 4. HELPER FUNCTIONS ---
-        function getDaysBetween(dateString1, dateString2) {
+        
+        // ### UTC-SAFE DATE FUNCTION ###
+        /**
+         * Calculates the difference in days between two YYYY-MM-DD date strings, safely using UTC.
+         * @param {string} dateStr1 - The end date (e.g., "2025-11-01")
+         * @param {string} dateStr2 - The start date (e.g., "2025-01-01")
+         * @returns {number} The difference in days.
+         */
+        function getDaysBetween(dateStr1, dateStr2) {
             try {
-                const date1 = new Date(dateString1 + 'T00:00:00');
-                const date2 = new Date(dateString2 + 'T00:00:00');
-                if (isNaN(date1) || isNaN(date2)) {
-                   console.error("Invalid date in getDaysBetween", dateString1, dateString2);
+                const [y1, m1, d1] = dateStr1.split('-').map(Number);
+                const [y2, m2, d2] = dateStr2.split('-').map(Number);
+
+                // Date.UTC uses 0-indexed months (0=Jan, 10=Nov)
+                const utcDate1 = Date.UTC(y1, m1 - 1, d1);
+                const utcDate2 = Date.UTC(y2, m2 - 1, d2);
+                
+                if (isNaN(utcDate1) || isNaN(utcDate2)) {
+                   console.error("Invalid date in getDaysBetween", dateStr1, dateStr2);
                    return 0;
                 }
-                const diffTime = date1 - date2;
-                return Math.round(diffTime / (1000 * 60 * 60 * 24));
+                
+                // 1000ms * 60s * 60min * 24hr = 86,400,000
+                const diffTime = utcDate1 - utcDate2;
+                return Math.round(diffTime / 86400000);
             } catch (e) {
                 console.error("Error in getDaysBetween", e);
                 return 0;
             }
         }
+        // ### END UTC-SAFE DATE FUNCTION ###
 
         function createCell(text, classes) {
             const cell = document.createElement('div');
@@ -530,10 +544,14 @@
                         if (team && team.shiftPattern && team.shiftPattern.length > 0) {
                             const pattern = team.shiftPattern;
                             const anchorDate = team.patternStartDate || patternAnchorDate;
-                            const employeeOffset = emp.patternOffset || 0;
+                            
+                            // ### FIX 1 of 3: REMOVED employeeOffset ###
+                            // const employeeOffset = emp.patternOffset || 0; 
                             
                             const daysSinceAnchor = getDaysBetween(fullDate, anchorDate);
-                            const totalOffset = daysSinceAnchor + employeeOffset;
+                            
+                            // ### FIX 1 of 3 (cont.): REMOVED employeeOffset ###
+                            const totalOffset = daysSinceAnchor; // + employeeOffset;
                             const patternIndex = (totalOffset % pattern.length + pattern.length) % pattern.length;
                             
                             const generatedShift = pattern[patternIndex];
@@ -647,9 +665,10 @@
             addError.textContent = '';
             
             const team_id = document.getElementById('emp-team-select').value;
-            // Re-introduce staggering logic
-            const employeesOnTeam = employeeData.filter(emp => emp.team_id === team_id).length;
-            const newPatternOffset = employeesOnTeam; 
+            
+            // ### FIX 2 of 3: REMOVED staggering logic ###
+            // const employeesOnTeam = employeeData.filter(emp => emp.team_id === team_id).length;
+            const newPatternOffset = 0; // employeesOnTeam; 
             
             const newEmployee = {
                 team_id: team_id,
@@ -960,6 +979,7 @@
             editTeamForm.reset();
         }
 
+        // ### REVERTED TO ORIGINAL, NON-DESTRUCTIVE FUNCTION ###
         async function handleEditTeam(e) {
             e.preventDefault();
             editTeamError.textContent = '';
@@ -980,13 +1000,13 @@
                 const teamRef = doc(teamsCollection, teamId);
                 await updateDoc(teamRef, updatedData);
 
-                // ### BUG FIX 1 START: Force immediate refresh
+                // ### Force immediate refresh ###
                 console.log("Team updated. Forcing local cache update and re-render.");
                 // Manually update the local cache so the render is instant
                 const updatedTeam = { ...teamsMap.get(teamId), ...updatedData };
                 teamsMap.set(teamId, updatedTeam);
                 renderRoster(); // Force a re-render
-                // ### BUG FIX 1 END
+                // ### END Force immediate refresh ###
 
                 closeEditTeamModal();
             } catch (error) {
@@ -994,6 +1014,7 @@
                 editTeamError.textContent = 'Error saving changes.';
             }
         }
+        // ### END REVERT ###
 
         // --- Delete Team Functions ---
         function checkAndDeleteTeam(teamId, teamName) { // teamId is now the docId
@@ -1037,13 +1058,21 @@
                 support: 'support_' + Date.now()
             };
 
+            // ### FOYER/SUPPORT PATTERN FIX START ###
+            // New 7-day pattern (SUN=OFF, MON-FRI=1, SAT=OFF)
+            const weekPattern = ['OFF', '1', '1', '1', '1', '1', 'OFF'];
+            // New anchor date (first Sunday of 2025)
+            const weekAnchorDate = '2025-01-05';
+
             const teams = [
                 { id: teamIDs.alpha, docId: teamIDs.alpha, name: 'Alpha', shiftPattern: ['1', '1', '2', '2', 'OFF', 'OFF'], patternStartDate: '2025-01-01' },
                 { id: teamIDs.bravo, docId: teamIDs.bravo, name: 'Bravo', shiftPattern: ['1', '1', '2', '2', 'OFF', 'OFF'], patternStartDate: '2025-01-01' },
                 { id: teamIDs.charlie, docId: teamIDs.charlie, name: 'Charlie', shiftPattern: ['1', '1', '2', '2', 'OFF', 'OFF'], patternStartDate: '2025-01-01' },
-                { id: teamIDs.foyer, docId: teamIDs.foyer, name: 'Foyer', shiftPattern: ['1', '1', '1', '1', 'OFF', 'OFF'], patternStartDate: '2025-01-01' }, // FIX: Renamed Delta to Foyer
-                { id: teamIDs.support, docId: teamIDs.support, name: 'Support', shiftPattern: ['1', '1', '1', '1', 'OFF', 'OFF'], patternStartDate: '2025-01-01' }
+                // Updated Foyer and Support teams:
+                { id: teamIDs.foyer, docId: teamIDs.foyer, name: 'Foyer', shiftPattern: weekPattern, patternStartDate: weekAnchorDate },
+                { id: teamIDs.support, docId: teamIDs.support, name: 'Support', shiftPattern: weekPattern, patternStartDate: weekAnchorDate }
             ];
+            // ### FOYER/SUPPORT PATTERN FIX END ###
 
             teams.forEach(team => {
                 batch.set(doc(teamsCollection, team.id), team);
@@ -1093,19 +1122,20 @@
                 { id: '25011447', emp_id: '9111757', name: 'CPL (APF) ZHENG YAO RONG', team_id: teamIDs.support }
             ];
 
-            let teamOffsets = {};
+            // ### FIX 3 of 3: REMOVED staggering logic ###
+            // let teamOffsets = {};
             employees.forEach(emp => {
-                const team_id = emp.team_id;
-                const currentOffset = teamOffsets[team_id] || 0;
+                // const team_id = emp.team_id;
+                // const currentOffset = teamOffsets[team_id] || 0;
                 
                 const empDoc = {
                     ...emp,
                     docId: emp.id, // Store for consistency
-                    patternOffset: currentOffset
+                    patternOffset: 0 // currentOffset
                 };
                 
                 batch.set(doc(employeesCollection, emp.id), empDoc);
-                teamOffsets[team_id] = currentOffset + 1; // Increment for next employee on this team
+                // teamOffsets[team_id] = currentOffset + 1; // Increment for next employee on this team
             });
             
             // 3. Commit the batch
@@ -1115,6 +1145,9 @@
         
         // ##### V14 ROBUST LOADING FIX START #####
         
+        // This variable will track if the initial auth state has been processed
+        let authStateProcessed = false;
+
         // These listeners are *only* for real-time updates *after* the initial load
         function setupDataListeners() {
             onSnapshot(query(teamsCollection), (snapshot) => {
@@ -1174,7 +1207,26 @@
         }
         
         async function initFirebase() {
+            // ### TIMEOUT FIX START ###
+            // Set a 10-second timeout.
+            const authTimeout = setTimeout(() => {
+                // If authStateProcessed is still false after 10s,
+                // it means onAuthStateChanged never fired.
+                if (!authStateProcessed) {
+                    console.error("Authentication timed out.");
+                    if (loadingState) {
+                        loadingState.textContent = "Authentication Timed Out. Please check your network and refresh.";
+                    }
+                }
+            }, 10000); // 10 seconds
+            // ### TIMEOUT FIX END ###
+
             onAuthStateChanged(auth, async (user) => {
+                // ### TIMEOUT FIX START ###
+                authStateProcessed = true; // Mark auth as processed
+                clearTimeout(authTimeout); // Clear the timeout
+                // ### TIMEOUT FIX END ###
+
                 if (user) {
                     console.log("User authenticated:", user.uid);
                     
@@ -1232,7 +1284,10 @@
 
                 } else {
                     console.log("User not signed in.");
-                    loadingState.textContent = "Authenticating...";
+                    // ### TIMEOUT FIX START ###
+                    // User is explicitly not signed in (e.g., token invalid)
+                    loadingState.textContent = "Authentication Failed. User is not signed in.";
+                    // ### TIMEOUT FIX END ###
                 }
             });
 
@@ -1244,7 +1299,11 @@
                 }
             } catch (error) {
                 console.error("Authentication Error:", error);
+                // ### TIMEOUT FIX START ###
+                authStateProcessed = true; // Mark as processed to prevent timeout message
+                clearTimeout(authTimeout); // Clear timeout
                 loadingState.textContent = "Authentication Failed. Please refresh.";
+                // ### TIMEOUT FIX END ###
             }
         }
         // ##### V14 LOADING FIX END #####
@@ -1266,11 +1325,9 @@
             addEmployeeForm.addEventListener('submit', handleAddEmployee);
             addEmployeeModal.addEventListener('click', (e) => { if (e.target === addEmployeeModal) closeAddModal(); });
 
-            // ### BUG FIX 2 START: Correctly assign Employee delete listeners
             cancelDeleteBtn.addEventListener('click', closeDeleteModal);
             confirmDeleteBtn.addEventListener('click', handleDeleteEmployee);
             deleteConfirmModal.addEventListener('click', (e) => { if (e.target === deleteConfirmModal) closeDeleteModal(); });
-            // ### BUG FIX 2 END
             
             batchDeleteBtn.addEventListener('click', openBatchDeleteModal);
             cancelBatchDeleteBtn.addEventListener('click', closeBatchDeleteModal);
@@ -1287,11 +1344,9 @@
             editTeamModal.addEventListener('click', (e) => { if (e.target === editTeamModal) closeEditTeamModal(); });
             editTeamPatternLength.addEventListener('change', renderVisualPatternCells);
             
-            // ### BUG FIX 2 START: Correctly assign Team delete listeners
             cancelDeleteTeamBtn_TEAM.addEventListener('click', closeDeleteTeamModal); 
             confirmDeleteTeamBtn_TEAM.addEventListener('click', performDeleteTeam);
             deleteTeamConfirmModal.addEventListener('click', (e) => { if (e.target === deleteTeamConfirmModal) closeDeleteTeamModal(); });
-            // ### BUG FIX 2 END
         }
         
         function assignDOMElements() {
@@ -1348,10 +1403,8 @@
             visualPatternCells = document.getElementById('visual-pattern-cells');
             editTeamError = document.getElementById('edit-team-error');
             deleteTeamConfirmModal = document.getElementById('delete-team-confirm-modal');
-            // ### BUG FIX 2 START: Correctly assign Team delete buttons
             cancelDeleteTeamBtn_TEAM = document.getElementById('cancel-delete-team-btn');
             confirmDeleteTeamBtn_TEAM = document.getElementById('confirm-delete-team-btn');
-            // ### BUG FIX 2 END
             deleteTeamModalName = document.getElementById('delete-team-modal-name');
         }
 
@@ -1366,4 +1419,5 @@
     </script>
 </body>
 </html>
+
 
