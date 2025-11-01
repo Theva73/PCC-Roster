@@ -9,24 +9,44 @@
         /* Custom styles */
         body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
         
-        /* STICKY HEADER FIX: 
-           - .header-cell (Dates) z-index must be HIGHER than .sticky-col (Names).
-           - .sticky-header-col (Corner) z-index must be the HIGHEST.
+        /* * RESPONSIVE & STICKY HEADER FIX:
+         * - The roster grid now calculates its height to fill the available screen space,
+         * accounting for the header's height.
+         * - This ensures dropdowns in the header are NEVER clipped by the grid's scroll area.
         */
-        .sticky-col { position: -webkit-sticky; position: sticky; left: 0; z-index: 10; background-color: #ffffff; } /* Employee Names */
-        .header-cell { position: -webkit-sticky; position: sticky; top: 0; z-index: 15; background-color: #f8fafc; } /* Dates (FIXED from z-5) */
-        .sticky-header-col { top: 0; left: 0; z-index: 20; background-color: #f1f5f9; } /* Corner (FIXED from z-15) */
+        #roster-grid {
+            /* * Calculate max height: 100% of viewport height (100vh) minus a pixel value
+             * for the header. We'll use 190px as a safe estimate for the header's
+             * max height when it's stacked on mobile (flex-col).
+             * On 'md' screens, we revert to a simpler 70vh.
+            */
+            max-height: calc(100vh - 190px);
+            overflow: auto;
+        }
         
-        /* NEW: Team header row, NOT sticky */
+        @media (min-width: 768px) {
+            #roster-grid {
+                /* On desktop, the header is shorter, so 70vh is a good, simple value */
+                max-height: 70vh;
+            }
+        }
+
+
+        /* Custom scrollbar for the grid */
+        #roster-grid::-webkit-scrollbar { width: 8px; height: 8px; }
+        #roster-grid::-webkit-scrollbar-track { background: #f1f1ff; border-radius: 10px; }
+        #roster-grid::-webkit-scrollbar-thumb { background: #a8a29e; border-radius: 10px; }
+        #roster-grid::-webkit-scrollbar-thumb:hover { background: #78716c; }
+
+        /* Sticky column Z-index setup */
+        .sticky-col { position: -webkit-sticky; position: sticky; left: 0; z-index: 10; background-color: #ffffff; } /* Employee Names */
+        .header-cell { position: -webkit-sticky; position: sticky; top: 0; z-index: 15; background-color: #f8fafc; } /* Dates */
+        .sticky-header-col { top: 0; left: 0; z-index: 20; background-color: #f1f5f9; } /* Corner */
+        
         .team-header-row {
             /* This class intentionally does NOT have position:sticky */
         }
         
-        .roster-container::-webkit-scrollbar { width: 8px; height: 8px; }
-        .roster-container::-webkit-scrollbar-track { background: #f1f1ff; border-radius: 10px; }
-        .roster-container::-webkit-scrollbar-thumb { background: #a8a29e; border-radius: 10px; }
-        .roster-container::-webkit-scrollbar-thumb:hover { background: #78716c; }
-
         .team-li:hover .edit-team-btn { opacity: 1; }
         .employee-row:hover .delete-btn { opacity: 1; }
 
@@ -36,11 +56,9 @@
             to { opacity: 1; transform: scale(1); }
         }
         
-        /* Shift that comes from the auto-pattern */
         .auto-shift { opacity: 0.6; }
         .auto-shift:hover { opacity: 1; }
 
-        /* Color selection grid */
         .color-swatch {
             width: 2.5rem;
             height: 2.5rem;
@@ -53,45 +71,93 @@
             border-color: #4f46e5; /* indigo-600 */
             box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #4f46e5;
         }
+
+        #team-filter-dropdown, #manage-dropdown {
+            max-height: 400px;
+            overflow-y: auto;
+        }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<!-- MODIFIED: Removed padding for edge-to-edge mobile layout -->
+<body class="bg-gray-100">
 
-    <div class="max-w-full mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+    <!-- 
+      MODIFIED: Main container is now full-width on mobile and becomes a 
+      "card" on medium screens (md) and up.
+    -->
+    <div class="w-full min-h-screen md:min-h-0 md:max-w-full md:my-8 md:mx-auto bg-white md:rounded-2xl md:shadow-lg overflow-hidden">
         
-        <!-- Header -->
-        <header class="p-5 border-b border-gray-200 bg-gray-50 flex flex-col md:flex-row justify-between items-center flex-wrap gap-4">
-            <h1 class="text-2xl font-bold text-gray-800">PCC/APOs Roster</h1>
-            
-            <div class="flex items-center space-x-2 my-4 md:my-0">
-                <button id="prev-month" class="p-2 rounded-lg hover:bg-gray-200 transition duration-150">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-                </button>
-                <span id="current-month-year" class="text-xl font-semibold text-indigo-600 w-48 text-center">November 2025</span>
-                <button id="next-month" class="p-2 rounded-lg hover:bg-gray-200 transition duration-150">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                </button>
-            </div>
-            
-            <div class="flex items-center space-x-4">
-                <!-- Action buttons container -->
-                <div id="header-actions" class="flex flex-wrap gap-2">
-                    <!-- NEW: Manage Labels Button -->
-                    <button id="manage-labels-btn" class="px-4 py-2 bg-purple-600 text-white rounded-lg shadow hover:bg-purple-700 transition duration-150">
-                        Manage Labels
-                    </button>
-                    <button id="manage-teams-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition duration-150">
-                        Manage Teams
-                    </button>
-                    <button id="add-employee-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition duration-150">
-                        Add Employee
-                    </button>
+        <!-- MODIFIED: Header padding reduced for mobile -->
+        <header class="p-3 sm:p-5 border-b border-gray-200 bg-gray-50">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <!-- Left Side: Title -->
+                <div class="flex-1 w-full md:w-auto">
+                    <h1 class="text-2xl font-bold text-gray-800 text-center md:text-left">PCC/APOs Roster</h1>
                 </div>
-                <!-- Batch delete button (initially hidden) -->
-                <div id="batch-delete-container" class="hidden">
-                    <button id="batch-delete-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg shadow hover:bg-red-700 transition duration-150">
-                        Delete Selected (0)
-                    </button>
+                
+                <!-- Center: Month Navigation -->
+                <div class="flex-shrink-0">
+                    <div class="flex items-center space-x-2 my-2 md:my-0">
+                        <button id="prev-month" class="p-2 rounded-lg hover:bg-gray-200 transition duration-150">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                        </button>
+                        <span id="current-month-year" class="text-xl font-semibold text-indigo-600 w-48 text-center">November 2025</span>
+                        <button id="next-month" class="p-2 rounded-lg hover:bg-gray-200 transition duration-150">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Side: Actions -->
+                <div class="flex-1 w-full md:w-auto">
+                    <!-- Action buttons container -->
+                    <div id="header-actions" class="flex flex-wrap gap-2 justify-center md:justify-end">
+                        
+                        <!-- Team Filter Dropdown -->
+                        <div class="relative">
+                            <button id="team-filter-btn" class="px-4 py-2 bg-gray-600 text-white rounded-lg shadow hover:bg-gray-700 transition duration-150 flex items-center space-x-2">
+                                <span>Filter Teams</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <div id="team-filter-dropdown" class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl z-50 hidden border border-gray-200">
+                                <div class="p-3 border-b border-gray-200">
+                                    <label class="flex items-center space-x-3">
+                                        <input type="checkbox" id="select-all-teams-checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                        <span class="font-medium text-gray-800">Select All</span>
+                                    </label>
+                                </div>
+                                <div id="team-filter-list" class="p-3 space-y-2">
+                                    <!-- Team checkboxes will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button id="add-employee-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition duration-150">
+                            Add Employee
+                        </button>
+
+                        <!-- Manage Dropdown -->
+                        <div class="relative">
+                            <button id="manage-menu-btn" class="p-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition duration-150">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.573-1.066z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </button>
+                            <div id="manage-dropdown" class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl z-50 hidden border border-gray-200 divide-y divide-gray-100">
+                                <button id="manage-labels-btn" class="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 transition duration-150">Manage Labels</button>
+                                <button id="manage-teams-btn" class="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 transition duration-150">Manage Teams</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Batch delete button (initially hidden) -->
+                    <div id="batch-delete-container" class="hidden flex justify-center md:justify-end">
+                        <button id="batch-delete-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg shadow hover:bg-red-700 transition duration-150">
+                            Delete Selected (0)
+                        </button>
+                    </div>
                 </div>
             </div>
         </header>
@@ -101,8 +167,11 @@
             <p>Authenticating...</p>
         </div>
 
-        <!-- Roster Grid Container -->
-        <div id="roster-container" class="roster-container w-full overflow-auto hidden" style="max-height: 70vh;">
+        <!-- 
+         * ROSTER GRID CONTAINER
+         * 'overflow-auto' and 'max-height' have been MOVED to the 'roster-grid' div inside.
+        -->
+        <div id="roster-container" class="roster-container w-full">
             <div id="roster-grid" class="grid">
                 <!-- Grid will be generated by JavaScript -->
             </div>
@@ -110,6 +179,7 @@
     </div>
 
     <!-- MODALS -->
+    <!-- All modals are already responsive with max-w-md and mx-4, no changes needed -->
 
     <!-- Shift Selector Modal (Main) -->
     <div id="shift-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
@@ -121,14 +191,12 @@
                 </button>
             </div>
             
-            <!-- MODIFIED: Editable Employee Details -->
             <div class="mb-4 p-4 border rounded-lg bg-gray-50">
                 <div class="space-y-3">
                     <div>
                         <label for="modal-employee-name-input" class="block text-sm font-medium text-gray-700">Employee Name</label>
                         <input type="text" id="modal-employee-name-input" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
-                    <!-- NEW: Editable Employee ID -->
                     <div>
                         <label for="modal-employee-id-input" class="block text-sm font-medium text-gray-700">Employee ID (e.g., 11997)</label>
                         <input type="text" id="modal-employee-id-input" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
@@ -151,7 +219,7 @@
         </div>
     </div>
 
-    <!-- NEW: Manage Shift Labels Modal -->
+    <!-- Manage Shift Labels Modal -->
     <div id="manage-labels-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg mx-4 modal-fade-in">
             <div class="flex justify-between items-center mb-4">
@@ -161,7 +229,6 @@
                 </button>
             </div>
             
-            <!-- Add New Label Form -->
             <form id="add-label-form" class="p-4 border rounded-lg bg-gray-50 mb-6">
                 <h4 class="text-lg font-medium text-gray-800 mb-3">Add New Label</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -172,12 +239,10 @@
                     <div>
                         <label for="new-label-color" class="block text-sm font-medium text-gray-700">Color</label>
                         <select id="new-label-color" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm" required>
-                            <!-- Options populated by JS -->
                         </select>
                     </div>
                 </div>
                 <div id="add-label-color-grid" class="mt-4 flex flex-wrap gap-2">
-                    <!-- Color swatches will be populated here -->
                 </div>
                 <div id="add-label-error" class="text-red-600 text-sm mt-3 h-4"></div>
                 <div class="text-right mt-3">
@@ -185,12 +250,10 @@
                 </div>
             </form>
 
-            <!-- Current Labels List -->
             <div>
                 <h4 class="text-lg font-medium text-gray-800 mb-2">Current Labels</h4>
                 <div id="delete-label-error" class="text-red-600 text-sm mb-2 h-4"></div>
                 <ul id="label-list-ul" class="divide-y divide-gray-200 h-64 overflow-y-auto border rounded-lg p-2 bg-gray-50">
-                    <!-- Label list will be populated by JS -->
                 </ul>
             </div>
         </div>
@@ -264,7 +327,6 @@
             <h3 class="text-xl font-semibold text-red-700">Confirm Batch Deletion</h3>
             <p class="my-4 text-gray-600">Are you sure you want to delete the following <strong id="batch-delete-count">0</strong> employees?</p>
             <ul id="batch-delete-list" class="mb-4 max-h-48 overflow-y-auto text-sm text-gray-500 list-disc list-inside bg-gray-50 p-3 rounded-lg">
-                <!-- List of employees to delete will be populated here -->
             </ul>
             <div class="flex justify-end space-x-3">
                 <button id="cancel-batch-delete-btn" class="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Cancel</button>
@@ -294,7 +356,6 @@
                 <h4 class="text-lg font-medium text-gray-800 mb-2">Current Teams</h4>
                 <div id="delete-team-error" class="text-red-600 text-sm mb-2"></div>
                 <ul id="team-list-ul" class="divide-y divide-gray-200 h-64 overflow-y-auto border rounded-lg p-2 bg-gray-50">
-                    <!-- Team list will be populated by JS -->
                 </ul>
             </div>
         </div>
@@ -331,7 +392,6 @@
                         <label class="block text-sm font-medium text-gray-700">Visual Pattern</label>
                         <p class="mt-1 text-xs text-gray-500">Click the cells below to set the repeating pattern.</p>
                         <div id="visual-pattern-cells" class="mt-2 flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border">
-                            <!-- Cells generated by JS -->
                         </div>
                     </div>
                     <div id="edit-team-error" class="text-red-600 text-sm"></div>
@@ -447,6 +507,7 @@
         let currentFullDate = null;
         let employeeIdToDelete = null;
         let teamIdToDelete = null;
+        let visibleTeamIDs = new Set(); 
 
         // --- 3. DOM ELEMENTS ---
         let grid, monthYearEl, prevMonthBtn, nextMonthBtn, loadingState, rosterContainer,
@@ -463,11 +524,12 @@
             editTeamAnchorDate, visualPatternCells, editTeamError, deleteTeamConfirmModal,
             cancelDeleteTeamBtn_TEAM, confirmDeleteTeamBtn_TEAM, 
             deleteTeamModalName,
-            // MODIFIED: Renamed elements
             modalEmployeeNameInput, modalEmployeeIdInput, saveDetailsBtn, saveDetailsStatus, 
             manageLabelsBtn, manageLabelsModal, closeLabelsModalBtn, addLabelForm, 
             newLabelText, newLabelColor, addLabelColorGrid, addLabelError, 
-            deleteLabelError, labelListUl;
+            deleteLabelError, labelListUl,
+            teamFilterBtn, teamFilterDropdown, teamFilterList, selectAllTeamsCheckbox,
+            manageMenuBtn, manageDropdown;
 
 
         // --- 4. HELPER FUNCTIONS ---
@@ -498,14 +560,16 @@
             const date = new Date(currentYear, currentMonth);
             monthYearEl.textContent = `${date.toLocaleString('default', { month: 'long' })} ${currentYear}`;
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            
+            // MODIFIED: Responsive grid columns
             const gridCols = 3 + daysInMonth;
-            grid.style.gridTemplateColumns = `120px 100px minmax(250px, 1fr) repeat(${daysInMonth}, minmax(60px, 1fr))`;
+            grid.style.gridTemplateColumns = `100px 80px minmax(180px, 1fr) repeat(${daysInMonth}, minmax(60px, 1fr))`;
 
-            // A. Render Header Row
-            grid.appendChild(createCell('Service ID', 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 min-w-[120px]'));
-            grid.appendChild(createCell('Emp ID', 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 min-w-[100px]'));
+            // A. Render Header Row (with responsive classes)
+            grid.appendChild(createCell('Service ID', 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 min-w-[100px] sm:min-w-[120px]'));
+            grid.appendChild(createCell('Emp ID', 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 min-w-[80px] sm:min-w-[100px]'));
             const nameHeader = document.createElement('div');
-            nameHeader.className = 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 flex items-center space-x-3 min-w-[250px]';
+            nameHeader.className = 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 flex items-center space-x-3 min-w-[180px] sm:min-w-[250px]';
             nameHeader.innerHTML = `
                 <input type="checkbox" id="select-all-checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
                 <label for="select-all-checkbox" class="cursor-pointer">Employee Name</label>
@@ -527,31 +591,39 @@
             
             // B. Render Employee Rows
             let currentTeamName = '';
-            employeeData.sort((a, b) => {
+            const visibleEmployees = employeeData.filter(emp => visibleTeamIDs.has(emp.team_id));
+
+            visibleEmployees.sort((a, b) => {
                 const teamAName = teamsMap.get(a.team_id)?.name || 'Unassigned';
                 const teamBName = teamsMap.get(b.team_id)?.name || 'Unassigned';
                 if (teamAName !== teamBName) return teamAName.localeCompare(teamBName);
                 return (a.id || '').localeCompare(b.id || '');
             });
             
-            employeeData.forEach(emp => {
+            if (visibleEmployees.length === 0) {
+                 const noDataCell = createCell('No employees to display. Check your team filters.', 'text-center p-6 text-gray-500');
+                 noDataCell.style.gridColumn = `span ${gridCols}`;
+                 grid.appendChild(noDataCell);
+            }
+
+            visibleEmployees.forEach(emp => {
                 const team = teamsMap.get(emp.team_id);
                 const teamName = team?.name || 'Unassigned';
 
                 if (teamName !== currentTeamName) {
                     currentTeamName = teamName;
-                    // ### BUG FIX: Replaced 'header-cell' with 'team-header-row' ###
                     const teamHeader = createCell(currentTeamName, 'team-header-row text-left p-3 font-bold text-base text-indigo-700 bg-indigo-50 border-t border-b border-indigo-200');
                     teamHeader.style.gridColumn = `span ${gridCols}`;
                     grid.appendChild(teamHeader);
                 }
                 
                 const rowCells = [];
-                rowCells.push(grid.appendChild(createCell(emp.id, 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600 min-w-[120px]')));
-                rowCells.push(grid.appendChild(createCell(emp.emp_id || '', 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600 min-w-[100px] left-[120px]')));
+                // MODIFIED: Added responsive classes for min-width and left-offset
+                rowCells.push(grid.appendChild(createCell(emp.id, 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600 min-w-[100px] sm:min-w-[120px]')));
+                rowCells.push(grid.appendChild(createCell(emp.emp_id || '', 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600 min-w-[80px] sm:min-w-[100px] left-[100px] sm:left-[120px]')));
                 
                 const nameCell = document.createElement('div');
-                nameCell.className = 'employee-row sticky-col text-sm p-3 border-b border-gray-200 text-gray-700 font-medium flex justify-between items-center min-w-[250px] left-[220px]';
+                nameCell.className = 'employee-row sticky-col text-sm p-3 border-b border-gray-200 text-gray-700 font-medium flex justify-between items-center min-w-[180px] sm:min-w-[250px] left-[180px] sm:left-[220px]';
                 nameCell.innerHTML = `
                     <div class="flex items-center space-x-3">
                         <input type="checkbox" class="emp-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" data-emp-id="${emp.id}">
@@ -608,13 +680,11 @@
             currentEmployeeId = empId;
             currentFullDate = fullDate;
             
-            // MODIFIED: Find full employee object to populate all fields
             const emp = employeeData.find(e => e.id === empId);
             if (emp) {
                 modalEmployeeNameInput.value = emp.name;
                 modalEmployeeIdInput.value = emp.emp_id || '';
             } else {
-                // Fallback, though this shouldn't happen
                 modalEmployeeNameInput.value = empName;
                 modalEmployeeIdInput.value = '';
             }
@@ -636,7 +706,6 @@
             modal.classList.remove('hidden');
         }
 
-        // MODIFIED: Save Employee Details (Name and Emp ID)
         async function handleSaveEmployeeDetails() {
             const newName = modalEmployeeNameInput.value.trim();
             const newEmpId = modalEmployeeIdInput.value.trim();
@@ -757,11 +826,15 @@
 
         function handleSelectAll(isChecked) {
             const allCheckboxes = document.querySelectorAll('.emp-checkbox');
+            const visibleEmployeeIDs = employeeData
+                .filter(emp => visibleTeamIDs.has(emp.team_id))
+                .map(emp => emp.id);
+
             if (isChecked) {
-                employeeData.forEach(emp => selectedEmployeeIds.add(emp.id));
+                visibleEmployeeIDs.forEach(id => selectedEmployeeIds.add(id));
                 allCheckboxes.forEach(cb => cb.checked = true);
             } else {
-                selectedEmployeeIds.clear();
+                visibleEmployeeIDs.forEach(id => selectedEmployeeIds.delete(id));
                 allCheckboxes.forEach(cb => cb.checked = false);
             }
             updateBatchDeleteUI();
@@ -770,10 +843,16 @@
         function updateSelectAllCheckbox() {
             const selectAll = document.getElementById('select-all-checkbox');
             if (!selectAll) return;
-            const totalEmployees = employeeData.length;
-            if (totalEmployees > 0 && selectedEmployeeIds.size === totalEmployees) {
+            const visibleEmployeeIDs = employeeData
+                .filter(emp => visibleTeamIDs.has(emp.team_id))
+                .map(emp => emp.id);
+            
+            const totalVisibleEmployees = visibleEmployeeIDs.length;
+            const selectedVisibleEmployees = visibleEmployeeIDs.filter(id => selectedEmployeeIds.has(id)).length;
+
+            if (totalVisibleEmployees > 0 && selectedVisibleEmployees === totalVisibleEmployees) {
                 selectAll.checked = true; selectAll.indeterminate = false;
-            } else if (selectedEmployeeIds.size > 0) {
+            } else if (selectedVisibleEmployees > 0) {
                 selectAll.checked = false; selectAll.indeterminate = true;
             } else {
                 selectAll.checked = false; selectAll.indeterminate = false;
@@ -829,7 +908,10 @@
             populateManageTeamsModal();
             manageTeamsModal.classList.remove('hidden');
         }
-        function closeManageTeamsModal() { manageTeamsModal.classList.add('hidden'); }
+        function closeManageTeamsModal() { 
+            manageTeamsModal.classList.add('hidden');
+            manageDropdown.classList.add('hidden'); // Also hide dropdown
+        }
         
         function populateManageTeamsModal() {
             if (!teamListUl) return; 
@@ -1028,7 +1110,10 @@
             manageLabelsModal.classList.remove('hidden');
         }
         
-        function closeAddLabelModal() { manageLabelsModal.classList.add('hidden'); }
+        function closeAddLabelModal() { 
+            manageLabelsModal.classList.add('hidden');
+            manageDropdown.classList.add('hidden'); // Also hide dropdown
+        }
 
         async function handleAddLabel(e) {
             e.preventDefault();
@@ -1055,6 +1140,7 @@
         }
         
         async function handleDeleteLabel(code, text) {
+            // Using a custom modal/confirm is better, but window.confirm is a quick implementation
             if (!confirm(`Are you sure you want to delete the label "${text}"?`)) return;
             deleteLabelError.textContent = '';
             try {
@@ -1063,6 +1149,75 @@
                 console.error("Error deleting label: ", error);
                 deleteLabelError.textContent = 'Error deleting label.';
             }
+        }
+
+        // --- Team Filter Functions ---
+        function populateTeamFilter() {
+            if (!teamFilterList) return;
+            teamFilterList.innerHTML = '';
+            const sortedTeams = [...teamsMap.values()].sort((a, b) => a.name.localeCompare(b.name));
+            
+            sortedTeams.forEach(team => {
+                const li = document.createElement('li');
+                li.className = 'flex items-center space-x-3';
+                li.innerHTML = `
+                    <input type="checkbox" id="team-filter-${team.docId}" data-team-id="${team.docId}" class="team-filter-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                    <label for="team-filter-${team.docId}" class="text-gray-700 cursor-pointer">${team.name}</label>
+                `;
+                const checkbox = li.querySelector('input');
+                checkbox.checked = visibleTeamIDs.has(team.docId);
+                checkbox.addEventListener('change', (e) => {
+                    handleTeamFilterChange(team.docId, e.target.checked);
+                });
+                teamFilterList.appendChild(li);
+            });
+            updateSelectAllTeamsCheckbox();
+        }
+
+        function handleTeamFilterChange(teamId, isChecked) {
+            if (isChecked) {
+                visibleTeamIDs.add(teamId);
+            } else {
+                visibleTeamIDs.delete(teamId);
+            }
+            updateSelectAllTeamsCheckbox();
+            renderRoster();
+        }
+
+        function updateSelectAllTeamsCheckbox() {
+            if (!selectAllTeamsCheckbox) return;
+            const totalTeams = teamsMap.size;
+            if (visibleTeamIDs.size === totalTeams) {
+                selectAllTeamsCheckbox.checked = true;
+                selectAllTeamsCheckbox.indeterminate = false;
+            } else if (visibleTeamIDs.size > 0) {
+                selectAllTeamsCheckbox.checked = false;
+                selectAllTeamsCheckbox.indeterminate = true;
+            } else {
+                selectAllTeamsCheckbox.checked = false;
+                selectAllTeamsCheckbox.indeterminate = false;
+            }
+        }
+
+        function handleSelectAllTeams(isChecked) {
+            if (isChecked) {
+                teamsMap.forEach(team => visibleTeamIDs.add(team.docId));
+            } else {
+                visibleTeamIDs.clear();
+            }
+            document.querySelectorAll('.team-filter-checkbox').forEach(cb => {
+                cb.checked = isChecked;
+            });
+            renderRoster();
+        }
+
+        function toggleTeamFilterDropdown() {
+            teamFilterDropdown.classList.toggle('hidden');
+        }
+
+        // Toggle Manage Menu
+        function toggleManageDropdown() {
+            manageDropdown.classList.toggle('hidden');
         }
 
         // --- Firebase Init & MIGRATION ---
@@ -1124,10 +1279,23 @@
         function setupDataListeners() {
             onSnapshot(query(teamsCollection), (snapshot) => {
                 console.log("Real-time: Teams data updated.");
+                let needsFilterUpdate = false;
                 snapshot.docChanges().forEach((change) => {
-                    if (change.type === "added" || change.type === "modified") teamsMap.set(change.doc.id, {docId: change.doc.id, ...change.doc.data()});
-                    if (change.type === "removed") teamsMap.delete(change.doc.id);
+                    needsFilterUpdate = true;
+                    if (change.type === "added") {
+                        teamsMap.set(change.doc.id, {docId: change.doc.id, ...change.doc.data()});
+                        visibleTeamIDs.add(change.doc.id); 
+                    }
+                    if (change.type === "modified") {
+                        teamsMap.set(change.doc.id, {docId: change.doc.id, ...change.doc.data()});
+                    }
+                    if (change.type === "removed") {
+                        teamsMap.delete(change.doc.id);
+                        visibleTeamIDs.delete(change.doc.id); 
+                    }
                 });
+                
+                if (needsFilterUpdate) populateTeamFilter(); 
                 if (isDataLoaded) renderRoster();
                 if (manageTeamsModal && !manageTeamsModal.classList.contains('hidden')) populateManageTeamsModal(); 
             });
@@ -1222,6 +1390,10 @@
                         console.log("Populating initial cache...");
                         teamsMap.clear();
                         teamsSnapshot.forEach(doc => teamsMap.set(doc.id, {docId: doc.id, ...doc.data()}));
+                        
+                        visibleTeamIDs.clear();
+                        teamsMap.forEach(team => visibleTeamIDs.add(team.docId));
+
                         employeeData = [];
                         employeesSnapshot.forEach(doc => employeeData.push({docId: doc.id, ...doc.data()}));
                         rosterData = {};
@@ -1237,7 +1409,10 @@
                         isDataLoaded = true;
                         loadingState.classList.add('hidden');
                         rosterContainer.classList.remove('hidden');
+                        
+                        populateTeamFilter(); 
                         renderRoster(); 
+                        
                         console.log("Attaching real-time listeners...");
                         setupDataListeners(); 
 
@@ -1273,13 +1448,18 @@
             closeModalBtn.addEventListener('click', closeModal);
             modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
             setAutoShiftBtn.addEventListener('click', () => selectShift('AUTO'));
-            // MODIFIED: Save details button
             saveDetailsBtn.addEventListener('click', handleSaveEmployeeDetails);
 
+            // Manage Modals (now triggered from dropdown)
             manageLabelsBtn.addEventListener('click', openAddLabelModal);
             closeLabelsModalBtn.addEventListener('click', closeAddLabelModal);
             addLabelForm.addEventListener('submit', handleAddLabel);
             manageLabelsModal.addEventListener('click', (e) => { if (e.target === manageLabelsModal) closeAddLabelModal(); });
+
+            manageTeamsBtn.addEventListener('click', openManageTeamsModal);
+            closeTeamsModalBtn.addEventListener('click', closeManageTeamsModal);
+            manageTeamsModal.addEventListener('click', (e) => { if (e.target === manageTeamsModal) closeManageTeamsModal(); });
+            addTeamForm.addEventListener('submit', handleAddTeam);
 
             closePatternModalBtn.addEventListener('click', closePatternShiftModal);
             patternShiftModal.addEventListener('click', (e) => { if (e.target === patternShiftModal) closePatternShiftModal(); });
@@ -1298,11 +1478,6 @@
             confirmBatchDeleteBtn.addEventListener('click', handleBatchDelete);
             batchDeleteConfirmModal.addEventListener('click', (e) => { if (e.target === batchDeleteConfirmModal) closeBatchDeleteModal(); });
 
-            manageTeamsBtn.addEventListener('click', openManageTeamsModal);
-            closeTeamsModalBtn.addEventListener('click', closeManageTeamsModal);
-            manageTeamsModal.addEventListener('click', (e) => { if (e.target === manageTeamsModal) closeManageTeamsModal(); });
-            addTeamForm.addEventListener('submit', handleAddTeam);
-
             closeEditTeamModalBtn.addEventListener('click', closeEditTeamModal);
             editTeamForm.addEventListener('submit', handleEditTeam);
             editTeamModal.addEventListener('click', (e) => { if (e.target === editTeamModal) closeEditTeamModal(); });
@@ -1311,6 +1486,37 @@
             cancelDeleteTeamBtn_TEAM.addEventListener('click', closeDeleteTeamModal); 
             confirmDeleteTeamBtn_TEAM.addEventListener('click', performDeleteTeam);
             deleteTeamConfirmModal.addEventListener('click', (e) => { if (e.target === deleteTeamConfirmModal) closeDeleteTeamModal(); });
+
+            // Team Filter Listeners
+            teamFilterBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                toggleTeamFilterDropdown();
+            });
+            selectAllTeamsCheckbox.addEventListener('change', (e) => {
+                handleSelectAllTeams(e.target.checked);
+            });
+            teamFilterDropdown.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+            });
+
+            // Manage Menu Listeners
+            manageMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleManageDropdown();
+            });
+            manageDropdown.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+
+            // Global click listener to close dropdowns
+            document.addEventListener('click', (e) => {
+                if (teamFilterDropdown && !teamFilterDropdown.classList.contains('hidden') && !teamFilterDropdown.contains(e.target) && e.target !== teamFilterBtn) {
+                    toggleTeamFilterDropdown();
+                }
+                if (manageDropdown && !manageDropdown.classList.contains('hidden') && !manageDropdown.contains(e.target) && e.target !== manageMenuBtn) {
+                    toggleManageDropdown();
+                }
+            });
         }
         
         function assignDOMElements() {
@@ -1369,13 +1575,10 @@
             cancelDeleteTeamBtn_TEAM = document.getElementById('cancel-delete-team-btn');
             confirmDeleteTeamBtn_TEAM = document.getElementById('confirm-delete-team-btn');
             deleteTeamModalName = document.getElementById('delete-team-modal-name');
-
-            // MODIFIED: Assign new elements
             modalEmployeeNameInput = document.getElementById('modal-employee-name-input');
             modalEmployeeIdInput = document.getElementById('modal-employee-id-input');
             saveDetailsBtn = document.getElementById('save-details-btn');
             saveDetailsStatus = document.getElementById('save-details-status');
-            
             manageLabelsBtn = document.getElementById('manage-labels-btn');
             manageLabelsModal = document.getElementById('manage-labels-modal');
             closeLabelsModalBtn = document.getElementById('close-labels-modal');
@@ -1386,6 +1589,14 @@
             addLabelError = document.getElementById('add-label-error');
             deleteLabelError = document.getElementById('delete-label-error');
             labelListUl = document.getElementById('label-list-ul');
+            teamFilterBtn = document.getElementById('team-filter-btn');
+            teamFilterDropdown = document.getElementById('team-filter-dropdown');
+            teamFilterList = document.getElementById('team-filter-list');
+            selectAllTeamsCheckbox = document.getElementById('select-all-teams-checkbox');
+            
+            // NEW: Assign Manage Menu
+            manageMenuBtn = document.getElementById('manage-menu-btn');
+            manageDropdown = document.getElementById('manage-dropdown');
         }
 
         // --- 7. INITIALIZATION ---
@@ -1399,5 +1610,4 @@
     </script>
 </body>
 </html>
-
 
