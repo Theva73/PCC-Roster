@@ -29,6 +29,20 @@
         /* Shift that comes from the auto-pattern */
         .auto-shift { opacity: 0.6; }
         .auto-shift:hover { opacity: 1; }
+
+        /* Color selection grid */
+        .color-swatch {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .color-swatch.selected {
+            border-color: #4f46e5; /* indigo-600 */
+            box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #4f46e5;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -51,7 +65,11 @@
             
             <div class="flex items-center space-x-4">
                 <!-- Action buttons container -->
-                <div id="header-actions" class="flex space-x-2">
+                <div id="header-actions" class="flex flex-wrap gap-2">
+                    <!-- NEW: Manage Labels Button -->
+                    <button id="manage-labels-btn" class="px-4 py-2 bg-purple-600 text-white rounded-lg shadow hover:bg-purple-700 transition duration-150">
+                        Manage Labels
+                    </button>
                     <button id="manage-teams-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition duration-150">
                         Manage Teams
                     </button>
@@ -87,16 +105,84 @@
     <div id="shift-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-semibold">Select Shift</h3>
+                <h3 class="text-xl font-semibold">Select Shift & Edit Details</h3>
                 <button id="close-modal" class="text-gray-400 hover:text-gray-600">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
-            <p class="mb-4 text-gray-600">Assign shift for <strong id="modal-employee-name"></strong> on <strong id="modal-date"></strong>.</p>
+            
+            <!-- MODIFIED: Editable Employee Details -->
+            <div class="mb-4 p-4 border rounded-lg bg-gray-50">
+                <div class="space-y-3">
+                    <div>
+                        <label for="modal-employee-name-input" class="block text-sm font-medium text-gray-700">Employee Name</label>
+                        <input type="text" id="modal-employee-name-input" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    </div>
+                    <!-- NEW: Editable Employee ID -->
+                    <div>
+                        <label for="modal-employee-id-input" class="block text-sm font-medium text-gray-700">Employee ID (e.g., 11997)</label>
+                        <input type="text" id="modal-employee-id-input" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    </div>
+                </div>
+                <div class="flex justify-between items-center mt-3">
+                    <span id="save-details-status" class="text-sm text-green-600 h-4"></span>
+                    <button id="save-details-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition duration-150">
+                        Save Details
+                    </button>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Note: Service ID (e.g., 25...) cannot be edited here.</p>
+            </div>
+            
+            <p class="mb-4 text-gray-600">Assign shift for <strong id="modal-date"></strong>.</p>
             <div id="shift-options" class="grid grid-cols-4 gap-3"></div>
             <button id="set-auto-shift-btn" class="w-full mt-4 px-4 py-2 bg-gray-600 text-white rounded-lg shadow hover:bg-gray-700 transition duration-150">
                 Set to Auto (Remove Override)
             </button>
+        </div>
+    </div>
+
+    <!-- NEW: Manage Shift Labels Modal -->
+    <div id="manage-labels-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg mx-4 modal-fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">Manage Shift Labels</h3>
+                <button id="close-labels-modal" class="text-gray-400 hover:text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            
+            <!-- Add New Label Form -->
+            <form id="add-label-form" class="p-4 border rounded-lg bg-gray-50 mb-6">
+                <h4 class="text-lg font-medium text-gray-800 mb-3">Add New Label</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="new-label-text" class="block text-sm font-medium text-gray-700">Label Text (e.g., "TRAIN")</label>
+                        <input type="text" id="new-label-text" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm" maxlength="5" required>
+                    </div>
+                    <div>
+                        <label for="new-label-color" class="block text-sm font-medium text-gray-700">Color</label>
+                        <select id="new-label-color" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm" required>
+                            <!-- Options populated by JS -->
+                        </select>
+                    </div>
+                </div>
+                <div id="add-label-color-grid" class="mt-4 flex flex-wrap gap-2">
+                    <!-- Color swatches will be populated here -->
+                </div>
+                <div id="add-label-error" class="text-red-600 text-sm mt-3 h-4"></div>
+                <div class="text-right mt-3">
+                    <button type="submit" class="px-5 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition">Add Label</button>
+                </div>
+            </form>
+
+            <!-- Current Labels List -->
+            <div>
+                <h4 class="text-lg font-medium text-gray-800 mb-2">Current Labels</h4>
+                <div id="delete-label-error" class="text-red-600 text-sm mb-2 h-4"></div>
+                <ul id="label-list-ul" class="divide-y divide-gray-200 h-64 overflow-y-auto border rounded-lg p-2 bg-gray-50">
+                    <!-- Label list will be populated by JS -->
+                </ul>
+            </div>
         </div>
     </div>
     
@@ -298,33 +384,48 @@
         setLogLevel('Debug');
 
         // Firestore collection references
-        let teamsCollection, employeesCollection, rosterCollection;
+        let teamsCollection, employeesCollection, rosterCollection, shiftCodesCollection;
+        let shiftCodesDocRef; // Single doc for all shift codes
 
         // Local data cache
-        let teamsMap = new Map(); // Stores the full team object (id, name, pattern, anchorDate)
+        let teamsMap = new Map();
         let employeeData = [];
-        let rosterData = {}; // Manual Overrides for employees
+        let rosterData = {};
         let isDataLoaded = false;
         let selectedEmployeeIds = new Set();
-        let tempPatternArray = []; // For the visual pattern builder
+        let tempPatternArray = [];
         
         // --- 1. DATA DEFINITIONS ---
-        const shiftCodes = {
-            '1':    { text: '1',    color: 'bg-white', textColor: 'text-gray-800' },
-            '2':    { text: '2',    color: 'bg-white', textColor: 'text-gray-800' },
-            '1A':   { text: '1A',   color: 'bg-teal-100', textColor: 'text-teal-800' },
-            '2N':   { text: '2N',   color: 'bg-yellow-200', textColor: 'text-yellow-800' },
-            'OFF':  { text: 'OFF',  color: 'bg-green-200', textColor: 'text-green-800' },
-            'AL':   { text: 'AL',   color: 'bg-blue-200', textColor: 'text-blue-800' },
-            'AD':   { text: 'AD',   color: 'bg-cyan-200', textColor: 'text-cyan-800' },
-            'PPT':  { text: 'PPT',  color: 'bg-lime-200', textColor: 'text-lime-800' },
-            'PCT':  { text: 'PCT',  color: 'bg-orange-200', textColor: 'text-orange-800' },
-            'BCLS': { text: 'BCLS', color: 'bg-red-200', textColor: 'text-red-800' },
-            '':     { text: '',     color: 'bg-gray-50', textColor: 'text-gray-400' } // Empty
+        const defaultShiftCodes = {
+            '1':    { text: '1',    color: 'bg-white', textColor: 'text-gray-800', isDefault: true },
+            '2':    { text: '2',    color: 'bg-white', textColor: 'text-gray-800', isDefault: true },
+            '1A':   { text: '1A',   color: 'bg-teal-100', textColor: 'text-teal-800', isDefault: true },
+            '2N':   { text: '2N',   color: 'bg-yellow-200', textColor: 'text-yellow-800', isDefault: true },
+            'OFF':  { text: 'OFF',  color: 'bg-green-200', textColor: 'text-green-800', isDefault: true },
+            'AL':   { text: 'AL',   color: 'bg-blue-200', textColor: 'text-blue-800', isDefault: true },
+            'AD':   { text: 'AD',   color: 'bg-cyan-200', textColor: 'text-cyan-800', isDefault: true },
+            'PPT':  { text: 'PPT',  color: 'bg-lime-200', textColor: 'text-lime-800', isDefault: true },
+            'PCT':  { text: 'PCT',  color: 'bg-orange-200', textColor: 'text-orange-800', isDefault: true },
+            'BCLS': { text: 'BCLS', color: 'bg-red-200', textColor: 'text-red-800', isDefault: true },
+            '':     { text: '',     color: 'bg-gray-50', textColor: 'text-gray-400', isDefault: true } // Empty
+        };
+        let shiftCodesMap = { ...defaultShiftCodes };
+
+        const colorOptions = {
+            'Pink': { color: 'bg-pink-200', textColor: 'text-pink-800' },
+            'Purple': { color: 'bg-purple-200', textColor: 'text-purple-800' },
+            'Indigo': { color: 'bg-indigo-200', textColor: 'text-indigo-800' },
+            'Yellow': { color: 'bg-yellow-200', textColor: 'text-yellow-800' },
+            'Lime': { color: 'bg-lime-200', textColor: 'text-lime-800' },
+            'Cyan': { color: 'bg-cyan-200', textColor: 'text-cyan-800' },
+            'Red': { color: 'bg-red-200', textColor: 'text-red-800' },
+            'Orange': { color: 'bg-orange-200', textColor: 'text-orange-800' },
+            'Blue': { color: 'bg-blue-200', textColor: 'text-blue-800' },
+            'Green': { color: 'bg-green-200', textColor: 'text-green-800' },
         };
         
-        const patternAnchorDate = '2025-01-01'; // Default genesis date
-        const defaultPattern = ['1', '1', '2', '2', 'OFF', 'OFF']; // 6-day
+        const patternAnchorDate = '2025-01-01';
+        const defaultPattern = ['1', '1', '2', '2', 'OFF', 'OFF'];
         
         // --- 2. STATE & CONSTANTS ---
         let currentYear = 2025;
@@ -334,15 +435,14 @@
         let currentCellElement = null;
         let currentEmployeeId = null;
         let currentFullDate = null;
-        let currentEmployeeName = null;
         let employeeIdToDelete = null;
         let teamIdToDelete = null;
 
-        // --- 3. DOM ELEMENTS (Declared here, assigned in DOMContentLoaded) ---
+        // --- 3. DOM ELEMENTS ---
         let grid, monthYearEl, prevMonthBtn, nextMonthBtn, loadingState, rosterContainer,
             headerActions, batchDeleteContainer, batchDeleteBtn, batchDeleteConfirmModal,
             batchDeleteCount, batchDeleteList, cancelBatchDeleteBtn, confirmBatchDeleteBtn,
-            modal, closeModalBtn, shiftOptionsContainer, modalEmployeeName, modalDate,
+            modal, closeModalBtn, shiftOptionsContainer, modalDate,
             setAutoShiftBtn, patternShiftModal, closePatternModalBtn, patternShiftOptionsContainer,
             patternModalDay, addEmployeeBtn, addEmployeeModal, closeAddModalBtn,
             addEmployeeForm, teamSelect, addError, deleteConfirmModal, cancelDeleteBtn,
@@ -352,40 +452,25 @@
             editTeamForm, editTeamId, editTeamName, editTeamPatternLength,
             editTeamAnchorDate, visualPatternCells, editTeamError, deleteTeamConfirmModal,
             cancelDeleteTeamBtn_TEAM, confirmDeleteTeamBtn_TEAM, 
-            deleteTeamModalName;
+            deleteTeamModalName,
+            // MODIFIED: Renamed elements
+            modalEmployeeNameInput, modalEmployeeIdInput, saveDetailsBtn, saveDetailsStatus, 
+            manageLabelsBtn, manageLabelsModal, closeLabelsModalBtn, addLabelForm, 
+            newLabelText, newLabelColor, addLabelColorGrid, addLabelError, 
+            deleteLabelError, labelListUl;
+
 
         // --- 4. HELPER FUNCTIONS ---
-        
-        // ### UTC-SAFE DATE FUNCTION ###
-        /**
-         * Calculates the difference in days between two YYYY-MM-DD date strings, safely using UTC.
-         * @param {string} dateStr1 - The end date (e.g., "2025-11-01")
-         * @param {string} dateStr2 - The start date (e.g., "2025-01-01")
-         * @returns {number} The difference in days.
-         */
         function getDaysBetween(dateStr1, dateStr2) {
             try {
                 const [y1, m1, d1] = dateStr1.split('-').map(Number);
                 const [y2, m2, d2] = dateStr2.split('-').map(Number);
-
-                // Date.UTC uses 0-indexed months (0=Jan, 10=Nov)
                 const utcDate1 = Date.UTC(y1, m1 - 1, d1);
                 const utcDate2 = Date.UTC(y2, m2 - 1, d2);
-                
-                if (isNaN(utcDate1) || isNaN(utcDate2)) {
-                   console.error("Invalid date in getDaysBetween", dateStr1, dateStr2);
-                   return 0;
-                }
-                
-                // 1000ms * 60s * 60min * 24hr = 86,400,000
-                const diffTime = utcDate1 - utcDate2;
-                return Math.round(diffTime / 86400000);
-            } catch (e) {
-                console.error("Error in getDaysBetween", e);
-                return 0;
-            }
+                if (isNaN(utcDate1) || isNaN(utcDate2)) { return 0; }
+                return Math.round((utcDate1 - utcDate2) / 86400000);
+            } catch (e) { console.error("Error in getDaysBetween", e); return 0; }
         }
-        // ### END UTC-SAFE DATE FUNCTION ###
 
         function createCell(text, classes) {
             const cell = document.createElement('div');
@@ -401,40 +486,21 @@
             grid.innerHTML = '';
             
             const date = new Date(currentYear, currentMonth);
-            const monthName = date.toLocaleString('default', { month: 'long' });
-            monthYearEl.textContent = `${monthName} ${currentYear}`;
-            
+            monthYearEl.textContent = `${date.toLocaleString('default', { month: 'long' })} ${currentYear}`;
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            
             const gridCols = 3 + daysInMonth;
             grid.style.gridTemplateColumns = `120px 100px minmax(250px, 1fr) repeat(${daysInMonth}, minmax(60px, 1fr))`;
 
             // A. Render Header Row
-            const serviceIdHeader = createCell('Service ID', 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200');
-            serviceIdHeader.style.minWidth = '120px';
-            grid.appendChild(serviceIdHeader);
-
-            const empIdHeader = createCell('Emp ID', 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200');
-            empIdHeader.style.minWidth = '100px';
-            grid.appendChild(empIdHeader);
-            
+            grid.appendChild(createCell('Service ID', 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 min-w-[120px]'));
+            grid.appendChild(createCell('Emp ID', 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 min-w-[100px]'));
             const nameHeader = document.createElement('div');
-            nameHeader.className = 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 flex items-center space-x-3';
-            nameHeader.style.minWidth = '250px';
-            
-            const selectAllCheckbox = document.createElement('input');
-            selectAllCheckbox.type = 'checkbox';
-            selectAllCheckbox.id = 'select-all-checkbox';
-            selectAllCheckbox.className = 'rounded border-gray-300 text-indigo-600 focus:ring-indigo-500';
-            selectAllCheckbox.addEventListener('change', (e) => handleSelectAll(e.target.checked));
-            
-            const nameLabel = document.createElement('label');
-            nameLabel.htmlFor = 'select-all-checkbox';
-            nameLabel.textContent = 'Employee Name';
-            nameLabel.className = 'cursor-pointer';
-            
-            nameHeader.appendChild(selectAllCheckbox);
-            nameHeader.appendChild(nameLabel);
+            nameHeader.className = 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 flex items-center space-x-3 min-w-[250px]';
+            nameHeader.innerHTML = `
+                <input type="checkbox" id="select-all-checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <label for="select-all-checkbox" class="cursor-pointer">Employee Name</label>
+            `;
+            nameHeader.querySelector('#select-all-checkbox').addEventListener('change', (e) => handleSelectAll(e.target.checked));
             grid.appendChild(nameHeader);
             
             for (let day = 1; day <= daysInMonth; day++) {
@@ -442,36 +508,24 @@
                 const dayName = weekdays[d.getDay()];
                 const headerCell = document.createElement('div');
                 headerCell.className = 'header-cell text-center p-2 border-b border-l border-gray-200';
-                const dayNumSpan = document.createElement('span');
-                dayNumSpan.className = 'text-lg font-bold block';
-                dayNumSpan.textContent = day;
-                const dayNameSpan = document.createElement('span');
-                dayNameSpan.className = 'text-xs text-gray-500 font-medium block';
-                dayNameSpan.textContent = dayName;
-                if (dayName === 'SAT' || dayName === 'SUN') {
-                    dayNumSpan.classList.add('text-red-500');
-                }
-                headerCell.appendChild(dayNumSpan);
-                headerCell.appendChild(dayNameSpan);
+                headerCell.innerHTML = `
+                    <span class="text-lg font-bold block ${dayName === 'SAT' || dayName === 'SUN' ? 'text-red-500' : ''}">${day}</span>
+                    <span class="text-xs text-gray-500 font-medium block">${dayName}</span>
+                `;
                 grid.appendChild(headerCell);
             }
             
             // B. Render Employee Rows
             let currentTeamName = '';
-            
-            // Sort by team name, then by employee name
             employeeData.sort((a, b) => {
                 const teamAName = teamsMap.get(a.team_id)?.name || 'Unassigned';
                 const teamBName = teamsMap.get(b.team_id)?.name || 'Unassigned';
-                if (teamAName !== teamBName) {
-                    return teamAName.localeCompare(teamBName);
-                }
-                // Fallback sort: Service ID
+                if (teamAName !== teamBName) return teamAName.localeCompare(teamBName);
                 return (a.id || '').localeCompare(b.id || '');
             });
             
             employeeData.forEach(emp => {
-                const team = teamsMap.get(emp.team_id); // This is now guaranteed to work
+                const team = teamsMap.get(emp.team_id);
                 const teamName = team?.name || 'Unassigned';
 
                 if (teamName !== currentTeamName) {
@@ -482,105 +536,57 @@
                 }
                 
                 const rowCells = [];
+                rowCells.push(grid.appendChild(createCell(emp.id, 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600 min-w-[120px]')));
+                rowCells.push(grid.appendChild(createCell(emp.emp_id || '', 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600 min-w-[100px] left-[120px]')));
                 
-                // Service ID Cell
-                const serviceIdCell = createCell(emp.id, 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600');
-                serviceIdCell.style.minWidth = '120px';
-                grid.appendChild(serviceIdCell);
-                rowCells.push(serviceIdCell);
-
-                // Emp ID Cell
-                const empIdCell = createCell(emp.emp_id || '', 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600');
-                empIdCell.style.minWidth = '100px';
-                empIdCell.style.left = '120px'; // Adjusted for Service ID col
-                grid.appendChild(empIdCell);
-                rowCells.push(empIdCell);
-                
-                // Name Cell (with checkbox and delete)
                 const nameCell = document.createElement('div');
-                nameCell.className = 'employee-row sticky-col text-sm p-3 border-b border-gray-200 text-gray-700 font-medium flex justify-between items-center';
-                nameCell.style.minWidth = '250px';
-                nameCell.style.left = '220px'; // Adjusted for two ID cols
-                
-                const nameContainer = document.createElement('div');
-                nameContainer.className = 'flex items-center space-x-3';
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.className = 'emp-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500';
-                checkbox.dataset.empId = emp.id;
-                checkbox.checked = selectedEmployeeIds.has(emp.id);
-                checkbox.addEventListener('change', (e) => handleSelectEmployee(emp.id, e.target.checked));
-                
-                const nameSpan = document.createElement('span');
-                nameSpan.textContent = emp.name;
-                nameContainer.appendChild(checkbox);
-                nameContainer.appendChild(nameSpan);
-                nameCell.appendChild(nameContainer);
-                
-                const deleteBtn = document.createElement('button');
-                deleteBtn.innerHTML = '&#215;';
-                deleteBtn.className = 'delete-btn text-red-400 hover:text-red-700 font-bold text-xl ml-2 p-0 leading-none rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-100 opacity-0 transition-opacity duration-150';
-                deleteBtn.title = `Delete ${emp.name}`;
-                deleteBtn.addEventListener('click', () => { openDeleteModal(emp.id, emp.name); });
-                nameCell.appendChild(deleteBtn);
-                grid.appendChild(nameCell);
-                rowCells.push(nameCell);
+                nameCell.className = 'employee-row sticky-col text-sm p-3 border-b border-gray-200 text-gray-700 font-medium flex justify-between items-center min-w-[250px] left-[220px]';
+                nameCell.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <input type="checkbox" class="emp-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" data-emp-id="${emp.id}">
+                        <span>${emp.name}</span>
+                    </div>
+                    <button class="delete-btn text-red-400 hover:text-red-700 font-bold text-xl ml-2 p-0 leading-none rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-100 opacity-0 transition-opacity duration-150" title="Delete ${emp.name}">
+                        &#215;
+                    </button>
+                `;
+                nameCell.querySelector('.emp-checkbox').checked = selectedEmployeeIds.has(emp.id);
+                nameCell.querySelector('.emp-checkbox').addEventListener('change', (e) => handleSelectEmployee(emp.id, e.target.checked));
+                nameCell.querySelector('.delete-btn').addEventListener('click', () => { openDeleteModal(emp.id, emp.name); });
+                rowCells.push(grid.appendChild(nameCell));
 
                 // C. DYNAMIC ROSTER CELLS
                 for (let day = 1; day <= daysInMonth; day++) {
                     const fullDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                     const empRoster = rosterData[emp.id] || {};
                     const manualShift = empRoster[fullDate]; 
-
-                    let shift = '';
-                    let shiftInfo = null;
-                    let isAuto = false;
+                    let shift = '', shiftInfo = null, isAuto = false;
 
                     if (manualShift !== undefined) {
                         shift = manualShift;
-                        shiftInfo = shiftCodes[shift] || shiftCodes[''];
+                        shiftInfo = shiftCodesMap[shift] || shiftCodesMap[''];
                     } else {
-                        // This is the V4/V7 logic
                         if (team && team.shiftPattern && team.shiftPattern.length > 0) {
                             const pattern = team.shiftPattern;
                             const anchorDate = team.patternStartDate || patternAnchorDate;
-                            
-                            // ### FIX 1 of 3: REMOVED employeeOffset ###
-                            // const employeeOffset = emp.patternOffset || 0; 
-                            
                             const daysSinceAnchor = getDaysBetween(fullDate, anchorDate);
-                            
-                            // ### FIX 1 of 3 (cont.): REMOVED employeeOffset ###
-                            const totalOffset = daysSinceAnchor; // + employeeOffset;
-                            const patternIndex = (totalOffset % pattern.length + pattern.length) % pattern.length;
-                            
-                            const generatedShift = pattern[patternIndex];
-                            shift = generatedShift;
-                            shiftInfo = shiftCodes[shift] || shiftCodes[''];
+                            const patternIndex = (daysSinceAnchor % pattern.length + pattern.length) % pattern.length;
+                            shift = pattern[patternIndex];
+                            shiftInfo = shiftCodesMap[shift] || shiftCodesMap[''];
                             isAuto = true;
                         } else {
-                            shiftInfo = shiftCodes[''];
+                            shiftInfo = shiftCodesMap[''];
                         }
                     }
-
                     const dataCell = createCell(shiftInfo.text, `employee-row text-center p-3 border-b border-l border-gray-200 cursor-pointer hover:bg-gray-100 transition duration-150 font-semibold ${shiftInfo.color} ${shiftInfo.textColor}`);
-                    if (isAuto) {
-                        dataCell.classList.add('auto-shift');
-                    }
-                    dataCell.addEventListener('click', () => {
-                        openModal(dataCell, emp.id, emp.name, fullDate);
-                    });
-                    grid.appendChild(dataCell);
-                    rowCells.push(dataCell);
+                    if (isAuto) dataCell.classList.add('auto-shift');
+                    dataCell.addEventListener('click', () => openModal(dataCell, emp.id, emp.name, fullDate));
+                    rowCells.push(grid.appendChild(dataCell));
                 }
                 
                 rowCells.forEach(cell => {
-                    cell.addEventListener('mouseenter', () => {
-                        rowCells.forEach(c => c.classList.add('bg-gray-50'));
-                    });
-                     cell.addEventListener('mouseleave', () => {
-                        rowCells.forEach(c => c.classList.remove('bg-gray-50'));
-                    });
+                    cell.addEventListener('mouseenter', () => rowCells.forEach(c => c.classList.add('bg-gray-50')));
+                    cell.addEventListener('mouseleave', () => rowCells.forEach(c => c.classList.remove('bg-gray-50')));
                 });
             });
             updateSelectAllCheckbox();
@@ -590,14 +596,24 @@
             currentCellElement = cellElement;
             currentEmployeeId = empId;
             currentFullDate = fullDate;
-            currentEmployeeName = empName;
             
-            modalEmployeeName.textContent = empName;
+            // MODIFIED: Find full employee object to populate all fields
+            const emp = employeeData.find(e => e.id === empId);
+            if (emp) {
+                modalEmployeeNameInput.value = emp.name;
+                modalEmployeeIdInput.value = emp.emp_id || '';
+            } else {
+                // Fallback, though this shouldn't happen
+                modalEmployeeNameInput.value = empName;
+                modalEmployeeIdInput.value = '';
+            }
+            saveDetailsStatus.textContent = '';
+            
             modalDate.textContent = new Date(fullDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
             
             shiftOptionsContainer.innerHTML = '';
-            Object.keys(shiftCodes).forEach(code => {
-                const shiftInfo = shiftCodes[code];
+            Object.keys(shiftCodesMap).sort().forEach(code => {
+                const shiftInfo = shiftCodesMap[code];
                 const button = document.createElement('button');
                 button.textContent = shiftInfo.text || 'Empty';
                 button.className = `p-3 rounded-lg border font-medium transition duration-150 ${shiftInfo.color} ${shiftInfo.textColor} hover:shadow-md hover:ring-2 hover:ring-indigo-400`;
@@ -609,6 +625,32 @@
             modal.classList.remove('hidden');
         }
 
+        // MODIFIED: Save Employee Details (Name and Emp ID)
+        async function handleSaveEmployeeDetails() {
+            const newName = modalEmployeeNameInput.value.trim();
+            const newEmpId = modalEmployeeIdInput.value.trim();
+            
+            if (!newName || !currentEmployeeId) return;
+
+            saveDetailsBtn.disabled = true;
+            saveDetailsStatus.textContent = 'Saving...';
+            try {
+                const empDocRef = doc(employeesCollection, currentEmployeeId);
+                await updateDoc(empDocRef, { 
+                    name: newName,
+                    emp_id: newEmpId
+                });
+                saveDetailsStatus.textContent = 'Saved!';
+                setTimeout(() => { saveDetailsStatus.textContent = ''; }, 2000);
+            } catch (error) {
+                console.error("Error saving details: ", error);
+                saveDetailsStatus.textContent = 'Error.';
+                 setTimeout(() => { saveDetailsStatus.textContent = ''; }, 2000);
+            } finally {
+                saveDetailsBtn.disabled = false;
+            }
+        }
+
         function closeModal() {
             modal.classList.add('hidden');
         }
@@ -616,15 +658,10 @@
         async function selectShift(shiftCode) {
             if (!currentEmployeeId || !currentFullDate) return;
             const rosterDocRef = doc(rosterCollection, currentEmployeeId);
-            
             try {
                 if (shiftCode === 'AUTO') {
-                    // Remove the manual override
-                    await updateDoc(rosterDocRef, {
-                        [currentFullDate]: deleteField()
-                    });
+                    await updateDoc(rosterDocRef, { [currentFullDate]: deleteField() });
                 } else {
-                    // Set the manual override
                     await setDoc(rosterDocRef, { [currentFullDate]: shiftCode }, { merge: true });
                 }
                 closeModal();
@@ -646,10 +683,7 @@
             teamSelect.innerHTML = '<option value="">Select a team...</option>';
             const sortedTeams = [...teamsMap.values()].sort((a, b) => a.name.localeCompare(b.name));
             sortedTeams.forEach(team => {
-                const option = document.createElement('option');
-                option.value = team.docId; // Use the docId as the value
-                option.textContent = team.name; // This was the bug, now fixed
-                teamSelect.appendChild(option);
+                teamSelect.innerHTML += `<option value="${team.docId}">${team.name}</option>`;
             });
             addEmployeeModal.classList.remove('hidden');
         }
@@ -663,37 +697,18 @@
         async function handleAddEmployee(e) {
             e.preventDefault();
             addError.textContent = '';
-            
-            const team_id = document.getElementById('emp-team-select').value;
-            
-            // ### FIX 2 of 3: REMOVED staggering logic ###
-            // const employeesOnTeam = employeeData.filter(emp => emp.team_id === team_id).length;
-            const newPatternOffset = 0; // employeesOnTeam; 
-            
             const newEmployee = {
-                team_id: team_id,
+                team_id: document.getElementById('emp-team-select').value,
                 id: document.getElementById('emp-service-id').value.trim(),
                 emp_id: document.getElementById('emp-short-id').value.trim(),
                 name: document.getElementById('emp-name').value.trim(),
-                patternOffset: newPatternOffset
+                patternOffset: 0
             };
-
-            if (!newEmployee.team_id) {
-                addError.textContent = 'Error: Please select a team.'; return;
-            }
-            // Use Service ID (the long one) as the unique identifier
-            if (employeeData.some(emp => emp.id === newEmployee.id)) {
-                addError.textContent = 'Error: Service ID already exists.'; return;
-            }
-            if (!newEmployee.id || !newEmployee.emp_id || !newEmployee.name) {
-                addError.textContent = 'Error: All fields are required.'; return;
-            }
-
+            if (!newEmployee.team_id) { addError.textContent = 'Error: Please select a team.'; return; }
+            if (employeeData.some(emp => emp.id === newEmployee.id)) { addError.textContent = 'Error: Service ID already exists.'; return; }
+            if (!newEmployee.id || !newEmployee.emp_id || !newEmployee.name) { addError.textContent = 'Error: All fields are required.'; return; }
             try {
-                // The document ID will be the Service ID
-                const empDocRef = doc(employeesCollection, newEmployee.id);
-                // We also add docId for consistency
-                await setDoc(empDocRef, {...newEmployee, docId: newEmployee.id});
+                await setDoc(doc(employeesCollection, newEmployee.id), {...newEmployee, docId: newEmployee.id});
                 closeAddModal();
             } catch (error) {
                  console.error("Error adding employee: ", error);
@@ -713,11 +728,9 @@
             if (!employeeIdToDelete) return;
             try {
                 const batch = writeBatch(db);
-                // Delete employee doc and roster doc, both keyed by the Service ID
                 batch.delete(doc(employeesCollection, employeeIdToDelete));
                 batch.delete(doc(rosterCollection, employeeIdToDelete));
                 await batch.commit();
-                
                 closeDeleteModal();
             } catch (error) {
                 console.error("Error deleting employee: ", error);
@@ -726,11 +739,7 @@
 
         // --- Batch Delete ---
         function handleSelectEmployee(empId, isChecked) {
-            if (isChecked) {
-                selectedEmployeeIds.add(empId);
-            } else {
-                selectedEmployeeIds.delete(empId);
-            }
+            if (isChecked) selectedEmployeeIds.add(empId); else selectedEmployeeIds.delete(empId);
             updateBatchDeleteUI();
             updateSelectAllCheckbox();
         }
@@ -752,14 +761,11 @@
             if (!selectAll) return;
             const totalEmployees = employeeData.length;
             if (totalEmployees > 0 && selectedEmployeeIds.size === totalEmployees) {
-                selectAll.checked = true;
-                selectAll.indeterminate = false;
+                selectAll.checked = true; selectAll.indeterminate = false;
             } else if (selectedEmployeeIds.size > 0) {
-                selectAll.checked = false;
-                selectAll.indeterminate = true;
+                selectAll.checked = false; selectAll.indeterminate = true;
             } else {
-                selectAll.checked = false;
-                selectAll.indeterminate = false;
+                selectAll.checked = false; selectAll.indeterminate = false;
             }
         }
 
@@ -779,25 +785,17 @@
             const count = selectedEmployeeIds.size;
             batchDeleteCount.textContent = count;
             batchDeleteList.innerHTML = '';
-            
             selectedEmployeeIds.forEach(id => {
                 const emp = employeeData.find(e => e.id === id);
-                if (emp) {
-                    const li = document.createElement('li');
-                    li.textContent = `${emp.name} (ID: ${emp.id})`;
-                    batchDeleteList.appendChild(li);
-                }
+                if (emp) batchDeleteList.innerHTML += `<li>${emp.name} (ID: ${emp.id})</li>`;
             });
             batchDeleteConfirmModal.classList.remove('hidden');
         }
         
-        function closeBatchDeleteModal() {
-            batchDeleteConfirmModal.classList.add('hidden');
-        }
+        function closeBatchDeleteModal() { batchDeleteConfirmModal.classList.add('hidden'); }
 
         async function handleBatchDelete() {
             if (selectedEmployeeIds.size === 0) return;
-            
             try {
                 const batch = writeBatch(db);
                 selectedEmployeeIds.forEach(id => {
@@ -805,7 +803,6 @@
                     batch.delete(doc(rosterCollection, id));
                 });
                 await batch.commit();
-                
                 selectedEmployeeIds.clear();
                 updateBatchDeleteUI();
                 closeBatchDeleteModal();
@@ -814,8 +811,7 @@
             }
         }
         
-        // --- Team Management Functions (V7) ---
-        
+        // --- Team Management Functions ---
         function openManageTeamsModal() {
             deleteTeamError.textContent = '';
             addTeamError.textContent = '';
@@ -827,41 +823,22 @@
         function populateManageTeamsModal() {
             if (!teamListUl) return; 
             teamListUl.innerHTML = '';
-            
-            // Sort by team name (value) but keep the docId (key)
             const sortedTeams = [...teamsMap.entries()].sort((a, b) => a[1].name.localeCompare(b[1].name));
-
             if (sortedTeams.length === 0) {
-                teamListUl.innerHTML = '<li class="p-3 text-gray-500 italic">No teams found.</li>';
-                return;
+                teamListUl.innerHTML = '<li class="p-3 text-gray-500 italic">No teams found.</li>'; return;
             }
-            
-            sortedTeams.forEach(([docId, team]) => { // Destructure into [docId, teamObject]
+            sortedTeams.forEach(([docId, team]) => {
                 const li = document.createElement('li');
                 li.className = 'team-li flex justify-between items-center p-3';
-                
-                const span = document.createElement('span');
-                span.textContent = team.name;
-                li.appendChild(span);
-
-                const buttonContainer = document.createElement('div');
-                buttonContainer.className = 'flex items-center';
-
-                const editBtn = document.createElement('button');
-                editBtn.textContent = 'Edit';
-                editBtn.className = 'edit-team-btn text-sm text-indigo-600 hover:text-indigo-800 font-medium mr-3 opacity-100 transition-opacity';
-                editBtn.onclick = () => openEditTeamModal(docId); // Pass the document ID
-                buttonContainer.appendChild(editBtn); 
-
-                const deleteBtn = document.createElement('button');
-                deleteBtn.innerHTML = '&#215;';
-                deleteBtn.className = 'text-red-400 hover:text-red-700 font-bold text-xl p-0 rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-100';
-                deleteBtn.title = `Delete ${team.name}`;
-                deleteBtn.onclick = () => checkAndDeleteTeam(docId, team.name); // Pass the document ID
-                buttonContainer.appendChild(deleteBtn); 
-
-                li.appendChild(buttonContainer); 
-                
+                li.innerHTML = `
+                    <span>${team.name}</span>
+                    <div class="flex items-center">
+                        <button class="edit-team-btn text-sm text-indigo-600 hover:text-indigo-800 font-medium mr-3 opacity-100 transition-opacity">Edit</button>
+                        <button class="delete-team-btn text-red-400 hover:text-red-700 font-bold text-xl p-0 rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-100" title="Delete ${team.name}">&#215;</button>
+                    </div>
+                `;
+                li.querySelector('.edit-team-btn').onclick = () => openEditTeamModal(docId);
+                li.querySelector('.delete-team-btn').onclick = () => checkAndDeleteTeam(docId, team.name);
                 teamListUl.appendChild(li);
             });
         }
@@ -871,19 +848,14 @@
             addTeamError.textContent = '';
             const newTeamName = newTeamNameInput.value.trim();
             if (!newTeamName) { addTeamError.textContent = 'Please enter a name.'; return; }
-            // The document ID
             const newTeamDocId = newTeamName.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_{2,}/g, '_') + '_' + Date.now();
             if ([...teamsMap.values()].some(team => team.name.toLowerCase() === newTeamName.toLowerCase())) {
-                addTeamError.textContent = 'A team with this name already exists.';
-                return;
+                addTeamError.textContent = 'A team with this name already exists.'; return;
             }
             try {
                 const newTeam = { 
-                    id: newTeamDocId, // Store the doc ID as the internal ID
-                    docId: newTeamDocId, // Store for consistency
-                    name: newTeamName,
-                    shiftPattern: defaultPattern, // All new teams get 6-day default
-                    patternStartDate: patternAnchorDate
+                    id: newTeamDocId, docId: newTeamDocId, name: newTeamName,
+                    shiftPattern: defaultPattern, patternStartDate: patternAnchorDate
                 };
                 await setDoc(doc(teamsCollection, newTeamDocId), newTeam);
                 newTeamNameInput.value = '';
@@ -895,56 +867,33 @@
 
         // --- Edit Team & Visual Pattern Builder ---
         function openEditTeamModal(teamId) {
-            const team = teamsMap.get(teamId); // This now works, as teamId is the docId (map key)
-            if (!team) {
-                console.error("Could not find team with ID:", teamId);
-                return;
-            }
-
-            editTeamId.value = teamId; // Store the docId
+            const team = teamsMap.get(teamId);
+            if (!team) { console.error("Could not find team with ID:", teamId); return; }
+            editTeamId.value = teamId;
             editTeamName.value = team.name;
             editTeamAnchorDate.value = team.patternStartDate || patternAnchorDate;
-            
             tempPatternArray = [...(team.shiftPattern || defaultPattern)];
             editTeamPatternLength.value = tempPatternArray.length;
-            
             renderVisualPatternCells();
-            
             editTeamError.textContent = '';
             editTeamModal.classList.remove('hidden');
         }
         
         function renderVisualPatternCells() {
             const len = parseInt(editTeamPatternLength.value) || 0;
-            
-            // Ensure tempPatternArray matches the new length
-            while (tempPatternArray.length < len) {
-                tempPatternArray.push(''); // Add empty shifts
-            }
-            if (tempPatternArray.length > len) {
-                tempPatternArray = tempPatternArray.slice(0, len); // Truncate
-            }
-            
+            while (tempPatternArray.length < len) tempPatternArray.push('');
+            if (tempPatternArray.length > len) tempPatternArray = tempPatternArray.slice(0, len);
             visualPatternCells.innerHTML = '';
             for (let i = 0; i < len; i++) {
                 const shiftCode = tempPatternArray[i] || '';
-                const shiftInfo = shiftCodes[shiftCode] || shiftCodes[''];
-                
+                const shiftInfo = shiftCodesMap[shiftCode] || shiftCodesMap[''];
                 const cell = document.createElement('div');
                 cell.className = `w-16 h-16 flex flex-col items-center justify-center rounded-lg border-2 cursor-pointer ${shiftInfo.color} ${shiftInfo.textColor} hover:shadow-md`;
                 cell.dataset.index = i;
-                
-                const daySpan = document.createElement('span');
-                daySpan.className = 'text-xs font-medium text-gray-500';
-                daySpan.textContent = `Day ${i + 1}`;
-                
-                const shiftSpan = document.createElement('span');
-                shiftSpan.className = 'text-lg font-bold';
-                shiftSpan.textContent = shiftInfo.text || '...';
-                
-                cell.appendChild(daySpan);
-                cell.appendChild(shiftSpan);
-                
+                cell.innerHTML = `
+                    <span class="text-xs font-medium text-gray-500">Day ${i + 1}</span>
+                    <span class="text-lg font-bold">${shiftInfo.text || '...'}</span>
+                `;
                 cell.addEventListener('click', () => openPatternShiftModal(i));
                 visualPatternCells.appendChild(cell);
             }
@@ -953,86 +902,60 @@
         function openPatternShiftModal(index) {
             patternModalDay.textContent = `Day ${index + 1}`;
             patternShiftOptionsContainer.innerHTML = '';
-            
-            Object.keys(shiftCodes).forEach(code => {
-                const shiftInfo = shiftCodes[code];
+            Object.keys(shiftCodesMap).sort().forEach(code => {
+                const shiftInfo = shiftCodesMap[code];
                 const button = document.createElement('button');
                 button.textContent = shiftInfo.text || 'Empty';
                 button.className = `p-3 rounded-lg border font-medium transition duration-150 ${shiftInfo.color} ${shiftInfo.textColor} hover:shadow-md hover:ring-2 hover:ring-indigo-400`;
                 button.addEventListener('click', () => {
                     tempPatternArray[index] = code;
-                    renderVisualPatternCells(); // Re-render cells to show new shift
+                    renderVisualPatternCells();
                     closePatternShiftModal();
                 });
                 patternShiftOptionsContainer.appendChild(button);
             });
-            
             patternShiftModal.classList.remove('hidden');
         }
         
-        function closePatternShiftModal() {
-            patternShiftModal.classList.add('hidden');
-        }
+        function closePatternShiftModal() { patternShiftModal.classList.add('hidden'); }
+        function closeEditTeamModal() { editTeamModal.classList.add('hidden'); editTeamForm.reset(); }
 
-        function closeEditTeamModal() {
-            editTeamModal.classList.add('hidden');
-            editTeamForm.reset();
-        }
-
-        // ### REVERTED TO ORIGINAL, NON-DESTRUCTIVE FUNCTION ###
         async function handleEditTeam(e) {
             e.preventDefault();
             editTeamError.textContent = '';
-            const teamId = editTeamId.value; // This is the docId
-            
+            const teamId = editTeamId.value;
             if (tempPatternArray.some(code => code === undefined || code === null)) {
-                editTeamError.textContent = 'All pattern days must have a shift selected.';
-                return;
+                editTeamError.textContent = 'All pattern days must have a shift selected.'; return;
             }
-
             const updatedData = {
                 name: editTeamName.value.trim(),
                 shiftPattern: tempPatternArray,
                 patternStartDate: editTeamAnchorDate.value
             };
-
             try {
-                const teamRef = doc(teamsCollection, teamId);
-                await updateDoc(teamRef, updatedData);
-
-                // ### Force immediate refresh ###
-                console.log("Team updated. Forcing local cache update and re-render.");
-                // Manually update the local cache so the render is instant
-                const updatedTeam = { ...teamsMap.get(teamId), ...updatedData };
-                teamsMap.set(teamId, updatedTeam);
-                renderRoster(); // Force a re-render
-                // ### END Force immediate refresh ###
-
+                await updateDoc(doc(teamsCollection, teamId), updatedData);
                 closeEditTeamModal();
             } catch (error) {
                 console.error("Error updating team: ", error);
                 editTeamError.textContent = 'Error saving changes.';
             }
         }
-        // ### END REVERT ###
 
         // --- Delete Team Functions ---
-        function checkAndDeleteTeam(teamId, teamName) { // teamId is now the docId
+        function checkAndDeleteTeam(teamId, teamName) {
             deleteTeamError.textContent = '';
             const employeesOnTeam = employeeData.filter(emp => emp.team_id === teamId);
-            
             if (employeesOnTeam.length > 0) {
-                deleteTeamError.textContent = `Cannot delete "${teamName}". ${employeesOnTeam.length} employee(s) are still assigned.`;
-                return;
+                deleteTeamError.textContent = `Cannot delete "${teamName}". ${employeesOnTeam.length} employee(s) are still assigned.`; return;
             }
-            teamIdToDelete = teamId; // This is the docId
+            teamIdToDelete = teamId;
             deleteTeamModalName.textContent = teamName;
             deleteTeamConfirmModal.classList.remove('hidden');
         }
         async function performDeleteTeam() {
             if (!teamIdToDelete) return;
             try {
-                await deleteDoc(doc(teamsCollection, teamIdToDelete)); // This now works
+                await deleteDoc(doc(teamsCollection, teamIdToDelete));
             } catch (error) {
                 console.error("Error deleting team: ", error);
                 deleteTeamError.textContent = 'Error deleting team.';
@@ -1044,126 +967,158 @@
             deleteTeamConfirmModal.classList.add('hidden');
         }
 
+        // --- Label Management Functions ---
+        function openAddLabelModal() {
+            addLabelError.textContent = '';
+            deleteLabelError.textContent = '';
+            newLabelText.value = '';
+            newLabelColor.innerHTML = '';
+            addLabelColorGrid.innerHTML = '';
+            let firstColorKey = null;
+            
+            Object.keys(colorOptions).forEach(colorName => {
+                const { color, textColor } = colorOptions[colorName];
+                if (!firstColorKey) firstColorKey = colorName;
+                newLabelColor.innerHTML += `<option value="${colorName}" class="${color} ${textColor} font-medium">${colorName}</option>`;
+                const swatch = document.createElement('div');
+                swatch.className = `color-swatch ${color}`;
+                swatch.dataset.colorName = colorName;
+                swatch.title = colorName;
+                swatch.addEventListener('click', () => {
+                    newLabelColor.value = colorName;
+                    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+                    swatch.classList.add('selected');
+                });
+                addLabelColorGrid.appendChild(swatch);
+            });
+            
+            if (firstColorKey) {
+                newLabelColor.value = firstColorKey;
+                addLabelColorGrid.querySelector(`[data-color-name="${firstColorKey}"]`).classList.add('selected');
+            }
+
+            labelListUl.innerHTML = '';
+            Object.keys(shiftCodesMap).sort().forEach(code => {
+                if (code === '') return;
+                const shift = shiftCodesMap[code];
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center p-3';
+                li.innerHTML = `
+                    <span class="font-medium px-3 py-1 rounded-lg ${shift.color} ${shift.textColor}">${shift.text}</span>
+                    ${shift.isDefault ? 
+                        '<span class="text-sm text-gray-500 italic">Default</span>' : 
+                        '<button class="delete-label-btn text-red-400 hover:text-red-700 font-bold text-xl p-0 rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-100" title="Delete ${shift.text}">&#215;</button>'}
+                `;
+                if (!shift.isDefault) {
+                    li.querySelector('.delete-label-btn').addEventListener('click', () => handleDeleteLabel(code, shift.text));
+                }
+                labelListUl.appendChild(li);
+            });
+            manageLabelsModal.classList.remove('hidden');
+        }
+        
+        function closeAddLabelModal() { manageLabelsModal.classList.add('hidden'); }
+
+        async function handleAddLabel(e) {
+            e.preventDefault();
+            addLabelError.textContent = '';
+            const newCode = newLabelText.value.trim().toUpperCase();
+            if (!newCode) { addLabelError.textContent = 'Label text is required.'; return; }
+            if (shiftCodesMap[newCode]) { addLabelError.textContent = 'This label already exists.'; return; }
+            const selectedColorName = newLabelColor.value;
+            const colorInfo = colorOptions[selectedColorName];
+            const newShiftData = {
+                text: newCode, color: colorInfo.color,
+                textColor: colorInfo.textColor, isDefault: false
+            };
+            try {
+                await updateDoc(shiftCodesDocRef, { [`data.${newCode}`]: newShiftData });
+                addLabelForm.reset();
+                newLabelColor.value = Object.keys(colorOptions)[0];
+                document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+                addLabelColorGrid.querySelector(`.color-swatch`).classList.add('selected');
+            } catch (error) {
+                console.error("Error adding label: ", error);
+                addLabelError.textContent = 'Error saving label.';
+            }
+        }
+        
+        async function handleDeleteLabel(code, text) {
+            if (!confirm(`Are you sure you want to delete the label "${text}"?`)) return;
+            deleteLabelError.textContent = '';
+            try {
+                await updateDoc(shiftCodesDocRef, { [`data.${code}`]: deleteField() });
+            } catch (error) {
+                console.error("Error deleting label: ", error);
+                deleteLabelError.textContent = 'Error deleting label.';
+            }
+        }
+
         // --- Firebase Init & MIGRATION ---
+        async function populateInitialShiftCodes() {
+            console.log("Populating initial shift codes...");
+            try {
+                await setDoc(shiftCodesDocRef, { data: defaultShiftCodes });
+                console.log("Initial shift codes populated.");
+            } catch (error) {
+                console.error("Error populating initial shift codes:", error);
+            }
+        }
         
         async function populateInitialData() {
             const batch = writeBatch(db);
-            
-            // 1. Define Teams
             const teamIDs = {
-                alpha: 'alpha_' + Date.now(),
-                bravo: 'bravo_' + Date.now(),
-                charlie: 'charlie_' + Date.now(),
-                foyer: 'foyer_' + Date.now(), // FIX: Renamed delta to foyer
-                support: 'support_' + Date.now()
+                alpha: 'alpha_' + Date.now(), bravo: 'bravo_' + Date.now(), charlie: 'charlie_' + Date.now(),
+                foyer: 'foyer_' + Date.now(), support: 'support_' + Date.now()
             };
-
-            // ### FOYER/SUPPORT PATTERN FIX START ###
-            // New 7-day pattern (SUN=OFF, MON-FRI=1, SAT=OFF)
             const weekPattern = ['OFF', '1', '1', '1', '1', '1', 'OFF'];
-            // New anchor date (first Sunday of 2025)
             const weekAnchorDate = '2025-01-05';
-
             const teams = [
                 { id: teamIDs.alpha, docId: teamIDs.alpha, name: 'Alpha', shiftPattern: ['1', '1', '2', '2', 'OFF', 'OFF'], patternStartDate: '2025-01-01' },
                 { id: teamIDs.bravo, docId: teamIDs.bravo, name: 'Bravo', shiftPattern: ['1', '1', '2', '2', 'OFF', 'OFF'], patternStartDate: '2025-01-01' },
                 { id: teamIDs.charlie, docId: teamIDs.charlie, name: 'Charlie', shiftPattern: ['1', '1', '2', '2', 'OFF', 'OFF'], patternStartDate: '2025-01-01' },
-                // Updated Foyer and Support teams:
                 { id: teamIDs.foyer, docId: teamIDs.foyer, name: 'Foyer', shiftPattern: weekPattern, patternStartDate: weekAnchorDate },
                 { id: teamIDs.support, docId: teamIDs.support, name: 'Support', shiftPattern: weekPattern, patternStartDate: weekAnchorDate }
             ];
-            // ### FOYER/SUPPORT PATTERN FIX END ###
-
-            teams.forEach(team => {
-                batch.set(doc(teamsCollection, team.id), team);
-            });
-
-            // 2. Define Employees (Extracted from image)
+            teams.forEach(team => batch.set(doc(teamsCollection, team.id), team));
             const employees = [
-                // Team Alpha
-                { id: '25013575', emp_id: '11997', name: 'SGT (APF) DAHLIA SHAFIQ', team_id: teamIDs.alpha },
-                { id: '25001375', emp_id: '11977', name: 'SGT (APF) CHEW WAI HOO', team_id: teamIDs.alpha },
-                { id: '25001153', emp_id: '33748', name: 'CPL (APF) RAVILO VEERASAMY', team_id: teamIDs.alpha },
-                { id: '25010549', emp_id: '119566', name: 'CPL (APF) LUA YIEN SIA', team_id: teamIDs.alpha },
-                { id: '25010533', emp_id: '12140', name: 'CPL (APF) ISYARIYAN YAZID', team_id: teamIDs.alpha },
-                { id: '25012454', emp_id: '114567', name: 'L/CPL (APF) MUJILAN RAJENDRAN', team_id: teamIDs.alpha },
-                { id: '25001254', emp_id: '114567', name: 'L/CPL (APF) ARAVINDAN MUNANDY', team_id: teamIDs.alpha },
-                { id: '25001420', emp_id: '71407', name: 'PC (APF) JAGTHEESWARAN MANIMARAN', team_id: teamIDs.alpha },
-                { id: '2501595', emp_id: '106722', name: 'SGT (APF) KALAIARACHE A/P NAGARATNAM', team_id: teamIDs.alpha },
-                { id: '25012687', emp_id: '114392', name: 'SGT (APF) DAHLAN THAQARAJAN', team_id: teamIDs.alpha },
-                // Team Bravo
-                { id: '25007705', emp_id: '112844', name: 'SGT (APF) LEE SOON THAI', team_id: teamIDs.bravo },
-                { id: '25080785', emp_id: '112888', name: 'SGT (APF) HO CHIE TIN', team_id: teamIDs.bravo },
-                { id: '25001731', emp_id: '70895', name: 'SGT (APF) HO KOK MAN', team_id: teamIDs.bravo },
-                { id: '25000421', emp_id: '104545', name: 'L/CPL (APF) THEVANANTHAN A/L KANAPATHY', team_id: teamIDs.bravo },
-                { id: '25011682', emp_id: '114573', name: 'L/CPL (APF) LIM CHIA MING', team_id: teamIDs.bravo },
-                { id: '25016179', emp_id: '114547', name: 'L/CPL (APF) JENNY WONG JOANN', team_id: teamIDs.bravo },
-                { id: '25002330', emp_id: '115005', name: 'CPL (APF) KRISHNA KUMAR DEVADAS', team_id: teamIDs.bravo },
-                { id: '25013556', emp_id: '112281', name: 'CPL (APF) CHUA YEN KAI', team_id: teamIDs.bravo },
-                { id: '25001355', emp_id: '107483', name: 'SGT (APF) DHARM AL ILBUGANATHAN', team_id: teamIDs.bravo },
-                { id: '25013354', emp_id: '114518', name: 'L/CPL (APF) VIVEKANANTHAN SANKARAN', team_id: teamIDs.bravo },
-                // Team Charlie
-                { id: '25000772', emp_id: '9431', name: 'SGT (APF) YONG KAH WHYE', team_id: teamIDs.charlie },
-                { id: '25080180', emp_id: '113414', name: 'SGT (APF) LIEW TAN HOU THIAN', team_id: teamIDs.charlie },
-                { id: '25080200', emp_id: '115716', name: 'SGT (APF) LIEW TECK LEE', team_id: teamIDs.charlie },
-                { id: '25006095', emp_id: '112048', name: 'CPL (APF) LO KOK BONG', team_id: teamIDs.charlie },
-                { id: '25011208', emp_id: '115904', name: 'CPL (APF) THEVARAJAN SUBRAMANIAM', team_id: teamIDs.charlie },
-                { id: '25012057', emp_id: '112907', name: 'CPL (APF) LAWRENCE A/L MICHAEL', team_id: teamIDs.charlie },
-                { id: '25012122', emp_id: '114221', name: 'L/CPL (APF) MUSTAQIM BIN JAILANI', team_id: teamIDs.charlie },
-                { id: '25012906', emp_id: '114406', name: 'L/CPL (APF) KAMASHNAKAR RAJIAH', team_id: teamIDs.charlie },
-                { id: '25012093', emp_id: '114208', name: 'PC (APF) ANISH PARITHAN', team_id: teamIDs.charlie },
-                { id: '25013927', emp_id: '114605', name: 'SGT (APF) HOE TIN HAN', team_id: teamIDs.charlie },
-                { id: '25011181', emp_id: '115893', name: 'SGT (APF) RAVITHRA RAJENDRAN', team_id: teamIDs.charlie },
-                // Team Foyer (FIX: Renamed from Delta)
-                { id: '25000178', emp_id: '9248', name: 'SGT (APF) TONY BOO KIAN BENG', team_id: teamIDs.foyer },
-                { id: '25000173', emp_id: '9260', name: 'SGT (APF) FONG TAI YING', team_id: teamIDs.foyer },
-                { id: '25004336', emp_id: '111757', name: 'SGT (APF) LYE CHEE MIN', team_id: teamIDs.foyer },
-                // Team Support
+                { id: '25013575', emp_id: '11997', name: 'SGT (APF) DAHLIA SHAFIQ', team_id: teamIDs.alpha }, { id: '25001375', emp_id: '11977', name: 'SGT (APF) CHEW WAI HOO', team_id: teamIDs.alpha },
+                { id: '25001153', emp_id: '33748', name: 'CPL (APF) RAVILO VEERASAMY', team_id: teamIDs.alpha }, { id: '25010549', emp_id: '119566', name: 'CPL (APF) LUA YIEN SIA', team_id: teamIDs.alpha },
+                { id: '25010533', emp_id: '12140', name: 'CPL (APF) ISYARIYAN YAZID', team_id: teamIDs.alpha }, { id: '25012454', emp_id: '114567', name: 'L/CPL (APF) MUJILAN RAJENDRAN', team_id: teamIDs.alpha },
+                { id: '25001254', emp_id: '114567', name: 'L/CPL (APF) ARAVINDAN MUNANDY', team_id: teamIDs.alpha }, { id: '25001420', emp_id: '71407', name: 'PC (APF) JAGTHEESWARAN MANIMARAN', team_id: teamIDs.alpha },
+                { id: '2501595', emp_id: '106722', name: 'SGT (APF) KALAIARACHE A/P NAGARATNAM', team_id: teamIDs.alpha }, { id: '25012687', emp_id: '114392', name: 'SGT (APF) DAHLAN THAQARAJAN', team_id: teamIDs.alpha },
+                { id: '25007705', emp_id: '112844', name: 'SGT (APF) LEE SOON THAI', team_id: teamIDs.bravo }, { id: '25080785', emp_id: '112888', name: 'SGT (APF) HO CHIE TIN', team_id: teamIDs.bravo },
+                { id: '25001731', emp_id: '70895', name: 'SGT (APF) HO KOK MAN', team_id: teamIDs.bravo }, { id: '25000421', emp_id: '104545', name: 'L/CPL (APF) THEVANANTHAN A/L KANAPATHY', team_id: teamIDs.bravo },
+                { id: '25011682', emp_id: '114573', name: 'L/CPL (APF) LIM CHIA MING', team_id: teamIDs.bravo }, { id: '25016179', emp_id: '114547', name: 'L/CPL (APF) JENNY WONG JOANN', team_id: teamIDs.bravo },
+                { id: '25002330', emp_id: '115005', name: 'CPL (APF) KRISHNA KUMAR DEVADAS', team_id: teamIDs.bravo }, { id: '25013556', emp_id: '112281', name: 'CPL (APF) CHUA YEN KAI', team_id: teamIDs.bravo },
+                { id: '25001355', emp_id: '107483', name: 'SGT (APF) DHARM AL ILBUGANATHAN', team_id: teamIDs.bravo }, { id: '25013354', emp_id: '114518', name: 'L/CPL (APF) VIVEKANANTHAN SANKARAN', team_id: teamIDs.bravo },
+                { id: '25000772', emp_id: '9431', name: 'SGT (APF) YONG KAH WHYE', team_id: teamIDs.charlie }, { id: '25080180', emp_id: '113414', name: 'SGT (APF) LIEW TAN HOU THIAN', team_id: teamIDs.charlie },
+                { id: '25080200', emp_id: '115716', name: 'SGT (APF) LIEW TECK LEE', team_id: teamIDs.charlie }, { id: '25006095', emp_id: '112048', name: 'CPL (APF) LO KOK BONG', team_id: teamIDs.charlie },
+                { id: '25011208', emp_id: '115904', name: 'CPL (APF) THEVARAJAN SUBRAMANIAM', team_id: teamIDs.charlie }, { id: '25012057', emp_id: '112907', name: 'CPL (APF) LAWRENCE A/L MICHAEL', team_id: teamIDs.charlie },
+                { id: '25012122', emp_id: '114221', name: 'L/CPL (APF) MUSTAQIM BIN JAILANI', team_id: teamIDs.charlie }, { id: '25012906', emp_id: '114406', name: 'L/CPL (APF) KAMASHNAKAR RAJIAH', team_id: teamIDs.charlie },
+                { id: '25012093', emp_id: '114208', name: 'PC (APF) ANISH PARITHAN', team_id: teamIDs.charlie }, { id: '25013927', emp_id: '114605', name: 'SGT (APF) HOE TIN HAN', team_id: teamIDs.charlie },
+                { id: '25011181', emp_id: '115893', name: 'SGT (APF) RAVITHRA RAJENDRAN', team_id: teamIDs.charlie }, { id: '25000178', emp_id: '9248', name: 'SGT (APF) TONY BOO KIAN BENG', team_id: teamIDs.foyer },
+                { id: '25000173', emp_id: '9260', name: 'SGT (APF) FONG TAI YING', team_id: teamIDs.foyer }, { id: '25004336', emp_id: '111757', name: 'SGT (APF) LYE CHEE MIN', team_id: teamIDs.foyer },
                 { id: '25011447', emp_id: '9111757', name: 'CPL (APF) ZHENG YAO RONG', team_id: teamIDs.support }
             ];
-
-            // ### FIX 3 of 3: REMOVED staggering logic ###
-            // let teamOffsets = {};
             employees.forEach(emp => {
-                // const team_id = emp.team_id;
-                // const currentOffset = teamOffsets[team_id] || 0;
-                
-                const empDoc = {
-                    ...emp,
-                    docId: emp.id, // Store for consistency
-                    patternOffset: 0 // currentOffset
-                };
-                
+                const empDoc = { ...emp, docId: emp.id, patternOffset: 0 };
                 batch.set(doc(employeesCollection, emp.id), empDoc);
-                // teamOffsets[team_id] = currentOffset + 1; // Increment for next employee on this team
             });
-            
-            // 3. Commit the batch
             await batch.commit();
         }
         
-        
-        // ##### V14 ROBUST LOADING FIX START #####
-        
-        // This variable will track if the initial auth state has been processed
         let authStateProcessed = false;
-
-        // These listeners are *only* for real-time updates *after* the initial load
+        
         function setupDataListeners() {
             onSnapshot(query(teamsCollection), (snapshot) => {
                 console.log("Real-time: Teams data updated.");
                 snapshot.docChanges().forEach((change) => {
-                    if (change.type === "added" || change.type === "modified") {
-                        teamsMap.set(change.doc.id, {docId: change.doc.id, ...change.doc.data()});
-                    }
-                    if (change.type === "removed") {
-                        teamsMap.delete(change.doc.id);
-                    }
+                    if (change.type === "added" || change.type === "modified") teamsMap.set(change.doc.id, {docId: change.doc.id, ...change.doc.data()});
+                    if (change.type === "removed") teamsMap.delete(change.doc.id);
                 });
-                if (isDataLoaded) renderRoster(); // Re-render on any change
-                if (manageTeamsModal && !manageTeamsModal.classList.contains('hidden')) {
-                    populateManageTeamsModal(); 
-                }
+                if (isDataLoaded) renderRoster();
+                if (manageTeamsModal && !manageTeamsModal.classList.contains('hidden')) populateManageTeamsModal(); 
             });
 
             onSnapshot(query(employeesCollection), (snapshot) => {
@@ -1171,9 +1126,7 @@
                 snapshot.docChanges().forEach((change) => {
                     const docData = {docId: change.doc.id, ...change.doc.data()};
                     if (change.type === "added") {
-                         if (!employeeData.some(emp => emp.docId === docData.docId)) {
-                             employeeData.push(docData);
-                        }
+                         if (!employeeData.some(emp => emp.docId === docData.docId)) employeeData.push(docData);
                     }
                     if (change.type === "modified") {
                         const index = employeeData.findIndex(emp => emp.docId === docData.docId);
@@ -1185,109 +1138,105 @@
                         selectedEmployeeIds.delete(docData.docId);
                     }
                 });
-                
-                if (isDataLoaded) {
-                    updateBatchDeleteUI();
-                    renderRoster();
-                }
+                if (isDataLoaded) { updateBatchDeleteUI(); renderRoster(); }
             });
 
             onSnapshot(query(rosterCollection), (snapshot) => {
                  console.log("Real-time: Roster data updated.");
                  snapshot.docChanges().forEach((change) => {
-                    if (change.type === "added" || change.type === "modified") {
-                        rosterData[change.doc.id] = change.doc.data();
-                    }
-                    if (change.type === "removed") {
-                        delete rosterData[change.doc.id];
-                    }
+                    if (change.type === "added" || change.type === "modified") rosterData[change.doc.id] = change.doc.data();
+                    if (change.type === "removed") delete rosterData[change.doc.id];
                  });
                 if (isDataLoaded) renderRoster();
             });
+
+            onSnapshot(shiftCodesDocRef, (docSnap) => {
+                console.log("Real-time: Shift codes updated.");
+                if (docSnap.exists() && docSnap.data().data) {
+                    shiftCodesMap = docSnap.data().data;
+                } else {
+                    shiftCodesMap = { ...defaultShiftCodes };
+                }
+                if (isDataLoaded) renderRoster();
+                if (manageLabelsModal && !manageLabelsModal.classList.contains('hidden')) openAddLabelModal();
+            }, (error) => console.error("Error listening to shift codes: ", error));
         }
         
         async function initFirebase() {
-            // ### TIMEOUT FIX START ###
-            // Set a 10-second timeout.
             const authTimeout = setTimeout(() => {
-                // If authStateProcessed is still false after 10s,
-                // it means onAuthStateChanged never fired.
                 if (!authStateProcessed) {
                     console.error("Authentication timed out.");
-                    if (loadingState) {
-                        loadingState.textContent = "Authentication Timed Out. Please check your network and refresh.";
-                    }
+                    if (loadingState) loadingState.textContent = "Authentication Timed Out. Please check your network and refresh.";
                 }
-            }, 10000); // 10 seconds
-            // ### TIMEOUT FIX END ###
+            }, 10000);
 
             onAuthStateChanged(auth, async (user) => {
-                // ### TIMEOUT FIX START ###
-                authStateProcessed = true; // Mark auth as processed
-                clearTimeout(authTimeout); // Clear the timeout
-                // ### TIMEOUT FIX END ###
+                authStateProcessed = true;
+                clearTimeout(authTimeout);
 
                 if (user) {
                     console.log("User authenticated:", user.uid);
-                    
                     teamsCollection = collection(db, "teams");
                     employeesCollection = collection(db, "employees");
                     rosterCollection = collection(db, "roster");
-                    
+                    shiftCodesCollection = collection(db, "shift_codes");
+                    shiftCodesDocRef = doc(shiftCodesCollection, "all");
+
                     try {
-                        // 1. Check if DB is empty (honors user's request)
-                        const teamCheckSnap = await getDocs(query(teamsCollection, limit(1))); // Just check for one
+                        const teamCheckSnap = await getDocs(query(teamsCollection, limit(1)));
                         if (teamCheckSnap.empty) {
                             console.log("Teams collection is empty. Populating initial data...");
-                            loadingState.textContent = "Uploading initial teams and staff list, please wait...";
-                            await populateInitialData(); // This populates the DB
+                            loadingState.textContent = "Uploading initial teams and staff list...";
+                            await populateInitialData();
                             console.log("Initial data populated.");
-                        } else {
-                            console.log("Database already has teams. Skipping population.");
                         }
 
-                        // 2. Now, load ALL data with Promise.all (THE FIX)
+                        const shiftCheckSnap = await getDoc(shiftCodesDocRef);
+                        if (!shiftCheckSnap.exists()) {
+                            console.log("Shift codes collection is empty. Populating...");
+                            loadingState.textContent = "Populating initial shift codes...";
+                            await populateInitialShiftCodes();
+                        } else {
+                            console.log("Shift codes already exist.");
+                        }
+
                         loadingState.textContent = "Loading Roster Data...";
-                        const [teamsSnapshot, employeesSnapshot, rosterSnapshot] = await Promise.all([
+                        const [teamsSnapshot, employeesSnapshot, rosterSnapshot, shiftCodesDocSnap] = await Promise.all([
                             getDocs(query(teamsCollection)),
                             getDocs(query(employeesCollection)),
-                            getDocs(query(rosterCollection))
+                            getDocs(query(rosterCollection)),
+                            getDoc(shiftCodesDocRef)
                         ]);
 
-                        // 3. Populate local cache from this *guaranteed* data
                         console.log("Populating initial cache...");
                         teamsMap.clear();
                         teamsSnapshot.forEach(doc => teamsMap.set(doc.id, {docId: doc.id, ...doc.data()}));
-                        
                         employeeData = [];
                         employeesSnapshot.forEach(doc => employeeData.push({docId: doc.id, ...doc.data()}));
-                        
                         rosterData = {};
                         rosterSnapshot.forEach(doc => rosterData[doc.id] = doc.data());
+                        if (shiftCodesDocSnap.exists() && shiftCodesDocSnap.data().data) {
+                            shiftCodesMap = shiftCodesDocSnap.data().data;
+                        } else {
+                            console.warn("Shift codes doc not found, using defaults.");
+                            shiftCodesMap = { ...defaultShiftCodes };
+                        }
                         
-                        console.log(`Cache populated: ${teamsMap.size} teams, ${employeeData.length} employees.`);
-
-                        // 4. NOW it's safe to render.
+                        console.log(`Cache populated: ${teamsMap.size} teams, ${employeeData.length} employees, ${Object.keys(shiftCodesMap).length} shift codes.`);
                         isDataLoaded = true;
                         loadingState.classList.add('hidden');
                         rosterContainer.classList.remove('hidden');
-                        renderRoster(); // This will work 100%
-
-                        // 5. AFTER the initial render, attach real-time listeners for updates.
+                        renderRoster(); 
                         console.log("Attaching real-time listeners...");
                         setupDataListeners(); 
 
                     } catch (error) {
-                        console.error("Error during init (check Firestore Rules):", error);
-                        loadingState.textContent = "Error: Could not read/write to database. Please check Firestore security rules.";
+                        console.error("Error during init:", error);
+                        loadingState.textContent = `Error during init: ${error.message} (Code: ${error.code})`;
                     }
-
                 } else {
                     console.log("User not signed in.");
-                    // ### TIMEOUT FIX START ###
-                    // User is explicitly not signed in (e.g., token invalid)
                     loadingState.textContent = "Authentication Failed. User is not signed in.";
-                    // ### TIMEOUT FIX END ###
                 }
             });
 
@@ -1299,14 +1248,11 @@
                 }
             } catch (error) {
                 console.error("Authentication Error:", error);
-                // ### TIMEOUT FIX START ###
-                authStateProcessed = true; // Mark as processed to prevent timeout message
-                clearTimeout(authTimeout); // Clear timeout
+                authStateProcessed = true;
+                clearTimeout(authTimeout);
                 loadingState.textContent = "Authentication Failed. Please refresh.";
-                // ### TIMEOUT FIX END ###
             }
         }
-        // ##### V14 LOADING FIX END #####
 
         // --- 6. EVENT LISTENERS (DOM) ---
         function assignDOMListeners() {
@@ -1316,6 +1262,13 @@
             closeModalBtn.addEventListener('click', closeModal);
             modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
             setAutoShiftBtn.addEventListener('click', () => selectShift('AUTO'));
+            // MODIFIED: Save details button
+            saveDetailsBtn.addEventListener('click', handleSaveEmployeeDetails);
+
+            manageLabelsBtn.addEventListener('click', openAddLabelModal);
+            closeLabelsModalBtn.addEventListener('click', closeAddLabelModal);
+            addLabelForm.addEventListener('submit', handleAddLabel);
+            manageLabelsModal.addEventListener('click', (e) => { if (e.target === manageLabelsModal) closeAddLabelModal(); });
 
             closePatternModalBtn.addEventListener('click', closePatternShiftModal);
             patternShiftModal.addEventListener('click', (e) => { if (e.target === patternShiftModal) closePatternShiftModal(); });
@@ -1367,7 +1320,6 @@
             modal = document.getElementById('shift-modal');
             closeModalBtn = document.getElementById('close-modal');
             shiftOptionsContainer = document.getElementById('shift-options');
-            modalEmployeeName = document.getElementById('modal-employee-name');
             modalDate = document.getElementById('modal-date');
             setAutoShiftBtn = document.getElementById('set-auto-shift-btn');
             patternShiftModal = document.getElementById('pattern-shift-modal');
@@ -1406,6 +1358,25 @@
             cancelDeleteTeamBtn_TEAM = document.getElementById('cancel-delete-team-btn');
             confirmDeleteTeamBtn_TEAM = document.getElementById('confirm-delete-team-btn');
             deleteTeamModalName = document.getElementById('delete-team-modal-name');
+
+            // MODIFIED: Assign new elements
+            modalEmployeeNameInput = document.getElementById('modal-employee-name-input');
+            modalEmployeeIdInput = document.getElementById('modal-employee-id-input');
+            saveDetailsBtn = document.getElementById('save-details-btn');
+            saveDetailsStatus = document.getElementById('save-details-status');
+            
+            manageLabelsBtn = document.getElementById('manage-labels-btn');
+            manageLabelsModal = document.getElementById('manage-labels-modal');
+            closeLabelsModalBtn = document.getElementById('close-labels-modal');
+            addLabelForm = document.getElementById('add-label-form');
+            newLabelText = document.getElementById('new-label-text');
+            newLabelColor = document.getElementById('new-label-color');
+            addLabelColorGrid = document.getElementById('add-label-color-grid');
+            addLabelError = document.getElementById('add-label-error');
+            deleteLabelError = document.getElementById('delete-label-error');
+            labelListUl = document.getElementById('label-list-ul');
+
+            // ### BUG FIX: Removed typo line ###
         }
 
         // --- 7. INITIALIZATION ---
