@@ -351,7 +351,10 @@
             addTeamError, deleteTeamError, teamListUl, editTeamModal, closeEditTeamModalBtn,
             editTeamForm, editTeamId, editTeamName, editTeamPatternLength,
             editTeamAnchorDate, visualPatternCells, editTeamError, deleteTeamConfirmModal,
-            cancelDeleteTeamBtn, confirmDeleteTeamBtn, deleteTeamModalName;
+            // ### BUG FIX 2 START: Declare separate variables for team delete buttons
+            cancelDeleteTeamBtn_TEAM, confirmDeleteTeamBtn_TEAM, 
+            // ### BUG FIX 2 END
+            deleteTeamModalName;
 
         // --- 4. HELPER FUNCTIONS ---
         function getDaysBetween(dateString1, dateString2) {
@@ -670,7 +673,8 @@
             try {
                 // The document ID will be the Service ID
                 const empDocRef = doc(employeesCollection, newEmployee.id);
-                await setDoc(empDocRef, newEmployee);
+                // We also add docId for consistency
+                await setDoc(empDocRef, {...newEmployee, docId: newEmployee.id});
                 closeAddModal();
             } catch (error) {
                  console.error("Error adding employee: ", error);
@@ -974,8 +978,16 @@
 
             try {
                 const teamRef = doc(teamsCollection, teamId);
-                // We must merge, not overwrite, in case other properties exist
                 await updateDoc(teamRef, updatedData);
+
+                // ### BUG FIX 1 START: Force immediate refresh
+                console.log("Team updated. Forcing local cache update and re-render.");
+                // Manually update the local cache so the render is instant
+                const updatedTeam = { ...teamsMap.get(teamId), ...updatedData };
+                teamsMap.set(teamId, updatedTeam);
+                renderRoster(); // Force a re-render
+                // ### BUG FIX 1 END
+
                 closeEditTeamModal();
             } catch (error) {
                 console.error("Error updating team: ", error);
@@ -1254,9 +1266,11 @@
             addEmployeeForm.addEventListener('submit', handleAddEmployee);
             addEmployeeModal.addEventListener('click', (e) => { if (e.target === addEmployeeModal) closeAddModal(); });
 
+            // ### BUG FIX 2 START: Correctly assign Employee delete listeners
             cancelDeleteBtn.addEventListener('click', closeDeleteModal);
             confirmDeleteBtn.addEventListener('click', handleDeleteEmployee);
             deleteConfirmModal.addEventListener('click', (e) => { if (e.target === deleteConfirmModal) closeDeleteModal(); });
+            // ### BUG FIX 2 END
             
             batchDeleteBtn.addEventListener('click', openBatchDeleteModal);
             cancelBatchDeleteBtn.addEventListener('click', closeBatchDeleteModal);
@@ -1273,19 +1287,11 @@
             editTeamModal.addEventListener('click', (e) => { if (e.target === editTeamModal) closeEditTeamModal(); });
             editTeamPatternLength.addEventListener('change', renderVisualPatternCells);
             
-            // This listener was duplicated and causing a crash. Fixed.
-            // cancelDeleteTeamBtn.addEventListener('click', closeDeleteTeamModal); 
-            // confirmDeleteTeamBtn.addEventListener('click', performDeleteTeam);
-            cancelDeleteTeamBtn.addEventListener('click', closeDeleteTeamModal); // This is for employee
-            confirmDeleteTeamBtn.addEventListener('click', handleDeleteEmployee); // This is for employee
-
-            cancelDeleteTeamBtn.addEventListener('click', closeDeleteModal);
-            confirmDeleteBtn.addEventListener('click', handleDeleteEmployee);
-            
-            // Listeners for the *Team* delete modal
-            cancelDeleteTeamBtn.addEventListener('click', closeDeleteTeamModal);
-            confirmDeleteTeamBtn.addEventListener('click', performDeleteTeam);
+            // ### BUG FIX 2 START: Correctly assign Team delete listeners
+            cancelDeleteTeamBtn_TEAM.addEventListener('click', closeDeleteTeamModal); 
+            confirmDeleteTeamBtn_TEAM.addEventListener('click', performDeleteTeam);
             deleteTeamConfirmModal.addEventListener('click', (e) => { if (e.target === deleteTeamConfirmModal) closeDeleteTeamModal(); });
+            // ### BUG FIX 2 END
         }
         
         function assignDOMElements() {
@@ -1342,8 +1348,10 @@
             visualPatternCells = document.getElementById('visual-pattern-cells');
             editTeamError = document.getElementById('edit-team-error');
             deleteTeamConfirmModal = document.getElementById('delete-team-confirm-modal');
-            cancelDeleteTeamBtn = document.getElementById('cancel-delete-team-btn'); // Renamed to avoid conflict
-            confirmDeleteTeamBtn = document.getElementById('confirm-delete-team-btn'); // Renamed to avoid conflict
+            // ### BUG FIX 2 START: Correctly assign Team delete buttons
+            cancelDeleteTeamBtn_TEAM = document.getElementById('cancel-delete-team-btn');
+            confirmDeleteTeamBtn_TEAM = document.getElementById('confirm-delete-team-btn');
+            // ### BUG FIX 2 END
             deleteTeamModalName = document.getElementById('delete-team-modal-name');
         }
 
