@@ -123,7 +123,38 @@
                 color: #000;
             }
 
-            /* Reset sticky elements */
+            
+/* --- Print: Make shift pattern cells match Emp ID style --- */
+#roster-grid.grid .bg-teal-100,
+#roster-grid.grid .bg-yellow-200,
+#roster-grid.grid .bg-green-200,
+#roster-grid.grid .bg-blue-200,
+#roster-grid.grid .bg-cyan-200,
+#roster-grid.grid .bg-lime-200,
+#roster-grid.grid .bg-orange-200,
+#roster-grid.grid .bg-red-200,
+#roster-grid.grid .bg-white,
+#roster-grid.grid .bg-gray-50 {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+/* Force dark print text if Tailwind text color classes are applied */
+#roster-grid.grid .text-teal-800,
+#roster-grid.grid .text-yellow-800,
+#roster-grid.grid .text-green-800,
+#roster-grid.grid .text-blue-800,
+#roster-grid.grid .text-cyan-800,
+#roster-grid.grid .text-lime-800,
+#roster-grid.grid .text-orange-800,
+#roster-grid.grid .text-red-800,
+#roster-grid.grid .text-gray-800 {
+    color: #000 !important;
+}
+/* Reset sticky elements */
             .sticky-col, .header-cell, .sticky-header-col {
                 position: static;
                 left: auto;
