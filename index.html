@@ -84,12 +84,123 @@
             grid-auto-rows: minmax(6rem, auto); 
         }
 
+        /* --- PRINT STYLES --- */
+        @media print {
+            /* Page setup */
+            @page {
+                size: A4 landscape;
+                margin: 0.5cm;
+            }
+
+            /* Hide everything by default */
+            body > *:not(.main-container) { display: none; }
+            
+            /* Show only the roster */
+            .main-container, #roster-container, #roster-grid {
+                display: block !important;
+                visibility: visible !important;
+                width: 100% !important;
+                height: auto !important;
+                overflow: visible !important;
+                max-height: none !important;
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            /* Hide all UI elements */
+            header, .modal, #print-modal, #header-actions, #batch-delete-container, 
+            .delete-btn, .emp-checkbox, .edit-team-btn,
+            #add-employee-btn, #team-filter-btn, #name-filter-btn, #manage-menu-btn, #print-btn {
+                display: none !important;
+            }
+
+            /* Force grid display */
+            #roster-grid.grid {
+                display: grid !important;
+                font-size: 7px; /* Shrink font to fit */
+                color: #000;
+            }
+
+            /* Reset sticky elements */
+            .sticky-col, .header-cell, .sticky-header-col {
+                position: static;
+                left: auto;
+                top: auto;
+                z-index: 1;
+                background-color: #f8fafc !important; /* Ensure header bg prints */
+            }
+            
+            /* Style grid cells for printing */
+            .header-cell, .employee-row, .team-header-row {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                border: 1px solid #9ca3af !important; /* Force borders */
+                color: #000 !important;
+                padding: 2px 4px !important;
+                min-width: 0 !important; /* Allow shrinking */
+                white-space: nowrap; /* Prevent wrapping in cells */
+            }
+            
+            /* Keep text colors for labels */
+            .text-teal-800 { color: #134e4a !important; }
+            .text-yellow-800 { color: #854d0e !important; }
+            .text-green-800 { color: #166534 !important; }
+            .text-blue-800 { color: #1e40af !important; }
+            .text-cyan-800 { color: #155e75 !important; }
+            .text-lime-800 { color: #3f6212 !important; }
+            .text-orange-800 { color: #9a3412 !important; }
+            .text-red-800 { color: #991b1b !important; }
+            .text-gray-800 { color: #1f2937 !important; }
+            .text-gray-400 { color: #9ca3af !important; }
+            
+            /* Special handling for auto-shift opacity */
+            .auto-shift { opacity: 1; border-style: dashed; }
+            
+            /* Hide role icons */
+            .employee-row svg { display: none; }
+            
+            /* Selective printing */
+            .printing-selective .no-print {
+                display: none !important;
+            }
+            
+            /* --- Print Styles for SINGLE EMPLOYEE CALENDAR VIEW --- */
+            #roster-grid:not(.grid) {
+                padding: 1rem;
+            }
+             #roster-grid:not(.grid) > div { /* This targets the header and calendar container */
+                display: block !important;
+                border: none !important;
+                padding: 0 !important;
+            }
+            #roster-grid:not(.grid) .grid { /* This targets the calendar grid itself */
+                padding: 0 !important;
+                gap: 1px !important;
+                background-color: #9ca3af; /* Use grid gap to create borders */
+                border: 1px solid #9ca3af !important;
+            }
+            #roster-grid:not(.grid) .grid > div { /* All cells */
+                background-color: #fff !important;
+                padding: 2px !important;
+                border: none !important;
+                min-height: 4rem !important;
+                font-size: 8px;
+            }
+            #roster-grid:not(.grid) .grid > div[class*=" bg-gray-50/50"] { /* Empty cells */
+                background-color: #f9fafb !important;
+            }
+            #roster-grid:not(.grid) .grid .text-xs { font-size: 7px; }
+            /* End Single Employee Print */
+        }
+
     </style>
 </head>
 <body class="bg-gray-100">
 
     <!-- Main container -->
-    <div class="w-full min-h-screen md:min-h-0 md:max-w-full md:my-8 md:mx-auto bg-white md:rounded-2xl md:shadow-lg overflow-hidden">
+    <div class="main-container w-full min-h-screen md:min-h-0 md:max-w-full md:my-8 md:mx-auto bg-white md:rounded-2xl md:shadow-lg overflow-hidden">
         
         <header class="p-3 sm:p-5 border-b border-gray-200 bg-gray-50">
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
@@ -178,6 +289,14 @@
                                 <button id="manage-teams-btn" class="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 transition duration-150">Manage Teams</button>
                             </div>
                         </div>
+
+                        <!-- NEW: Print Button -->
+                        <button id="print-btn" class="p-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition duration-150">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-8V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                        </button>
+
                     </div>
                     <!-- Batch delete button (initially hidden) -->
                     <div id="batch-delete-container" class="hidden flex justify-center md:justify-end">
@@ -196,23 +315,14 @@
 
         <!-- ROSTER GRID CONTAINER -->
         <div id="roster-container" class="roster-container w-full">
-            <!-- 
-              MODIFIED: The 'roster-grid' div is now the main target for both 
-              the grid view and the new single-employee calendar view.
-            -->
             <div id="roster-grid">
                 <!-- Content generated by JavaScript -->
             </div>
         </div>
     </div>
 
-    <!-- 
-      FIX: ADDED EMPLOYEE CALENDAR MODAL
-      - This HTML block is from your 'roster_02_11_3D.txt' file.
-      - It provides the modal structure for the single-employee calendar view.
-      - Styling has been modernized as requested.
-    -->
-    <div id="employee-calendar-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <!-- Employee Calendar Modal -->
+    <div id="employee-calendar-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8 w-full max-w-2xl mx-4 modal-fade-in overflow-y-auto">
             <div class="flex justify-between items-start mb-4">
                 <div>
@@ -232,12 +342,8 @@
         </div>
     </div>
 
-    <!-- 
-      FIX: ADDED GENERIC CONFIRMATION MODAL
-      - This HTML block is from 'roster_02_11_3D.txt'.
-      - It's used to replace the ugly 'prompt()' when deleting labels.
-    -->
-    <div id="confirm-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-[60] hidden">
+    <!-- Generic Confirmation Modal -->
+    <div id="confirm-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-[60] hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
             <h3 id="confirm-modal-title" class="text-xl font-semibold text-red-700">Confirm Action</h3>
             <p id="confirm-modal-body" class="my-4 text-gray-600">Are you sure?</p>
@@ -252,7 +358,7 @@
     <!-- MODALS -->
 
     <!-- Shift Selector Modal (Main) -->
-    <div id="shift-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div id="shift-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Select Shift & Edit Details</h3>
@@ -298,7 +404,7 @@
     </div>
 
     <!-- Manage Shift Labels Modal -->
-    <div id="manage-labels-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div id="manage-labels-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg mx-4 modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Manage Shift Labels</h3>
@@ -337,8 +443,8 @@
         </div>
     </div>
 
-    <!-- NEW: Edit Shift Label Modal -->
-    <div id="edit-label-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-[55] hidden">
+    <!-- Edit Shift Label Modal -->
+    <div id="edit-label-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-[55] hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg mx-4 modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Edit Shift Label</h3>
@@ -371,7 +477,7 @@
     </div>
     
     <!-- Shift Selector Modal (for Pattern Builder) -->
-    <div id="pattern-shift-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[60] hidden">
+    <div id="pattern-shift-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[60] hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Set Pattern Shift</h3>
@@ -385,7 +491,7 @@
     </div>
 
     <!-- Add Employee Modal -->
-    <div id="add-employee-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div id="add-employee-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Add New Employee</h3>
@@ -421,7 +527,7 @@
     </div>
 
     <!-- Delete Employee Confirmation Modal -->
-    <div id="delete-confirm-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div id="delete-confirm-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
             <h3 class="text-xl font-semibold text-red-700">Confirm Deletion</h3>
             <p class="my-4 text-gray-600">Are you sure you want to delete <strong id="delete-modal-name"></strong> (Service ID: <strong id="delete-modal-id"></strong>)?</p>
@@ -433,7 +539,7 @@
     </div>
 
     <!-- BATCH Delete Employee Confirmation Modal -->
-    <div id="batch-delete-confirm-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div id="batch-delete-confirm-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
             <h3 class="text-xl font-semibold text-red-700">Confirm Batch Deletion</h3>
             <p class="my-4 text-gray-600">Are you sure you want to delete the following <strong id="batch-delete-count">0</strong> employees?</p>
@@ -447,7 +553,7 @@
     </div>
 
     <!-- Manage Teams Modal -->
-    <div id="manage-teams-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div id="manage-teams-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
              <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Manage Teams</h3>
@@ -473,7 +579,7 @@
     </div>
 
     <!-- Edit Team (Visual Pattern Builder) Modal -->
-    <div id="edit-team-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-[55] hidden">
+    <div id="edit-team-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-[55] hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-2xl mx-4 modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Edit Team & Pattern</h3>
@@ -516,7 +622,7 @@
 
 
     <!-- Delete Team Confirmation Modal -->
-    <div id="delete-team-confirm-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div id="delete-team-confirm-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
             <h3 class="text-xl font-semibold text-red-700">Confirm Team Deletion</h3>
             <p class="my-4 text-gray-600">Are you sure you want to delete <strong id="delete-team-modal-name"></strong>?</p>
@@ -526,6 +632,30 @@
             </div>
         </div>
     </div>
+
+    <!-- NEW: Print Options Modal -->
+    <div id="print-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4 modal-fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">Print Roster</h3>
+                <button id="close-print-modal" class="text-gray-400 hover:text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <p class="text-gray-600 mb-4">Select which staff to include in the printout.</p>
+            <div class="space-y-3">
+                <button id="print-all-visible-btn" class="w-full px-5 py-3 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition duration-150 flex items-center justify-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-8V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                    <span>Print All Visible Staff</span>
+                </button>
+                <button id="print-selected-btn" class="w-full px-5 py-3 bg-gray-600 text-white rounded-lg shadow hover:bg-gray-700 transition duration-150 flex items-center justify-center space-x-2" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span>Print Selected Staff (0)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Firebase SDK -->
     <script type="module">
@@ -577,7 +707,6 @@
         let tempPatternArray = [];
         
         // --- 1. DATA DEFINITIONS ---
-        // --- ROOT CAUSE FIX: Changed '' key to '_EMPTY' to avoid bugs ---
         const defaultShiftCodes = {
             '1':    { text: '1',    color: 'bg-white', textColor: 'text-gray-800', isDefault: true },
             '2':    { text: '2',    color: 'bg-white', textColor: 'text-gray-800', isDefault: true },
@@ -593,7 +722,6 @@
         };
         let shiftCodesMap = { ...defaultShiftCodes };
 
-        // --- MODIFICATION: Added more color options and alphabetized the keys ---
         const colorOptions = {
             'Amber': { color: 'bg-amber-200', textColor: 'text-amber-800' },
             'Blue': { color: 'bg-blue-200', textColor: 'text-blue-800' },
@@ -616,7 +744,6 @@
             'White': { color: 'bg-white', textColor: 'text-gray-800' }, // Original
             'Yellow': { color: 'bg-yellow-200', textColor: 'text-yellow-800' },
         };
-        // --- END OF MODIFICATION ---
         
         const patternAnchorDate = '2025-01-01';
         const defaultPattern = ['1', '1', '2', '2', 'OFF', 'OFF'];
@@ -657,13 +784,13 @@
             manageMenuBtn, manageDropdown,
             modalEmployeeRoleInput,
             nameFilterBtn, nameFilterDropdown, nameFilterSearch, selectAllNamesCheckbox, nameFilterList,
-            // NEW elements for Edit Label Modal
             editLabelModal, closeEditLabelModalBtn, editLabelForm, editLabelKey, 
             editLabelText, editLabelColor, editLabelColorGrid, editLabelError,
-            // FIX: Added elements for Modals
             employeeCalendarModal, employeeCalendarName, employeeCalendarDetails, 
             employeeCalendarWeekdays, employeeCalendarGrid, closeEmployeeCalendarBtn,
-            confirmModal, confirmModalTitle, confirmModalBody, confirmModalCancel, confirmModalConfirm;
+            confirmModal, confirmModalTitle, confirmModalBody, confirmModalCancel, confirmModalConfirm,
+            // NEW: Print Modal Elements
+            printBtn, printModal, closePrintModalBtn, printAllVisibleBtn, printSelectedBtn;
 
 
         // --- 4. HELPER FUNCTIONS ---
@@ -693,12 +820,10 @@
             }
         }
 
-        // FIX: Added showConfirmationModal function from old file
         function showConfirmationModal(title, body, onConfirm) {
             confirmModalTitle.textContent = title;
             confirmModalBody.innerHTML = body; // Use innerHTML for strong tags
             
-            // Clone and replace the confirm button to remove old listeners
             const newConfirmBtn = confirmModalConfirm.cloneNode(true);
             confirmModalConfirm.parentNode.replaceChild(newConfirmBtn, confirmModalConfirm);
             confirmModalConfirm = newConfirmBtn;
@@ -711,15 +836,12 @@
             confirmModal.classList.remove('hidden');
         }
 
-        // NEW: Helper to get shift info for a specific employee and date
         function getShiftForEmployee(emp, fullDate) {
-            // --- ROOT CAUSE FIX: Ensure '_EMPTY' exists before use ---
             if (!shiftCodesMap['_EMPTY']) {
                 shiftCodesMap['_EMPTY'] = { text: '', color: 'bg-gray-50', textColor: 'text-gray-400', isDefault: true };
             }
             const emptyShiftInfo = shiftCodesMap['_EMPTY'];
             const getShiftInfo = (code) => shiftCodesMap[code] || emptyShiftInfo;
-            // --- END OF FIX ---
 
             const empRoster = rosterData[emp.id] || {};
             const manualShift = empRoster[fullDate]; 
@@ -747,10 +869,6 @@
 
         // --- 5. CORE RENDER FUNCTIONS ---
 
-        /**
-         * Main render controller.
-         * Decides whether to show the grid view or the single employee calendar view.
-         */
         function renderRoster() {
             if (!isDataLoaded || !grid) return;
             
@@ -764,39 +882,26 @@
                 visibleTeamIDs.has(emp.team_id) && visibleEmployeeIDs.has(emp.id)
             );
 
-            // --- VIEW SWITCH ---
             if (visibleEmployees.length === 1) {
-                // SINGLE EMPLOYEE CALENDAR VIEW
-                grid.style.gridTemplateColumns = '1fr'; // Ensure it's not a CSS grid
-                grid.classList.remove('grid'); // Ensure CSS grid is inactive
+                grid.style.gridTemplateColumns = '1fr';
+                grid.classList.remove('grid');
                 renderSingleEmployeeCalendarView(visibleEmployees[0], daysInMonth);
             } else {
-                // MULTI-EMPLOYEE GRID VIEW
                 grid.style.gridTemplateColumns = `100px 80px minmax(180px, 1fr) repeat(${daysInMonth}, minmax(60px, 1fr))`;
-                grid.classList.add('grid'); // Ensure CSS grid is active
+                grid.classList.add('grid');
                 renderMultiEmployeeGridView(visibleEmployees, daysInMonth);
             }
         }
         
-        /**
-         * Renders the standard multi-employee grid view.
-         */
         function renderMultiEmployeeGridView(visibleEmployees, daysInMonth) {
             
             // A. Render Header Row
-            // The Service ID and Employee Name columns should scroll horizontally, while the Employee ID column
-            // remains sticky to provide a compact view of the calendar. Service ID and Name headers use
-            // `header-cell` (sticky only on the top) and scroll horizontally. The Employee ID header uses
-            // `sticky-header-col` so it stays pinned to the left of the viewport. This order is Service ID,
-            // Employee ID, then Employee Name.
             grid.appendChild(createCell('Service ID', 'header-cell font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 min-w-[100px] sm:min-w-[120px]'));
             grid.appendChild(createCell('Emp ID', 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 min-w-[80px] sm:min-w-[100px]'));
             const nameHeader = document.createElement('div');
-            // Reduce the minimum width of the employee name column and allow names to wrap.
-            // This helps prevent the name column from growing excessively wide on small screens.
             nameHeader.className = 'header-cell font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 flex items-center space-x-3 min-w-[150px] sm:min-w-[200px]';
             nameHeader.innerHTML = `
-                <input type="checkbox" id="select-all-checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <input type="checkbox" id="select-all-checkbox" class="emp-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
                 <label for="select-all-checkbox" class="cursor-pointer">Employee Name</label>
             `;
             nameHeader.querySelector('#select-all-checkbox').addEventListener('change', (e) => handleSelectAll(e.target.checked));
@@ -841,13 +946,20 @@
                     currentTeamName = teamName;
                     const teamHeader = createCell(currentTeamName, 'team-header-row text-left p-3 font-bold text-base text-indigo-700 bg-indigo-50 border-t border-b border-indigo-200');
                     teamHeader.style.gridColumn = `span ${3 + daysInMonth}`;
+                    teamHeader.dataset.teamId = emp.team_id; // MODIFIED: Add team ID for printing
                     grid.appendChild(teamHeader);
                 }
                 
                 const rowCells = [];
-                // The Service ID and Employee Name cells scroll horizontally, while the Employee ID cell is sticky.
-                rowCells.push(grid.appendChild(createCell(emp.id, 'employee-row text-sm p-3 border-b border-l border-gray-200 text-gray-600 min-w-[100px] sm:min-w-[120px]')));
-                rowCells.push(grid.appendChild(createCell(emp.emp_id || '', 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600 min-w-[80px] sm:min-w-[100px]')));
+
+                // MODIFIED: Add data-emp-id to all cells in the row
+                const empServiceIdCell = createCell(emp.id, 'employee-row text-sm p-3 border-b border-l border-gray-200 text-gray-600 min-w-[100px] sm:min-w-[120px]');
+                empServiceIdCell.dataset.empId = emp.id;
+                rowCells.push(grid.appendChild(empServiceIdCell));
+                
+                const empShortIdCell = createCell(emp.emp_id || '', 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600 min-w-[80px] sm:min-w-[100px]');
+                empShortIdCell.dataset.empId = emp.id;
+                rowCells.push(grid.appendChild(empShortIdCell));
                 
                 let roleIcon = '';
                 if (emp.role === 'leader') {
@@ -856,19 +968,15 @@
                     roleIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" title="Assistant"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.54-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>';
                 }
 
-                // --- FIX: Restored name container from old file ---
-                // This re-adds the click listener to open the employee calendar modal.
                 const nameCell = document.createElement('div');
-                // The name cell scrolls horizontally along with the Service ID. It is no longer sticky, allowing
-                // the Employee ID column to be the only pinned column and freeing up more space for the calendar.
                 nameCell.className = 'employee-row text-sm p-3 border-b border-gray-200 text-gray-700 font-medium flex justify-between items-center min-w-[150px] sm:min-w-[200px]';
+                nameCell.dataset.empId = emp.id; // MODIFIED: Add data-emp-id
 
                 const nameContainer = document.createElement('div');
-                nameContainer.className = 'flex items-center space-x-2 cursor-pointer'; // Add cursor-pointer here
+                nameContainer.className = 'flex items-center space-x-2 cursor-pointer';
                 nameContainer.innerHTML = `
                     <input type="checkbox" class="emp-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" data-emp-id="${emp.id}">
                     ${roleIcon}
-                    <!-- Allow long employee names to wrap onto multiple lines to prevent overlapping the calendar. -->
                     <span class="break-words whitespace-normal" title="${emp.name}">${emp.name}</span>
                 `;
 
@@ -880,20 +988,16 @@
                 nameCell.appendChild(nameContainer);
                 nameCell.appendChild(deleteButton);
 
-                // Add listeners
                 nameCell.querySelector('.emp-checkbox').checked = selectedEmployeeIds.has(emp.id);
                 nameCell.querySelector('.emp-checkbox').addEventListener('change', (e) => handleSelectEmployee(emp.id, e.target.checked));
                 deleteButton.addEventListener('click', () => { openDeleteModal(emp.id, emp.name); });
 
-                // Attach click listener to nameContainer, not nameCell
                 nameContainer.addEventListener('click', (e) => {
-                    // Prevent opening calendar when clicking on the checkbox
                     if (e.target.closest('input.emp-checkbox')) return;
                     openEmployeeCalendar(emp.id);
                 });
                 
                 rowCells.push(grid.appendChild(nameCell));
-                // --- END OF FIX ---
 
 
                 // C. DYNAMIC ROSTER CELLS
@@ -902,6 +1006,7 @@
                     const { shift, shiftInfo, isAuto } = getShiftForEmployee(emp, fullDate);
                     
                     const dataCell = createCell(shiftInfo.text, `employee-row text-center p-3 border-b border-l border-gray-200 cursor-pointer hover:bg-gray-100 transition duration-150 font-semibold ${shiftInfo.color} ${shiftInfo.textColor}`);
+                    dataCell.dataset.empId = emp.id; // MODIFIED: Add data-emp-id
                     if (isAuto) dataCell.classList.add('auto-shift');
                     dataCell.addEventListener('click', () => openModal(dataCell, emp.id, emp.name, fullDate));
                     rowCells.push(grid.appendChild(dataCell));
@@ -913,57 +1018,33 @@
                 });
             });
             updateSelectAllCheckbox();
-            // After rendering the grid, recalculate and apply the left offset for the sticky name column. This ensures
-            // that the employee name column aligns correctly with the Service ID and Emp ID columns and slides into
-            // place as the user scrolls horizontally.
             if (typeof handleRosterScroll === 'function') {
                 handleRosterScroll();
             }
         }
 
-        /**
-         * Adjusts the horizontal offset of the sticky name column based on the current scroll position.
-         * When the roster is scrolled horizontally, the Service ID and Emp ID columns move off screen. This
-         * function calculates the combined width of these two columns and positions the name column so that it
-         * gradually slides into place as space becomes available. The header cell containing the "Employee Name"
-         * label (identified by the select-all checkbox) and all sticky employee name cells are updated. If the
-         * grid is not in multi-employee view or the necessary elements are missing, the function exits gracefully.
-         */
         function handleRosterScroll() {
             if (!grid || !grid.children || grid.children.length < 3) return;
-            // Ensure this logic only applies when multiple employees are displayed (grid has sticky name column).
             if (!grid.classList.contains('grid')) return;
             const scrollLeft = grid.scrollLeft;
-            // The first two cells of the grid correspond to Service ID and Emp ID headers. Use their widths to
-            // calculate how far the name column should be offset.
             const firstCell = grid.children[0];
             if (!firstCell) return;
-            // The offset for the sticky Employee ID column is simply the width of the Service ID column. As the
-            // user scrolls horizontally, the Employee ID column will slide into place once the Service ID column
-            // has been scrolled out of view.
             const pinnedOffset = firstCell.offsetWidth;
             const newLeft = Math.max(0, pinnedOffset - scrollLeft);
-            // Update the sticky Employee ID header (the second cell in the header row).
             const empHeader = grid.children[1];
             if (empHeader) {
                 empHeader.style.left = `${newLeft}px`;
             }
-            // Update each sticky employee ID cell.
             const stickyIdCells = grid.querySelectorAll('.employee-row.sticky-col');
             stickyIdCells.forEach(cell => {
                 cell.style.left = `${newLeft}px`;
             });
         }
 
-        /**
-         * MODIFICATION: Renders the single-employee calendar view with updated styling.
-         * This now matches the aesthetic of the modal popup view.
-         */
         function renderSingleEmployeeCalendarView(emp, daysInMonth) {
             const team = teamsMap.get(emp.team_id);
             const teamName = team?.name || 'Unassigned';
 
-            // 1. Render Employee Info Header
             const infoHeader = document.createElement('div');
             infoHeader.className = 'p-4 bg-gray-50 border-b border-gray-200';
             infoHeader.innerHTML = `
@@ -976,63 +1057,48 @@
             `;
             grid.appendChild(infoHeader);
 
-            // 2. Render Calendar
             const calendarContainer = document.createElement('div');
-            // MODIFICATION: Increased gap and padding
             calendarContainer.className = 'grid grid-cols-7 gap-2 p-4';
-            calendarContainer.style.gridAutoRows = 'minmax(6rem, auto)'; // Ensure cells have min height
+            calendarContainer.style.gridAutoRows = 'minmax(6rem, auto)';
 
-            // 3. Weekday Headers
             weekdays.forEach(dayName => {
                 calendarContainer.appendChild(
-                    // MODIFICATION: Styled like the modal's weekday headers
                     createCell(dayName, 'text-center text-sm font-medium text-gray-500 uppercase tracking-wider p-2')
                 );
             });
 
-            // 4. Padding for first day
             const firstDayOfWeek = new Date(currentYear, currentMonth, 1).getDay();
             for (let i = 0; i < firstDayOfWeek; i++) {
                 calendarContainer.appendChild(
-                    // MODIFICATION: Styled like the modal's empty cells
                     createCell('', 'rounded-lg bg-gray-50/50')
                 );
             }
 
-            // 5. Day Cells
             for (let day = 1; day <= daysInMonth; day++) {
                 const fullDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const { shift, shiftInfo, isAuto } = getShiftForEmployee(emp, fullDate);
 
                 const dayCell = document.createElement('div');
-                // --- REFINEMENT: Removed items-start and justify-start ---
                 dayCell.className = 'rounded-lg p-2 flex flex-col bg-white border border-gray-200 cursor-pointer hover:bg-gray-50 transition duration-150';
                 if (isAuto) dayCell.classList.add('auto-shift');
                 
-                // Date number
                 const dateLabel = document.createElement('span');
                 const weekdayIndex = new Date(currentYear, currentMonth, day).getDay();
                 const weekend = (weekdayIndex === 0 || weekdayIndex === 6);
-                // MODIFICATION: Styled like modal date labels
                 dateLabel.className = `text-sm font-semibold ${weekend ? 'text-red-600' : 'text-gray-900'}`;
                 dateLabel.textContent = day;
                 
                 dayCell.appendChild(dateLabel);
 
-                // --- REFINEMENT: Added wrapper for centering badge ---
                 const badgeWrapper = document.createElement('div');
                 badgeWrapper.className = 'flex-1 flex items-center justify-center w-full';
 
-                // Shift badge
                 if (shiftInfo.text) {
                     const badge = document.createElement('span');
-                    // --- REFINEMENT: Styled like modal badges, removed mt-2 ---
                     badge.className = `text-xs font-bold rounded-full px-2.5 py-0.5 ${shiftInfo.color} ${shiftInfo.textColor} ${isAuto ? 'opacity-60' : ''}`;
                     badge.textContent = shiftInfo.text;
                     
-                    // Append badge to wrapper
                     badgeWrapper.appendChild(badge);
-                    // Append wrapper to cell
                     dayCell.appendChild(badgeWrapper);
                 }
                 
@@ -1044,120 +1110,87 @@
             
             grid.appendChild(calendarContainer);
         }
-        // --- END OF MODIFICATION ---
 
         // --- 6. MODAL & DATA FUNCTIONS ---
         
-        // FIX: Added openEmployeeCalendar function from old file
-        /**
-         * Opens a modal showing a single employee's month view.
-         * This styling is from the 'roster_02_11_3D.txt' file and
-         * matches the request for a more modern view.
-         *
-         * @param {string} empId - The document ID of the employee to display.
-         */
         function openEmployeeCalendar(empId) {
             if (!employeeCalendarModal || !employeeCalendarName || !employeeCalendarDetails || !employeeCalendarWeekdays || !employeeCalendarGrid) return;
             
             const emp = employeeData.find(e => e.id === empId);
             if (!emp) return;
 
-            // Title and details
             employeeCalendarName.textContent = emp.name || '';
             const serviceId = emp.id || '';
             const empIdStr = emp.emp_id || '';
             const teamName = teamsMap.get(emp.team_id)?.name || 'Unassigned';
             employeeCalendarDetails.textContent = `Service ID: ${serviceId}${empIdStr ? ' \u2022 Emp ID: ' + empIdStr : ''}${teamName ? ' \u2022 Team: ' + teamName : ''}`;
             
-            // Clear existing grid content
             employeeCalendarWeekdays.innerHTML = '';
             employeeCalendarGrid.innerHTML = '';
             
-            // Weekday headings (starting Sunday)
             const weekdayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
             weekdayNames.forEach(dayName => {
                 const headerCell = document.createElement('div');
-                // MODIFICATION: Updated weekday header styles
                 headerCell.className = 'text-center text-sm font-medium text-gray-500 uppercase tracking-wider';
                 headerCell.textContent = dayName;
                 employeeCalendarWeekdays.appendChild(headerCell);
             });
             
-            // Determine days in month and day of week for the first day
             const year = currentYear;
             const month = currentMonth;
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const firstDayOfWeek = new Date(year, month, 1).getDay();
             
-            // Add empty cells for days before the first of the month
             for (let i = 0; i < firstDayOfWeek; i++) {
                 const emptyCell = document.createElement('div');
-                // MODIFICATION: Styled empty cells
                 emptyCell.className = 'rounded-lg bg-gray-50/50 min-h-[6rem]';
                 employeeCalendarGrid.appendChild(emptyCell);
             }
             
-            // Helper to fetch shift info
             const emptyShiftInfo = shiftCodesMap['_EMPTY'] || { text: '', color: 'bg-gray-50', textColor: 'text-gray-400', isDefault: true };
             const getShiftInfo = (code) => shiftCodesMap[code] || emptyShiftInfo;
             
-            // For each day in month, create a cell
             for (let day = 1; day <= daysInMonth; day++) {
                 const fullDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const { shift, shiftInfo, isAuto } = getShiftForEmployee(emp, fullDate);
                 
-                // Create cell container
                 const cell = document.createElement('div');
-                // --- REFINEMENT: Removed items-start and justify-start ---
                 cell.className = 'rounded-lg p-2 min-h-[6rem] flex flex-col bg-white border border-gray-200 transition-colors hover:bg-gray-50';
 
-                // Date number
                 const dateLabel = document.createElement('span');
                 const weekdayIndex = new Date(year, month, day).getDay();
                 const weekend = (weekdayIndex === 0 || weekdayIndex === 6);
-                // MODIFICATION: Updated date label styles
                 dateLabel.className = `text-sm font-semibold ${weekend ? 'text-red-600' : 'text-gray-900'}`;
                 dateLabel.textContent = day;
                 
-                // Append
                 cell.appendChild(dateLabel);
                 
-                // --- REFINEMENT: Added wrapper for centering badge ---
                 const badgeWrapper = document.createElement('div');
                 badgeWrapper.className = 'flex-1 flex items-center justify-center w-full';
                 
-                // Shift badge
                 const badge = document.createElement('span');
-                // --- REFINEMENT: Updated badge styles, removed mt-2 ---
                 badge.className = `text-xs font-bold rounded-full px-2.5 py-0.5 ${shiftInfo.color} ${shiftInfo.textColor} ${isAuto ? 'opacity-60' : ''}`;
                 badge.textContent = shiftInfo.text || '';
                 
-                // Append badge to wrapper
                 badgeWrapper.appendChild(badge);
 
-                // MODIFICATION: Only add badge wrapper if text exists
                 if (shiftInfo.text) {
                     cell.appendChild(badgeWrapper);
                 }
                 employeeCalendarGrid.appendChild(cell);
             }
-            // Show modal
             employeeCalendarModal.classList.remove('hidden');
         }
 
-        /**
-         * Closes the employee calendar modal if it is open.
-         */
         function closeEmployeeCalendar() {
             if (employeeCalendarModal) {
                 employeeCalendarModal.classList.add('hidden');
             }
         }
-        // --- END OF FIX ---
 
 
         function openModal(cellElement, empId, empName, fullDate) {
-            currentCellElement = cellElement; // Still useful for context, even if not directly manipulating
+            currentCellElement = cellElement;
             currentEmployeeId = empId;
             currentFullDate = fullDate;
             
@@ -1206,7 +1239,7 @@
                     role: newRole 
                 });
                 saveDetailsStatus.textContent = 'Saved!';
-                renderRoster(); // MODIFIED: Re-render to show potential name/role changes
+                renderRoster();
                 setTimeout(() => { saveDetailsStatus.textContent = ''; }, 2000);
             } catch (error) {
                 console.error("Error saving details: ", error);
@@ -1231,7 +1264,7 @@
                     await setDoc(rosterDocRef, { [currentFullDate]: shiftCode }, { merge: true });
                 }
                 closeModal();
-                renderRoster(); // MODIFIED: Re-render to show the change
+                renderRoster();
             } catch (error) {
                 console.error("Error saving shift: ", error);
             }
@@ -1334,7 +1367,6 @@
         }
         
         function updateSelectAllCheckbox() {
-            // Only run if the checkbox exists (i.e., in grid view)
             const selectAll = document.getElementById('select-all-checkbox');
             if (!selectAll) return; 
 
@@ -1468,12 +1500,10 @@
         }
         
         function renderVisualPatternCells() {
-            // --- ROOT CAUSE FIX: Ensure '_EMPTY' exists before use ---
             if (!shiftCodesMap['_EMPTY']) {
                 shiftCodesMap['_EMPTY'] = { text: '', color: 'bg-gray-50', textColor: 'text-gray-400', isDefault: true };
             }
             const emptyShiftInfo = shiftCodesMap['_EMPTY'];
-            // --- END OF FIX ---
             
             const len = parseInt(editTeamPatternLength.value) || 0;
             while (tempPatternArray.length < len) tempPatternArray.push('');
@@ -1563,19 +1593,11 @@
         }
 
         // --- Label Management Functions ---
-
-        /**
-         * NEW: Closes the Edit Label Modal.
-         */
         function closeEditLabelModal() {
             editLabelModal.classList.add('hidden');
             editLabelError.textContent = '';
         }
 
-        /**
-         * NEW: Opens the Edit Label Modal and populates it with data.
-         * @param {string} labelKey - The key of the label to edit (e.g., '1', 'AL').
-         */
         function openEditLabelModal(labelKey) {
             const shift = shiftCodesMap[labelKey];
             if (!shift) {
@@ -1592,11 +1614,9 @@
             
             let currentColorName = null;
             
-            // Populate color dropdown and swatches
             Object.keys(colorOptions).forEach(colorName => {
                 const { color, textColor } = colorOptions[colorName];
                 
-                // Find the key for the current color
                 if (color === shift.color) {
                     currentColorName = colorName;
                 }
@@ -1609,14 +1629,12 @@
                 swatch.title = colorName;
                 swatch.addEventListener('click', () => {
                     editLabelColor.value = colorName;
-                    // Note: Query selector needs to be specific to this modal
                     document.querySelectorAll('#edit-label-color-grid .color-swatch').forEach(s => s.classList.remove('selected'));
                     swatch.classList.add('selected');
                 });
                 editLabelColorGrid.appendChild(swatch);
             });
             
-            // Set the current color as selected
             if (currentColorName) {
                 editLabelColor.value = currentColorName;
                 const currentSwatch = editLabelColorGrid.querySelector(`[data-color-name="${currentColorName}"]`);
@@ -1624,7 +1642,6 @@
                     currentSwatch.classList.add('selected');
                 }
             } else {
-                // Fallback if color not in options
                 const firstColorKey = Object.keys(colorOptions)[0];
                 editLabelColor.value = firstColorKey;
                 const firstSwatch = editLabelColorGrid.querySelector(`[data-color-name="${firstColorKey}"]`);
@@ -1636,22 +1653,18 @@
             editLabelModal.classList.remove('hidden');
         }
 
-        /**
-         * NEW: Handles the submission of the Edit Label form.
-         */
         async function handleEditLabel(e) {
             e.preventDefault();
             editLabelError.textContent = '';
             
-            const labelKey = editLabelKey.value; // The *original* key (e.g., '1')
-            const newText = editLabelText.value.trim().toUpperCase(); // The *new* key (e.g., 'S1')
+            const labelKey = editLabelKey.value;
+            const newText = editLabelText.value.trim().toUpperCase();
             
             if (!newText) {
                 editLabelError.textContent = 'Label text is required.';
                 return;
             }
             
-            // Check if the new text (key) already exists, but isn't the key we are currently editing
             if (newText !== labelKey && shiftCodesMap[newText]) {
                 editLabelError.textContent = 'This label text (key) already exists.';
                 return;
@@ -1660,33 +1673,27 @@
             const selectedColorName = editLabelColor.value;
             const colorInfo = colorOptions[selectedColorName];
             
-            // Preserve the original 'isDefault' flag
             const isDefault = shiftCodesMap[labelKey] ? shiftCodesMap[labelKey].isDefault : false;
 
             const updatedShiftData = {
                 text: newText,
                 color: colorInfo.color,
                 textColor: colorInfo.textColor,
-                isDefault: isDefault // Preserve the default flag
+                isDefault: isDefault
             };
 
             try {
                 const updatePayload = {};
                 
                 if (newText === labelKey) {
-                    // Key hasn't changed, just update the properties
                     updatePayload[`data.${labelKey}`] = updatedShiftData;
                 } else {
-                    // Key HAS changed. Create new entry, delete old entry.
-                    // The `isDefault` flag is carried over to the new entry.
                     updatePayload[`data.${newText}`] = updatedShiftData;
                     updatePayload[`data.${labelKey}`] = deleteField(); 
                 }
                 
                 await updateDoc(shiftCodesDocRef, updatePayload);
                 closeEditLabelModal();
-                // The `onSnapshot` listener for shiftCodesDocRef will automatically
-                // close the 'Manage Labels' modal and re-render the roster.
                 
             } catch (error) {
                 console.error("Error editing label: ", error);
@@ -1694,10 +1701,6 @@
             }
         }
 
-
-        /**
-         * MODIFIED: To add Edit buttons to all labels.
-         */
         function openAddLabelModal() {
             addLabelError.textContent = '';
             deleteLabelError.textContent = '';
@@ -1732,12 +1735,11 @@
 
             labelListUl.innerHTML = '';
             Object.keys(shiftCodesMap).sort().forEach(code => {
-                if (code === '_EMPTY') return; // FIX: Do not show the empty shift
+                if (code === '_EMPTY') return;
                 const shift = shiftCodesMap[code];
                 const li = document.createElement('li');
                 li.className = 'flex justify-between items-center p-3';
                 
-                // --- MODIFICATION START ---
                 li.innerHTML = `
                     <span class="font-medium px-3 py-1 rounded-lg ${shift.color} ${shift.textColor}">${shift.text}</span>
                     <div class="flex items-center space-x-2">
@@ -1750,17 +1752,14 @@
                     </div>
                 `;
                 
-                // Add listener for the new Edit button
                 li.querySelector('.edit-label-btn').addEventListener('click', (e) => {
                     const key = e.target.getAttribute('data-label-key');
                     openEditLabelModal(key);
                 });
                 
-                // Add listener for the Delete button (if it exists)
                 if (!shift.isDefault) {
                     li.querySelector('.delete-label-btn').addEventListener('click', () => handleDeleteLabel(code, shift.text));
                 }
-                // --- MODIFICATION END ---
                 
                 labelListUl.appendChild(li);
             });
@@ -1802,7 +1801,6 @@
             }
         }
         
-        // FIX: Replaced prompt() with showConfirmationModal()
         async function handleDeleteLabel(code, text) {
             deleteLabelError.textContent = '';
             showConfirmationModal(
@@ -1979,6 +1977,62 @@
         function toggleManageDropdown() {
             manageDropdown.classList.toggle('hidden');
         }
+        
+        // --- NEW: Print Functions ---
+        function openPrintModal() {
+            const count = selectedEmployeeIds.size;
+            const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+            
+            if (count > 0) {
+                printSelectedBtn.disabled = false;
+                printSelectedBtn.innerHTML = `${svgIcon} <span>Print Selected Staff (${count})</span>`;
+                printSelectedBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                printSelectedBtn.classList.add('bg-gray-600', 'hover:bg-gray-700');
+            } else {
+                printSelectedBtn.disabled = true;
+                printSelectedBtn.innerHTML = `${svgIcon} <span>Print Selected Staff (0)</span>`;
+                printSelectedBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                printSelectedBtn.classList.remove('bg-gray-600', 'hover:bg-gray-700');
+            }
+            printModal.classList.remove('hidden');
+        }
+
+        function closePrintModal() {
+            printModal.classList.add('hidden');
+        }
+        
+        function handlePrint(isSelective) {
+            closePrintModal();
+            
+            if (isSelective) {
+                document.body.classList.add('printing-selective');
+                const visibleEmployees = employeeData.filter(emp => 
+                    visibleTeamIDs.has(emp.team_id) && visibleEmployeeIDs.has(emp.id)
+                );
+                const printedTeamIDs = new Set();
+                
+                visibleEmployees.forEach(emp => {
+                    if (selectedEmployeeIds.has(emp.id)) {
+                        printedTeamIDs.add(emp.team_id);
+                    } else {
+                        // Find all cells for this employee and hide them
+                        document.querySelectorAll(`[data-emp-id="${emp.id}"]`).forEach(cell => cell.classList.add('no-print'));
+                    }
+                });
+                
+                // Hide team headers that have no selected employees under them
+                document.querySelectorAll('.team-header-row[data-team-id]').forEach(header => {
+                    if (!printedTeamIDs.has(header.dataset.teamId)) {
+                        header.classList.add('no-print');
+                    }
+                });
+            }
+            
+            // Set a short timeout to allow the DOM to update before printing
+            setTimeout(() => {
+                window.print();
+            }, 100); 
+        }
 
         // --- Firebase Init & MIGRATION ---
         async function populateInitialShiftCodes() {
@@ -2126,17 +2180,13 @@
                     shiftCodesMap = { ...defaultShiftCodes };
                 }
                 
-                // --- ROOT CAUSE FIX: Ensure '_EMPTY' exists after load ---
                 if (!shiftCodesMap['_EMPTY']) {
                     console.warn("'_EMPTY' shift code not found, adding default.");
                     shiftCodesMap['_EMPTY'] = defaultShiftCodes['_EMPTY'];
                 }
-                // --- END OF FIX ---
 
                 if (isDataLoaded) renderRoster();
-                // If the manage labels modal is open, refresh its content
                 if (manageLabelsModal && !manageLabelsModal.classList.contains('hidden')) {
-                    // Check if edit modal is also open. If not, refresh main list.
                     if (editLabelModal && editLabelModal.classList.contains('hidden')) {
                         openAddLabelModal();
                     }
@@ -2212,12 +2262,10 @@
                             shiftCodesMap = { ...defaultShiftCodes };
                         }
                         
-                        // --- ROOT CAUSE FIX: Ensure '_EMPTY' exists on initial load ---
                         if (!shiftCodesMap['_EMPTY']) {
                             console.warn("'_EMPTY' shift code not found on init, adding default.");
                             shiftCodesMap['_EMPTY'] = defaultShiftCodes['_EMPTY'];
                         }
-                        // --- END OF FIX ---
                         
                         console.log(`Cache populated: ${teamsMap.size} teams, ${employeeData.length} employees, ${Object.keys(shiftCodesMap).length} shift codes.`);
                         isDataLoaded = true;
@@ -2270,7 +2318,6 @@
             addLabelForm.addEventListener('submit', handleAddLabel);
             manageLabelsModal.addEventListener('click', (e) => { if (e.target === manageLabelsModal) closeAddLabelModal(); });
 
-            // NEW Listeners for Edit Label Modal
             closeEditLabelModalBtn.addEventListener('click', closeEditLabelModal);
             editLabelForm.addEventListener('submit', handleEditLabel);
             editLabelModal.addEventListener('click', (e) => { if (e.target === editLabelModal) closeEditLabelModal(); });
@@ -2341,7 +2388,18 @@
                 e.stopPropagation();
             });
 
-            // FIX: Added listeners for new modals
+            // NEW: Print Listeners
+            printBtn.addEventListener('click', openPrintModal);
+            closePrintModalBtn.addEventListener('click', closePrintModal);
+            printModal.addEventListener('click', (e) => { if (e.target === printModal) closePrintModal(); });
+            printAllVisibleBtn.addEventListener('click', () => handlePrint(false));
+            printSelectedBtn.addEventListener('click', () => handlePrint(true));
+            window.onafterprint = () => {
+                document.body.classList.remove('printing-selective');
+                document.querySelectorAll('.no-print').forEach(cell => cell.classList.remove('no-print'));
+            };
+
+
             confirmModalCancel.addEventListener('click', () => confirmModal.classList.add('hidden'));
             confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) confirmModal.classList.add('hidden'); });
 
@@ -2353,7 +2411,6 @@
                     if (e.target === employeeCalendarModal) closeEmployeeCalendar();
                 });
             }
-            // --- END OF FIX ---
 
             // Global click listener to close dropdowns
             document.addEventListener('click', (e) => {
@@ -2368,9 +2425,6 @@
                 }
             });
 
-            // When the roster is scrolled horizontally, adjust the sticky name column so that it slides into
-            // position as the Service ID and Emp ID columns move off screen. This listener is attached once
-            // during initialization and works across both desktop and mobile views.
             if (grid) {
                 grid.addEventListener('scroll', handleRosterScroll);
             }
@@ -2459,7 +2513,6 @@
             selectAllNamesCheckbox = document.getElementById('select-all-names-checkbox');
             nameFilterList = document.getElementById('name-filter-list');
 
-            // NEW: Assign Edit Label Modal elements
             editLabelModal = document.getElementById('edit-label-modal');
             closeEditLabelModalBtn = document.getElementById('close-edit-label-modal');
             editLabelForm = document.getElementById('edit-label-form');
@@ -2469,7 +2522,6 @@
             editLabelColorGrid = document.getElementById('edit-label-color-grid');
             editLabelError = document.getElementById('edit-label-error');
 
-            // FIX: Assign new modal elements
             confirmModal = document.getElementById('confirm-modal');
             confirmModalTitle = document.getElementById('confirm-modal-title');
             confirmModalBody = document.getElementById('confirm-modal-body');
@@ -2482,6 +2534,13 @@
             employeeCalendarWeekdays = document.getElementById('employee-calendar-weekdays');
             employeeCalendarGrid = document.getElementById('employee-calendar-grid');
             closeEmployeeCalendarBtn = document.getElementById('close-employee-calendar-btn');
+
+            // NEW: Assign Print Modal Elements
+            printBtn = document.getElementById('print-btn');
+            printModal = document.getElementById('print-modal');
+            closePrintModalBtn = document.getElementById('close-print-modal');
+            printAllVisibleBtn = document.getElementById('print-all-visible-btn');
+            printSelectedBtn = document.getElementById('print-selected-btn');
         }
 
         // --- 8. INITIALIZATION ---
