@@ -593,20 +593,30 @@
         };
         let shiftCodesMap = { ...defaultShiftCodes };
 
+        // --- MODIFICATION: Added more color options and alphabetized the keys ---
         const colorOptions = {
+            'Amber': { color: 'bg-amber-200', textColor: 'text-amber-800' },
+            'Blue': { color: 'bg-blue-200', textColor: 'text-blue-800' },
+            'Cyan': { color: 'bg-cyan-200', textColor: 'text-cyan-800' },
+            'Emerald': { color: 'bg-emerald-200', textColor: 'text-emerald-800' },
+            'Fuchsia': { color: 'bg-fuchsia-200', textColor: 'text-fuchsia-800' },
+            'Gray': { color: 'bg-gray-200', textColor: 'text-gray-800' },
+            'Green': { color: 'bg-green-200', textColor: 'text-green-800' },
+            'Indigo': { color: 'bg-indigo-200', textColor: 'text-indigo-800' },
+            'Lime': { color: 'bg-lime-200', textColor: 'text-lime-800' },
+            'Orange': { color: 'bg-orange-200', textColor: 'text-orange-800' },
             'Pink': { color: 'bg-pink-200', textColor: 'text-pink-800' },
             'Purple': { color: 'bg-purple-200', textColor: 'text-purple-800' },
-            'Indigo': { color: 'bg-indigo-200', textColor: 'text-indigo-800' },
-            'Yellow': { color: 'bg-yellow-200', textColor: 'text-yellow-800' },
-            'Lime': { color: 'bg-lime-200', textColor: 'text-lime-800' },
-            'Cyan': { color: 'bg-cyan-200', textColor: 'text-cyan-800' },
             'Red': { color: 'bg-red-200', textColor: 'text-red-800' },
-            'Orange': { color: 'bg-orange-200', textColor: 'text-orange-800' },
-            'Blue': { color: 'bg-blue-200', textColor: 'text-blue-800' },
-            'Green': { color: 'bg-green-200', textColor: 'text-green-800' },
-            'White': { color: 'bg-white', textColor: 'text-gray-800' }, // Added white
-            'Teal': { color: 'bg-teal-100', textColor: 'text-teal-800' }, // Added teal
+            'Rose': { color: 'bg-rose-200', textColor: 'text-rose-800' },
+            'Sky': { color: 'bg-sky-200', textColor: 'text-sky-800' },
+            'Stone': { color: 'bg-stone-200', textColor: 'text-stone-800' },
+            'Teal': { color: 'bg-teal-100', textColor: 'text-teal-800' }, // Original
+            'Violet': { color: 'bg-violet-200', textColor: 'text-violet-800' },
+            'White': { color: 'bg-white', textColor: 'text-gray-800' }, // Original
+            'Yellow': { color: 'bg-yellow-200', textColor: 'text-yellow-800' },
         };
+        // --- END OF MODIFICATION ---
         
         const patternAnchorDate = '2025-01-01';
         const defaultPattern = ['1', '1', '2', '2', 'OFF', 'OFF'];
@@ -1714,7 +1724,10 @@
             
             if (firstColorKey) {
                 newLabelColor.value = firstColorKey;
-                addLabelColorGrid.querySelector(`[data-color-name="${firstColorKey}"]`).classList.add('selected');
+                const firstSwatch = addLabelColorGrid.querySelector(`[data-color-name="${firstColorKey}"]`);
+                if (firstSwatch) {
+                    firstSwatch.classList.add('selected');
+                }
             }
 
             labelListUl.innerHTML = '';
@@ -1774,9 +1787,15 @@
             try {
                 await updateDoc(shiftCodesDocRef, { [`data.${newCode}`]: newShiftData });
                 addLabelForm.reset();
-                newLabelColor.value = Object.keys(colorOptions)[0];
-                document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
-                addLabelColorGrid.querySelector(`.color-swatch`).classList.add('selected');
+                
+                const firstColorKey = Object.keys(colorOptions)[0];
+                newLabelColor.value = firstColorKey;
+                document.querySelectorAll('#add-label-color-grid .color-swatch').forEach(s => s.classList.remove('selected'));
+                const firstSwatch = addLabelColorGrid.querySelector(`[data-color-name="${firstColorKey}"]`);
+                if (firstSwatch) {
+                    firstSwatch.classList.add('selected');
+                }
+
             } catch (error) {
                 console.error("Error adding label: ", error);
                 addLabelError.textContent = 'Error saving label.';
