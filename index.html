@@ -175,34 +175,45 @@
                 display: none !important;
             }
             
-            /* --- Print Styles for SINGLE EMPLOYEE CALENDAR VIEW --- */
-            #roster-grid:not(.grid) {
-                padding: 1rem;
-            }
-             #roster-grid:not(.grid) > div { /* This targets the header and calendar container */
-                display: block !important;
-                border: none !important;
-                padding: 0 !important;
-            }
-            #roster-grid:not(.grid) .grid { /* This targets the calendar grid itself */
-                padding: 0 !important;
-                gap: 1px !important;
-                background-color: #9ca3af; /* Use grid gap to create borders */
-                border: 1px solid #9ca3af !important;
-            }
-            #roster-grid:not(.grid) .grid > div { /* All cells */
-                background-color: #fff !important;
-                padding: 2px !important;
-                border: none !important;
-                min-height: 4rem !important;
-                font-size: 10px; /* UPDATED: Increased from 8px */
-                font-weight: 700; /* UPDATED: Added bold */
-            }
-            #roster-grid:not(.grid) .grid > div[class*=" bg-gray-50/50"] { /* Empty cells */
-                background-color: #f9fafb !important;
-            }
-            #roster-grid:not(.grid) .grid .text-xs { font-size: 8px; } /* UPDATED: Increased from 7px */
-            /* End Single Employee Print */
+            
+/* --- Print Styles for SINGLE EMPLOYEE CALENDAR VIEW --- */
+#roster-grid:not(.grid) {
+    padding: 1rem;
+}
+#roster-grid:not(.grid) > div { 
+    display: block !important;
+    border: none !important;
+    padding: 0 !important;
+}
+#roster-grid:not(.grid) .grid { 
+    padding: 0 !important;
+    gap: 1px !important;
+    background-color: #9ca3af;
+    border: 1px solid #9ca3af !important;
+}
+#roster-grid:not(.grid) .grid > div { 
+    background-color: #fff !important;
+    padding: 4px !important;
+    border: none !important;
+    min-height: 4.5rem !important;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    vertical-align: middle;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    word-wrap: break-word;
+}
+#roster-grid:not(.grid) .grid > div[class*=" bg-gray-50/50"] { 
+    background-color: #f9fafb !important;
+}
+#roster-grid:not(.grid) .grid .text-xs { 
+    font-size: 10px;
+    font-weight: 600;
+}
+/* End Single Employee Print */
+
         }
 
     </style>
