@@ -87,40 +87,30 @@
         /* --- PRINT STYLES --- */
         @media print {
 
-/* === PRINT: force centering & bold for all roster cells incl. OFF === */
+/* === PRINT: stronger centering & typography for all shift cells === */
 #roster-grid.grid .employee-row > div,
-#roster-grid:not(.grid) .grid > div,
-#roster-grid.grid .header-cell {
+#roster-grid:not(.grid) .grid > div {
     display: flex !important;
-    align-items: center !important;
     justify-content: center !important;
+    align-items: center !important;
     text-align: center !important;
-    font-size: 12px !important;
-    font-weight: 700 !important;
-    padding: 0 !important;
+    font-size: 12px !important;    /* match Emp ID */
+    font-weight: 700 !important;    /* bold */
 }
-/* ensure inner tags also center */
-#roster-grid.grid .employee-row > div > *,
-#roster-grid:not(.grid) .grid > div > * {
-    display: block !important;
-    width: 100% !important;
-    text-align: center !important;
-    margin: 0 auto !important;
-}
-/* keep colors and make text dark for print */
+/* keep colors and make text dark when printing */
 #roster-grid.grid .employee-row > div[class*="bg-"],
-#roster-grid:not(.grid) .grid > div[class*="bg-"] {
+#roster-grid:not(.grid) .grid > div[class*="bg-"]{
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
 }
 #roster-grid .employee-row > div [class*="text-"],
-#roster-grid:not(.grid) .grid > div [class*="text-"] {
-    color: #000 !important;
+#roster-grid:not(.grid) .grid > div [class*="text-"]{
+    color:#000 !important;
 }
 
-/* Selective print visibility */
-.printing-selective .employee-row { display: none !important; }
-.printing-selective .employee-row.selected-for-print { display: grid !important; }
+/* Selective print behavior */
+.printing-selective .employee-row{ display:none !important; }
+.printing-selective .employee-row.selected-for-print{ display:grid !important; }
 
 
             /* Page setup */
@@ -2600,30 +2590,48 @@
         });
 
     
-// === Print Selected Staff: robust selectors & updates ===
+// === Robust auth fallback + print selected wiring ===
 (function(){
-  function qsel(){
-    // Accept any checkbox inside an employee row
-    return Array.from(document.querySelectorAll('.employee-row input[type="checkbox"]'));
-  }
-  function checkedBoxes(){
-    return qsel().filter(cb => cb.checked);
-  }
+  // ---- Auth fallback: try custom token -> anon -> fallback proceed ----
+  const appAuthReady = new Promise((resolve) => {
+    let resolved = false;
+    function done(){ if(!resolved){ resolved=true; resolve(); } }
+    try {
+      // Use Firebase from module scope
+      const tryCustom = (typeof __initial_auth_token !== 'undefined' && __initial_auth_token);
+      if (tryCustom && window.firebaseAuth) {
+        signInWithCustomToken(window.firebaseAuth, __initial_auth_token).then(done).catch(()=>{
+          // fallback to anon
+          if (window.firebaseAuth && window.signInAnonymously) {
+            signInAnonymously(window.firebaseAuth).then(done).catch(done);
+          } else { done(); }
+        });
+      } else {
+        if (window.firebaseAuth && window.signInAnonymously) {
+          signInAnonymously(window.firebaseAuth).then(done).catch(done);
+        } else { done(); }
+      }
+    } catch(e){ done(); }
+    // hard timeout to avoid 'Authenticating...' hang
+    setTimeout(done, 4000);
+  });
+
+  // ---- Print Selected Staff wiring ----
   function updateCount(){
-    const n = checkedBoxes().length;
+    const n = document.querySelectorAll('.emp-checkbox:checked').length;
     const btn = document.getElementById('print-selected-btn');
     if (!btn) return;
     btn.disabled = n === 0;
-    const span = btn.querySelector('span');
-    if (span) span.textContent = `Print Selected Staff (${n})`;
-    else btn.textContent = `Print Selected Staff (${n})`;
+    const label = btn.querySelector('span');
+    if(label){ label.textContent = `Print Selected Staff (${n})`; }
+    else { btn.textContent = `Print Selected Staff (${n})`; }
   }
   function markSelected(){
     document.body.classList.add('printing-selective');
     document.querySelectorAll('.employee-row').forEach(r=>r.classList.remove('selected-for-print'));
-    checkedBoxes().forEach(cb => {
+    document.querySelectorAll('.emp-checkbox:checked').forEach(cb=>{
       const row = cb.closest('.employee-row');
-      if (row) row.classList.add('selected-for-print');
+      if(row) row.classList.add('selected-for-print');
     });
   }
   function clearMark(){
@@ -2631,25 +2639,26 @@
     document.querySelectorAll('.employee-row.selected-for-print').forEach(r=>r.classList.remove('selected-for-print'));
   }
 
-  // Delegate changes on any checkbox (covers dynamic rows)
   document.addEventListener('change', (e)=>{
-    if (e.target && e.target.matches('.employee-row input[type="checkbox"]')) updateCount();
-  }, true);
+    if (e.target && e.target.classList && e.target.classList.contains('emp-checkbox')) updateCount();
+  });
 
-  // Update when opening the print modal and on first paint
-  const printOpenBtn = document.getElementById('print-btn');
-  if (printOpenBtn) printOpenBtn.addEventListener('click', ()=> setTimeout(updateCount, 0));
-  setTimeout(updateCount, 500);
+  appAuthReady.then(()=>{
+    const printOpenBtn = document.getElementById('print-btn');
+    if (printOpenBtn) printOpenBtn.addEventListener('click', ()=> setTimeout(updateCount, 0));
 
-  // Button bindings
-  const btnAll = document.getElementById('print-all-visible-btn');
-  if (btnAll) btnAll.addEventListener('click', ()=>{ clearMark(); window.print(); });
+    const btnAll = document.getElementById('print-all-visible-btn');
+    if (btnAll) btnAll.addEventListener('click', ()=>{ clearMark(); window.print(); });
 
-  const btnSel = document.getElementById('print-selected-btn');
-  if (btnSel) btnSel.addEventListener('click', ()=>{
-    markSelected();
-    // iOS Safari sometimes needs a tick before print
-    setTimeout(()=>{ window.print(); setTimeout(clearMark, 400); }, 50);
+    const btnSel = document.getElementById('print-selected-btn');
+    if (btnSel) btnSel.addEventListener('click', ()=>{
+      markSelected();
+      window.print();
+      setTimeout(clearMark, 300);
+    });
+
+    // Initial count once UI paints
+    setTimeout(updateCount, 300);
   });
 })();
 
