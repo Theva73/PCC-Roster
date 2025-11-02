@@ -87,30 +87,40 @@
         /* --- PRINT STYLES --- */
         @media print {
 
-/* === PRINT: stronger centering & typography for all shift cells === */
-#roster-grid.grid .employee-row > div,
-#roster-grid:not(.grid) .grid > div {
+/* === PRINT: force centering & bold for all roster cells incl. OFF === */
+/* MODIFIED: Corrected selector to target data/ID cells, excluding the name cell */
+#roster-grid.grid > .employee-row:not(.font-medium),
+#roster-grid.grid .header-cell {
     display: flex !important;
-    justify-content: center !important;
     align-items: center !important;
+    justify-content: center !important;
     text-align: center !important;
-    font-size: 12px !important;    /* match Emp ID */
-    font-weight: 700 !important;    /* bold */
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    padding: 0 !important;
 }
-/* keep colors and make text dark when printing */
-#roster-grid.grid .employee-row > div[class*="bg-"],
-#roster-grid:not(.grid) .grid > div[class*="bg-"]{
+/* ensure inner tags also center */
+/* MODIFIED: Corrected selector */
+#roster-grid.grid > .employee-row:not(.font-medium) > * {
+    display: block !important;
+    width: 100% !important;
+    text-align: center !important;
+    margin: 0 auto !important;
+}
+/* keep colors and make text dark for print */
+#roster-grid.grid .employee-row[class*="bg-"],
+#roster-grid:not(.grid) .grid > div[class*="bg-"] {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
 }
-#roster-grid .employee-row > div [class*="text-"],
-#roster-grid:not(.grid) .grid > div [class*="text-"]{
-    color:#000 !important;
+#roster-grid .employee-row [class*="text-"],
+#roster-grid:not(.grid) .grid > div [class*="text-"] {
+    color: #000 !important;
 }
 
-/* Selective print behavior */
-.printing-selective .employee-row{ display:none !important; }
-.printing-selective .employee-row.selected-for-print{ display:grid !important; }
+/* Selective print visibility */
+.printing-selective .employee-row { display: none !important; }
+.printing-selective .employee-row.selected-for-print { display: grid !important; }
 
 
             /* Page setup */
@@ -224,7 +234,26 @@
                 min-height: 4rem !important;
                 font-size: 10px; /* UPDATED: Increased from 8px */
                 font-weight: 700; /* UPDATED: Added bold */
+
+                /* NEW: Flex properties to center label */
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: flex-start !important;
             }
+            /* NEW: Target the badge wrapper inside calendar cell */
+            #roster-grid:not(.grid) .grid > div > div {
+                display: flex !important;
+                flex-grow: 1 !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 100% !important;
+            }
+            /* NEW: Ensure date (span) stays at top */
+            #roster-grid:not(.grid) .grid > div > span {
+                flex-grow: 0 !important;
+                flex-shrink: 0 !important;
+            }
+
             #roster-grid:not(.grid) .grid > div[class*=" bg-gray-50/50"] { /* Empty cells */
                 background-color: #f9fafb !important;
             }
@@ -2590,48 +2619,30 @@
         });
 
     
-// === Robust auth fallback + print selected wiring ===
+// === Print Selected Staff: robust selectors & updates ===
 (function(){
-  // ---- Auth fallback: try custom token -> anon -> fallback proceed ----
-  const appAuthReady = new Promise((resolve) => {
-    let resolved = false;
-    function done(){ if(!resolved){ resolved=true; resolve(); } }
-    try {
-      // Use Firebase from module scope
-      const tryCustom = (typeof __initial_auth_token !== 'undefined' && __initial_auth_token);
-      if (tryCustom && window.firebaseAuth) {
-        signInWithCustomToken(window.firebaseAuth, __initial_auth_token).then(done).catch(()=>{
-          // fallback to anon
-          if (window.firebaseAuth && window.signInAnonymously) {
-            signInAnonymously(window.firebaseAuth).then(done).catch(done);
-          } else { done(); }
-        });
-      } else {
-        if (window.firebaseAuth && window.signInAnonymously) {
-          signInAnonymously(window.firebaseAuth).then(done).catch(done);
-        } else { done(); }
-      }
-    } catch(e){ done(); }
-    // hard timeout to avoid 'Authenticating...' hang
-    setTimeout(done, 4000);
-  });
-
-  // ---- Print Selected Staff wiring ----
+  function qsel(){
+    // Accept any checkbox inside an employee row
+    return Array.from(document.querySelectorAll('.employee-row input[type="checkbox"]'));
+  }
+  function checkedBoxes(){
+    return qsel().filter(cb => cb.checked);
+  }
   function updateCount(){
-    const n = document.querySelectorAll('.emp-checkbox:checked').length;
+    const n = checkedBoxes().length;
     const btn = document.getElementById('print-selected-btn');
     if (!btn) return;
     btn.disabled = n === 0;
-    const label = btn.querySelector('span');
-    if(label){ label.textContent = `Print Selected Staff (${n})`; }
-    else { btn.textContent = `Print Selected Staff (${n})`; }
+    const span = btn.querySelector('span');
+    if (span) span.textContent = `Print Selected Staff (${n})`;
+    else btn.textContent = `Print Selected Staff (${n})`;
   }
   function markSelected(){
     document.body.classList.add('printing-selective');
     document.querySelectorAll('.employee-row').forEach(r=>r.classList.remove('selected-for-print'));
-    document.querySelectorAll('.emp-checkbox:checked').forEach(cb=>{
+    checkedBoxes().forEach(cb => {
       const row = cb.closest('.employee-row');
-      if(row) row.classList.add('selected-for-print');
+      if (row) row.classList.add('selected-for-print');
     });
   }
   function clearMark(){
@@ -2639,26 +2650,25 @@
     document.querySelectorAll('.employee-row.selected-for-print').forEach(r=>r.classList.remove('selected-for-print'));
   }
 
+  // Delegate changes on any checkbox (covers dynamic rows)
   document.addEventListener('change', (e)=>{
-    if (e.target && e.target.classList && e.target.classList.contains('emp-checkbox')) updateCount();
-  });
+    if (e.target && e.target.matches('.employee-row input[type="checkbox"]')) updateCount();
+  }, true);
 
-  appAuthReady.then(()=>{
-    const printOpenBtn = document.getElementById('print-btn');
-    if (printOpenBtn) printOpenBtn.addEventListener('click', ()=> setTimeout(updateCount, 0));
+  // Update when opening the print modal and on first paint
+  const printOpenBtn = document.getElementById('print-btn');
+  if (printOpenBtn) printOpenBtn.addEventListener('click', ()=> setTimeout(updateCount, 0));
+  setTimeout(updateCount, 500);
 
-    const btnAll = document.getElementById('print-all-visible-btn');
-    if (btnAll) btnAll.addEventListener('click', ()=>{ clearMark(); window.print(); });
+  // Button bindings
+  const btnAll = document.getElementById('print-all-visible-btn');
+  if (btnAll) btnAll.addEventListener('click', ()=>{ clearMark(); window.print(); });
 
-    const btnSel = document.getElementById('print-selected-btn');
-    if (btnSel) btnSel.addEventListener('click', ()=>{
-      markSelected();
-      window.print();
-      setTimeout(clearMark, 300);
-    });
-
-    // Initial count once UI paints
-    setTimeout(updateCount, 300);
+  const btnSel = document.getElementById('print-selected-btn');
+  if (btnSel) btnSel.addEventListener('click', ()=>{
+    markSelected();
+    // iOS Safari sometimes needs a tick before print
+    setTimeout(()=>{ window.print(); setTimeout(clearMark, 400); }, 50);
   });
 })();
 
