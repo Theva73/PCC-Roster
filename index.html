@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -947,7 +946,8 @@
         }
 
         /**
-         * NEW: Renders the single-employee calendar view.
+         * MODIFICATION: Renders the single-employee calendar view with updated styling.
+         * This now matches the aesthetic of the modal popup view.
          */
         function renderSingleEmployeeCalendarView(emp, daysInMonth) {
             const team = teamsMap.get(emp.team_id);
@@ -968,12 +968,15 @@
 
             // 2. Render Calendar
             const calendarContainer = document.createElement('div');
-            calendarContainer.className = 'grid grid-cols-7 gap-1 p-2 md:p-4';
+            // MODIFICATION: Increased gap and padding
+            calendarContainer.className = 'grid grid-cols-7 gap-2 p-4';
+            calendarContainer.style.gridAutoRows = 'minmax(6rem, auto)'; // Ensure cells have min height
 
             // 3. Weekday Headers
             weekdays.forEach(dayName => {
                 calendarContainer.appendChild(
-                    createCell(dayName, 'text-center text-xs font-bold text-gray-500 p-2')
+                    // MODIFICATION: Styled like the modal's weekday headers
+                    createCell(dayName, 'text-center text-sm font-medium text-gray-500 uppercase tracking-wider p-2')
                 );
             });
 
@@ -981,7 +984,8 @@
             const firstDayOfWeek = new Date(currentYear, currentMonth, 1).getDay();
             for (let i = 0; i < firstDayOfWeek; i++) {
                 calendarContainer.appendChild(
-                    createCell('', 'border rounded-lg bg-gray-50')
+                    // MODIFICATION: Styled like the modal's empty cells
+                    createCell('', 'rounded-lg bg-gray-50/50')
                 );
             }
 
@@ -991,21 +995,38 @@
                 const { shift, shiftInfo, isAuto } = getShiftForEmployee(emp, fullDate);
 
                 const dayCell = document.createElement('div');
-                dayCell.className = 'border rounded-lg p-2 h-24 flex flex-col cursor-pointer hover:bg-gray-100 transition duration-150';
+                // --- REFINEMENT: Removed items-start and justify-start ---
+                dayCell.className = 'rounded-lg p-2 flex flex-col bg-white border border-gray-200 cursor-pointer hover:bg-gray-50 transition duration-150';
                 if (isAuto) dayCell.classList.add('auto-shift');
                 
-                dayCell.innerHTML = `
-                    <span class="font-semibold text-gray-800">${day}</span>
-                    <div class="mt-1 text-center">
-                        <span class="text-sm font-bold p-1 rounded ${shiftInfo.color} ${shiftInfo.textColor}">
-                            ${shiftInfo.text || ''}
-                        </span>
-                    </div>
-                `;
+                // Date number
+                const dateLabel = document.createElement('span');
+                const weekdayIndex = new Date(currentYear, currentMonth, day).getDay();
+                const weekend = (weekdayIndex === 0 || weekdayIndex === 6);
+                // MODIFICATION: Styled like modal date labels
+                dateLabel.className = `text-sm font-semibold ${weekend ? 'text-red-600' : 'text-gray-900'}`;
+                dateLabel.textContent = day;
+                
+                dayCell.appendChild(dateLabel);
+
+                // --- REFINEMENT: Added wrapper for centering badge ---
+                const badgeWrapper = document.createElement('div');
+                badgeWrapper.className = 'flex-1 flex items-center justify-center w-full';
+
+                // Shift badge
+                if (shiftInfo.text) {
+                    const badge = document.createElement('span');
+                    // --- REFINEMENT: Styled like modal badges, removed mt-2 ---
+                    badge.className = `text-xs font-bold rounded-full px-2.5 py-0.5 ${shiftInfo.color} ${shiftInfo.textColor} ${isAuto ? 'opacity-60' : ''}`;
+                    badge.textContent = shiftInfo.text;
+                    
+                    // Append badge to wrapper
+                    badgeWrapper.appendChild(badge);
+                    // Append wrapper to cell
+                    dayCell.appendChild(badgeWrapper);
+                }
                 
                 dayCell.addEventListener('click', () => {
-                    // Pass the cell element so the modal can be positioned, but we'll
-                    // rely on renderRoster() to update the view.
                     openModal(dayCell, emp.id, emp.name, fullDate);
                 });
                 calendarContainer.appendChild(dayCell);
@@ -1013,6 +1034,7 @@
             
             grid.appendChild(calendarContainer);
         }
+        // --- END OF MODIFICATION ---
 
         // --- 6. MODAL & DATA FUNCTIONS ---
         
@@ -1076,8 +1098,8 @@
                 
                 // Create cell container
                 const cell = document.createElement('div');
-                // MODIFICATION: Updated day cell styles
-                cell.className = 'rounded-lg p-2 min-h-[6rem] flex flex-col items-start justify-start bg-white border border-gray-200 transition-colors hover:bg-gray-50';
+                // --- REFINEMENT: Removed items-start and justify-start ---
+                cell.className = 'rounded-lg p-2 min-h-[6rem] flex flex-col bg-white border border-gray-200 transition-colors hover:bg-gray-50';
 
                 // Date number
                 const dateLabel = document.createElement('span');
@@ -1087,17 +1109,25 @@
                 dateLabel.className = `text-sm font-semibold ${weekend ? 'text-red-600' : 'text-gray-900'}`;
                 dateLabel.textContent = day;
                 
-                // Shift badge
-                const badge = document.createElement('span');
-                // MODIFICATION: Updated badge styles (rounded-full, smaller text, etc.)
-                badge.className = `text-xs font-bold rounded-full px-2.5 py-0.5 mt-2 ${shiftInfo.color} ${shiftInfo.textColor} ${isAuto ? 'opacity-60' : ''}`;
-                badge.textContent = shiftInfo.text || '';
-                
                 // Append
                 cell.appendChild(dateLabel);
-                // MODIFICATION: Only add badge if text exists
+                
+                // --- REFINEMENT: Added wrapper for centering badge ---
+                const badgeWrapper = document.createElement('div');
+                badgeWrapper.className = 'flex-1 flex items-center justify-center w-full';
+                
+                // Shift badge
+                const badge = document.createElement('span');
+                // --- REFINEMENT: Updated badge styles, removed mt-2 ---
+                badge.className = `text-xs font-bold rounded-full px-2.5 py-0.5 ${shiftInfo.color} ${shiftInfo.textColor} ${isAuto ? 'opacity-60' : ''}`;
+                badge.textContent = shiftInfo.text || '';
+                
+                // Append badge to wrapper
+                badgeWrapper.appendChild(badge);
+
+                // MODIFICATION: Only add badge wrapper if text exists
                 if (shiftInfo.text) {
-                    cell.appendChild(badge);
+                    cell.appendChild(badgeWrapper);
                 }
                 employeeCalendarGrid.appendChild(cell);
             }
