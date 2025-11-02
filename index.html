@@ -123,38 +123,7 @@
                 color: #000;
             }
 
-            
-/* --- Print: Make shift pattern cells match Emp ID style --- */
-#roster-grid.grid .bg-teal-100,
-#roster-grid.grid .bg-yellow-200,
-#roster-grid.grid .bg-green-200,
-#roster-grid.grid .bg-blue-200,
-#roster-grid.grid .bg-cyan-200,
-#roster-grid.grid .bg-lime-200,
-#roster-grid.grid .bg-orange-200,
-#roster-grid.grid .bg-red-200,
-#roster-grid.grid .bg-white,
-#roster-grid.grid .bg-gray-50 {
-    font-size: 12px !important;
-    font-weight: 700 !important;
-    text-align: center !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-}
-/* Force dark print text if Tailwind text color classes are applied */
-#roster-grid.grid .text-teal-800,
-#roster-grid.grid .text-yellow-800,
-#roster-grid.grid .text-green-800,
-#roster-grid.grid .text-blue-800,
-#roster-grid.grid .text-cyan-800,
-#roster-grid.grid .text-lime-800,
-#roster-grid.grid .text-orange-800,
-#roster-grid.grid .text-red-800,
-#roster-grid.grid .text-gray-800 {
-    color: #000 !important;
-}
-/* Reset sticky elements */
+            /* Reset sticky elements */
             .sticky-col, .header-cell, .sticky-header-col {
                 position: static;
                 left: auto;
@@ -206,46 +175,54 @@
                 display: none !important;
             }
             
-            
-/* --- Print Styles for SINGLE EMPLOYEE CALENDAR VIEW --- */
-#roster-grid:not(.grid) {
-    padding: 1rem;
-}
-#roster-grid:not(.grid) > div { 
-    display: block !important;
-    border: none !important;
-    padding: 0 !important;
-}
-#roster-grid:not(.grid) .grid { 
-    padding: 0 !important;
-    gap: 1px !important;
-    background-color: #9ca3af;
-    border: 1px solid #9ca3af !important;
-}
-#roster-grid:not(.grid) .grid > div { 
-    background-color: #fff !important;
-    padding: 4px !important;
-    border: none !important;
-    min-height: 4.5rem !important;
-    font-size: 12px;
-    font-weight: 700;
-    text-align: center;
-    vertical-align: middle;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    word-wrap: break-word;
-}
-#roster-grid:not(.grid) .grid > div[class*=" bg-gray-50/50"] { 
-    background-color: #f9fafb !important;
-}
-#roster-grid:not(.grid) .grid .text-xs { 
-    font-size: 10px;
-    font-weight: 600;
-}
-/* End Single Employee Print */
+            /* --- Print Styles for SINGLE EMPLOYEE CALENDAR VIEW --- */
+            #roster-grid:not(.grid) {
+                padding: 1rem;
+            }
+             #roster-grid:not(.grid) > div { /* This targets the header and calendar container */
+                display: block !important;
+                border: none !important;
+                padding: 0 !important;
+            }
+            #roster-grid:not(.grid) .grid { /* This targets the calendar grid itself */
+                padding: 0 !important;
+                gap: 1px !important;
+                background-color: #9ca3af; /* Use grid gap to create borders */
+                border: 1px solid #9ca3af !important;
+            }
+            #roster-grid:not(.grid) .grid > div { /* All cells */
+                background-color: #fff !important;
+                padding: 2px !important;
+                border: none !important;
+                min-height: 4rem !important;
+                font-size: 10px; /* UPDATED: Increased from 8px */
+                font-weight: 700; /* UPDATED: Added bold */
+            }
+            #roster-grid:not(.grid) .grid > div[class*=" bg-gray-50/50"] { /* Empty cells */
+                background-color: #f9fafb !important;
+            }
+            #roster-grid:not(.grid) .grid .text-xs { font-size: 8px; } /* UPDATED: Increased from 7px */
+            /* End Single Employee Print */
+        
 
-        }
+/* --- Print: additional centering + selective printing --- */
+#roster-grid.grid .employee-row > div {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+}
+/* Ensure any span inside cells also centers */
+#roster-grid.grid .employee-row > div > * {
+    margin: 0 auto !important;
+    text-align: center !important;
+}
+
+/* Selective print: hide all rows by default, show only marked rows */
+.printing-selective .employee-row { display: none !important; }
+.printing-selective .employee-row.selected-for-print { display: grid !important; }
+
+}
 
     </style>
 </head>
@@ -2604,6 +2581,71 @@
             initFirebase();
         });
 
-    </script>
+    
+// --- Print wiring: enable "Print Selected Staff" & show only selected rows on print ---
+(function () {
+    try {
+        function updatePrintSelectionUI() {
+            const checked = Array.from(document.querySelectorAll('.emp-checkbox:checked'));
+            const count = checked.length;
+            const btn = document.getElementById('print-selected-btn');
+            if (btn) {
+                btn.disabled = count === 0;
+                btn.querySelector('span') ? (btn.querySelector('span').textContent = `Print Selected Staff (${count})`) : (btn.textContent = `Print Selected Staff (${count})`);
+            }
+        }
+
+        function markSelectedRowsForPrint() {
+            document.querySelectorAll('.employee-row.selected-for-print').forEach(e => e.classList.remove('selected-for-print'));
+            const checked = Array.from(document.querySelectorAll('.emp-checkbox:checked'));
+            checked.forEach(cb => {
+                const row = cb.closest('.employee-row');
+                if (row) row.classList.add('selected-for-print');
+            });
+            document.body.classList.add('printing-selective');
+        }
+
+        function clearSelectivePrint() {
+            document.body.classList.remove('printing-selective');
+            document.querySelectorAll('.employee-row.selected-for-print').forEach(e => e.classList.remove('selected-for-print'));
+        }
+
+        // Change handler for checkboxes to update count
+        document.addEventListener('change', (e) => {
+            if (e.target && e.target.classList && e.target.classList.contains('emp-checkbox')) {
+                updatePrintSelectionUI();
+            }
+        });
+
+        // Open print modal -> refresh counts
+        const printBtn = document.getElementById('print-btn');
+        if (printBtn) {
+            printBtn.addEventListener('click', () => setTimeout(updatePrintSelectionUI, 0));
+        }
+
+        // Print All
+        const printAllVisibleBtn = document.getElementById('print-all-visible-btn');
+        if (printAllVisibleBtn) {
+            printAllVisibleBtn.addEventListener('click', () => {
+                clearSelectivePrint();
+                window.print();
+            });
+        }
+
+        // Print Selected
+        const printSelectedBtn = document.getElementById('print-selected-btn');
+        if (printSelectedBtn) {
+            printSelectedBtn.addEventListener('click', () => {
+                markSelectedRowsForPrint();
+                window.print();
+                setTimeout(clearSelectivePrint, 250);
+            });
+        }
+    } catch (err) {
+        console.error('Print selection wiring error:', err);
+    }
+})();
+
+</script>
 </body>
 </html>
