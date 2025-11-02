@@ -119,7 +119,7 @@
             /* Force grid display */
             #roster-grid.grid {
                 display: grid !important;
-                font-size: 7px; /* Shrink font to fit */
+                font-size: 10px; /* UPDATED: Increased from 7px for readability */
                 color: #000;
             }
 
@@ -141,6 +141,15 @@
                 padding: 2px 4px !important;
                 min-width: 0 !important; /* Allow shrinking */
                 white-space: nowrap; /* Prevent wrapping in cells */
+            }
+            
+            /* UPDATED: Make shift labels bold */
+            .employee-row {
+                font-weight: 700; /* Bold */
+            }
+            /* Keep headers bold/semibold as well */
+            .header-cell, .team-header-row {
+                font-weight: 600; /* Semibold */
             }
             
             /* Keep text colors for labels */
@@ -186,12 +195,13 @@
                 padding: 2px !important;
                 border: none !important;
                 min-height: 4rem !important;
-                font-size: 8px;
+                font-size: 10px; /* UPDATED: Increased from 8px */
+                font-weight: 700; /* UPDATED: Added bold */
             }
             #roster-grid:not(.grid) .grid > div[class*=" bg-gray-50/50"] { /* Empty cells */
                 background-color: #f9fafb !important;
             }
-            #roster-grid:not(.grid) .grid .text-xs { font-size: 7px; }
+            #roster-grid:not(.grid) .grid .text-xs { font-size: 8px; } /* UPDATED: Increased from 7px */
             /* End Single Employee Print */
         }
 
@@ -471,6 +481,7 @@
                 <div id="edit-label-error" class="text-red-600 text-sm mt-3 h-4"></div>
                 <div class="text-right mt-3">
                     <button type="submit" class="px-5 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition">Save Changes</button>
+
                 </div>
             </form>
         </div>
