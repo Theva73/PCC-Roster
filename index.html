@@ -480,47 +480,39 @@
         </div>
     </div>
 
-    <!-- 
-      REFINEMENT: Combined "Manage Labels" and "Edit Label" modals into one.
-      - Removed the separate #edit-label-modal.
-      - The form below now handles BOTH creating and editing.
-      - JavaScript logic will swap the title, button text, and onsubmit handler.
-    -->
+    <!-- Manage Shift Labels Modal -->
     <div id="manage-labels-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg mx-4 modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Manage Labels & Hours</h3>
-                <button id="close-labels-modal" class="text-gray-400 hover:text-gray-600">
+                <!-- REFINEMENT 1: Added classes to make the 'X' a more obvious button -->
+                <button id="close-labels-modal" class="text-gray-400 hover:text-gray-600 rounded-full p-1 hover:bg-gray-100">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
             
-            <!-- This form is now used for both Add and Edit -->
-            <form id="label-form" class="p-4 border rounded-lg bg-gray-50 mb-6">
-                <input type="hidden" id="label-key">
-                <h4 id="label-form-title" class="text-lg font-medium text-gray-800 mb-3">Create New Label</h4>
+            <form id="add-label-form" class="p-4 border rounded-lg bg-gray-50 mb-6">
+                <h4 class="text-lg font-medium text-gray-800 mb-3">Create New Label</h4>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label for="label-text" class="block text-sm font-medium text-gray-700">Label Text (e.g., "TRAIN")</label>
-                        <input type="text" id="label-text" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm" maxlength="5" required>
+                        <label for="new-label-text" class="block text-sm font-medium text-gray-700">Label Text (e.g., "TRAIN")</label>
+                        <input type="text" id="new-label-text" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm" maxlength="5" required>
                     </div>
                     <div>
-                        <label for="label-hours" class="block text-sm font-medium text-gray-700">Working Hours</label>
-                        <input type="number" id="label-hours" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm" value="0" min="0" max="24" step="0.5">
+                        <label for="new-label-hours" class="block text-sm font-medium text-gray-700">Working Hours</label>
+                        <input type="number" id="new-label-hours" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm" value="0" min="0" max="24" step="0.5">
                     </div>
                     <div>
-                        <label for="label-color" class="block text-sm font-medium text-gray-700">Color</label>
-                        <select id="label-color" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm" required>
+                        <label for="new-label-color" class="block text-sm font-medium text-gray-700">Color</label>
+                        <select id="new-label-color" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm" required>
                         </select>
                     </div>
                 </div>
-                <div id="label-color-grid" class="mt-4 flex flex-wrap gap-2">
+                <div id="add-label-color-grid" class="mt-4 flex flex-wrap gap-2">
                 </div>
-                <div id="label-error" class="text-red-600 text-sm mt-3 h-4"></div>
-                <!-- Updated buttons for Add/Edit/Cancel -->
-                <div class="flex justify-end space-x-3 mt-3">
-                    <button type="button" id="label-form-cancel-btn" class="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition hidden">Cancel</button>
-                    <button type="submit" id="label-form-submit-btn" class="px-5 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition">Add Label</button>
+                <div id="add-label-error" class="text-red-600 text-sm mt-3 h-4"></div>
+                <div class="text-right mt-3">
+                    <button type="submit" class="px-5 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition">Add Label</button>
                 </div>
             </form>
 
@@ -533,7 +525,44 @@
         </div>
     </div>
 
-    <!-- REMOVED: Edit Shift Label Modal (now merged into Manage Labels modal) -->
+    <!-- Edit Shift Label Modal -->
+    <div id="edit-label-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-[55] hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg mx-4 modal-fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">Edit Label & Hours</h3>
+                <!-- REFINEMENT 1: Added classes to make the 'X' a more obvious button -->
+                <button id="close-edit-label-modal" class="text-gray-400 hover:text-gray-600 rounded-full p-1 hover:bg-gray-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            
+            <form id="edit-label-form" class="p-4 border rounded-lg bg-gray-50 mb-6">
+                <input type="hidden" id="edit-label-key">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="edit-label-text" class="block text-sm font-medium text-gray-700">Label Text (e.g., "TRAIN")</label>
+                        <input type="text" id="edit-label-text" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm" maxlength="5" required>
+                    </div>
+                    <div>
+                        <label for="edit-label-hours" class="block text-sm font-medium text-gray-700">Working Hours</label>
+                        <input type="number" id="edit-label-hours" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm" value="0" min="0" max="24" step="0.5">
+                    </div>
+                    <div>
+                        <label for="edit-label-color" class="block text-sm font-medium text-gray-700">Color</label>
+                        <select id="edit-label-color" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm" required>
+                        </select>
+                    </div>
+                </div>
+                <div id="edit-label-color-grid" class="mt-4 flex flex-wrap gap-2">
+                </div>
+                <div id="edit-label-error" class="text-red-600 text-sm mt-3 h-4"></div>
+                <div class="text-right mt-3">
+                    <button type="submit" class="px-5 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition">Save Changes</button>
+
+                </div>
+            </form>
+        </div>
+    </div>
     
     <!-- Shift Selector Modal (for Pattern Builder) -->
     <div id="pattern-shift-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[60] hidden">
@@ -709,6 +738,7 @@
                 </button>
                 <button id="print-selected-btn" class="w-full px-5 py-3 bg-gray-600 text-white rounded-lg shadow hover:bg-gray-700 transition duration-150 flex items-center justify-center space-x-2" disabled>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+
                     <span>Print Selected Staff (0)</span>
                 </button>
             </div>
@@ -837,17 +867,17 @@
             cancelDeleteTeamBtn_TEAM, confirmDeleteTeamBtn_TEAM, 
             deleteTeamModalName,
             modalEmployeeNameInput, modalEmployeeIdInput, saveDetailsBtn, saveDetailsStatus, 
-            manageLabelsBtn, manageLabelsModal, closeLabelsModalBtn, 
-            // REFINED: Label form elements
-            labelForm, labelFormTitle, labelKey, labelText, labelHours, labelColor, 
-            labelColorGrid, labelError, labelFormSubmitBtn, labelFormCancelBtn,
-            // END REFINED
+            manageLabelsBtn, manageLabelsModal, closeLabelsModalBtn, addLabelForm, 
+            newLabelText, newLabelColor, newLabelHours, // <-- NEW: Added newLabelHours
+            addLabelColorGrid, addLabelError, 
             deleteLabelError, labelListUl,
             teamFilterBtn, teamFilterDropdown, teamFilterList, selectAllTeamsCheckbox,
             manageMenuBtn, manageDropdown,
             modalEmployeeRoleInput,
             nameFilterBtn, nameFilterDropdown, nameFilterSearch, selectAllNamesCheckbox, nameFilterList,
-            // REMOVED: editLabelModal elements
+            editLabelModal, closeEditLabelModalBtn, editLabelForm, editLabelKey, 
+            editLabelText, editLabelColor, editLabelHours, // <-- NEW: Added editLabelHours
+            editLabelColorGrid, editLabelError,
             employeeCalendarModal, employeeCalendarName, employeeCalendarDetails, 
             employeeCalendarWeekdays, employeeCalendarGrid, closeEmployeeCalendarBtn,
             confirmModal, confirmModalTitle, confirmModalBody, confirmModalCancel, confirmModalConfirm,
@@ -1491,6 +1521,23 @@
                 headerActions.classList.remove('hidden');
                 batchDeleteContainer.classList.add('hidden');
             }
+            
+            // NEW: Also update the print button count
+            const printBtn = document.getElementById('print-selected-btn');
+            if(printBtn) {
+                const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+                if (count > 0) {
+                    printBtn.disabled = false;
+                    printBtn.innerHTML = `${svgIcon} <span>Print Selected Staff (${count})</span>`;
+                    printBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                    printBtn.classList.add('bg-gray-600', 'hover:bg-gray-700');
+                } else {
+                    printBtn.disabled = true;
+                    printBtn.innerHTML = `${svgIcon} <span>Print Selected Staff (0)</span>`;
+                    printBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                    printBtn.classList.remove('bg-gray-600', 'hover:bg-gray-700');
+                }
+            }
         }
         
         function openBatchDeleteModal() {
@@ -1687,97 +1734,156 @@
             deleteTeamConfirmModal.classList.add('hidden');
         }
 
-        // --- REFINED: Label Management Functions ---
-
-        // NEW HELPER: Sets the color on the label form (dropdown + swatches)
-        function setLabelFormColor(colorName) {
-            if (!colorOptions[colorName]) {
-                colorName = Object.keys(colorOptions)[0]; // Default to first color
-            }
-            labelColor.value = colorName;
-            document.querySelectorAll('#label-color-grid .color-swatch').forEach(s => s.classList.remove('selected'));
-            const swatch = labelColorGrid.querySelector(`[data-color-name="${colorName}"]`);
-            if (swatch) {
-                swatch.classList.add('selected');
-            }
-        }
-        
-        // NEW HELPER: Resets the label form to "Create" mode
-        function resetLabelFormToCreateMode() {
-            labelFormTitle.textContent = 'Create New Label';
-            labelForm.reset(); // Resets text, hours
-            labelKey.value = '';
-            labelHours.value = 0;
-            
-            setLabelFormColor(Object.keys(colorOptions)[0]); // Set to first color
-
-            labelError.textContent = '';
-            labelFormSubmitBtn.textContent = 'Add Label';
-            labelFormSubmitBtn.className = 'px-5 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition'; // Green
-            labelFormCancelBtn.classList.add('hidden');
-            
-            labelForm.onsubmit = handleAddLabel;
+        // --- Label Management Functions ---
+        function closeEditLabelModal() {
+            editLabelModal.classList.add('hidden');
+            editLabelError.textContent = '';
         }
 
-        // NEW HELPER: Populates the label form for "Edit" mode
-        function populateLabelFormForEdit(labelKeyToEdit) {
-            const shift = shiftCodesMap[labelKeyToEdit];
+        function openEditLabelModal(labelKey) {
+            const shift = shiftCodesMap[labelKey];
             if (!shift) {
-                console.error('Cannot find label to edit:', labelKeyToEdit);
+                console.error('Cannot find label to edit:', labelKey);
                 return;
             }
 
-            labelFormTitle.textContent = 'Edit Label';
-            labelKey.value = labelKeyToEdit;
-            labelText.value = shift.text;
-            labelHours.value = shift.hours || 0;
+            editLabelError.textContent = '';
+            editLabelKey.value = labelKey;
+            editLabelText.value = shift.text;
+            editLabelHours.value = shift.hours || 0; // NEW: Set hours
+            
+            editLabelColor.innerHTML = '';
+            editLabelColorGrid.innerHTML = '';
             
             let currentColorName = null;
-            for (const colorName in colorOptions) {
-                if (colorOptions[colorName].color === shift.color) {
+            
+            Object.keys(colorOptions).forEach(colorName => {
+                const { color, textColor } = colorOptions[colorName];
+                
+                if (color === shift.color) {
                     currentColorName = colorName;
-                    break;
+                }
+                
+                editLabelColor.innerHTML += `<option value="${colorName}" class="${color} ${textColor} font-medium">${colorName}</option>`;
+                
+                const swatch = document.createElement('div');
+                swatch.className = `color-swatch ${color}`;
+                swatch.dataset.colorName = colorName;
+                swatch.title = colorName;
+                swatch.addEventListener('click', () => {
+                    editLabelColor.value = colorName;
+                    document.querySelectorAll('#edit-label-color-grid .color-swatch').forEach(s => s.classList.remove('selected'));
+                    swatch.classList.add('selected');
+                });
+                editLabelColorGrid.appendChild(swatch);
+            });
+            
+            if (currentColorName) {
+                editLabelColor.value = currentColorName;
+                const currentSwatch = editLabelColorGrid.querySelector(`[data-color-name="${currentColorName}"]`);
+                if (currentSwatch) {
+                    currentSwatch.classList.add('selected');
+                }
+            } else {
+                const firstColorKey = Object.keys(colorOptions)[0];
+                editLabelColor.value = firstColorKey;
+                const firstSwatch = editLabelColorGrid.querySelector(`[data-color-name="${firstColorKey}"]`);
+                if (firstSwatch) {
+                    firstSwatch.classList.add('selected');
                 }
             }
-            setLabelFormColor(currentColorName);
 
-            labelError.textContent = '';
-            labelFormSubmitBtn.textContent = 'Save Changes';
-            labelFormSubmitBtn.className = 'px-5 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition'; // Indigo
-            labelFormCancelBtn.classList.remove('hidden');
-
-            labelForm.onsubmit = handleEditLabel; // Re-wire the onsubmit event
-            
-            // Scroll to top of modal content
-            if (manageLabelsModal.firstElementChild) {
-                manageLabelsModal.firstElementChild.scrollTop = 0;
-            }
+            editLabelModal.classList.remove('hidden');
         }
 
-        // MODIFIED: This function now just opens the modal and populates the list
-        function openAddLabelModal() {
-            deleteLabelError.textContent = '';
+        async function handleEditLabel(e) {
+            e.preventDefault();
+            editLabelError.textContent = '';
             
-            // Setup the color swatches (only need to do this once)
-            if (labelColorGrid.innerHTML === '') {
-                labelColor.innerHTML = '';
-                Object.keys(colorOptions).forEach(colorName => {
-                    const { color, textColor } = colorOptions[colorName];
-                    labelColor.innerHTML += `<option value="${colorName}" class="${color} ${textColor} font-medium">${colorName}</option>`;
-                    const swatch = document.createElement('div');
-                    swatch.className = `color-swatch ${color}`;
-                    swatch.dataset.colorName = colorName;
-                    swatch.title = colorName;
-                    swatch.addEventListener('click', () => {
-                        setLabelFormColor(colorName);
-                    });
-                    labelColorGrid.appendChild(swatch);
-                });
+            const labelKey = editLabelKey.value;
+            const newText = editLabelText.value.trim().toUpperCase();
+            const newHours = parseFloat(editLabelHours.value) || 0; // NEW: Get hours
+            
+            if (!newText) {
+                editLabelError.textContent = 'Label text is required.';
+                return;
             }
             
-            resetLabelFormToCreateMode(); // Set form to "Add" mode
+            if (newText !== labelKey && shiftCodesMap[newText]) {
+                editLabelError.textContent = 'This label text (key) already exists.';
+                return;
+            }
+            
+            const selectedColorName = editLabelColor.value;
+            const colorInfo = colorOptions[selectedColorName];
+            
+            const isDefault = shiftCodesMap[labelKey] ? shiftCodesMap[labelKey].isDefault : false;
 
-            // Populate the list of current labels
+            // UPDATED: Added hours
+            const updatedShiftData = {
+                text: newText,
+                color: colorInfo.color,
+                textColor: colorInfo.textColor,
+                isDefault: isDefault,
+                hours: newHours
+            };
+
+            // *** START OF FIX ***
+            try {
+                const updatePayload = {};
+                
+                if (newText === labelKey) {
+                    // Just update the existing field
+                    updatePayload[`data.${labelKey}`] = updatedShiftData;
+                } else {
+                    // This is a rename. Add the new field and delete the old one.
+                    updatePayload[`data.${newText}`] = updatedShiftData; // Add the new field
+                    updatePayload[`data.${labelKey}`] = deleteField(); // Delete the old field
+                }
+                
+                await updateDoc(shiftCodesDocRef, updatePayload);
+                closeEditLabelModal();
+                
+            } catch (error) {
+                console.error("Error editing label: ", error);
+                editLabelError.textContent = 'Error saving changes.';
+            }
+            // *** END OF FIX ***
+        }
+
+        function openAddLabelModal() {
+            addLabelError.textContent = '';
+            deleteLabelError.textContent = '';
+            newLabelText.value = '';
+            newLabelHours.value = 0; // NEW: Reset hours field
+            newLabelColor.innerHTML = '';
+            addLabelColorGrid.innerHTML = '';
+            let firstColorKey = null;
+            
+            Object.keys(colorOptions).forEach(colorName => {
+                const { color, textColor } = colorOptions[colorName];
+                if (!firstColorKey) firstColorKey = colorName;
+                newLabelColor.innerHTML += `<option value="${colorName}" class="${color} ${textColor} font-medium">${colorName}</option>`;
+                const swatch = document.createElement('div');
+                swatch.className = `color-swatch ${color}`;
+                swatch.dataset.colorName = colorName;
+                swatch.title = colorName;
+                swatch.addEventListener('click', () => {
+                    newLabelColor.value = colorName;
+                    document.querySelectorAll('#add-label-color-grid .color-swatch').forEach(s => s.classList.remove('selected'));
+                    swatch.classList.add('selected');
+                });
+                addLabelColorGrid.appendChild(swatch);
+            });
+            
+            if (firstColorKey) {
+                newLabelColor.value = firstColorKey;
+                const firstSwatch = addLabelColorGrid.querySelector(`[data-color-name="${firstColorKey}"]`);
+                if (firstSwatch) {
+                    firstSwatch.classList.add('selected');
+                }
+            }
+
             labelListUl.innerHTML = '';
             Object.keys(shiftCodesMap).sort().forEach(code => {
                 if (code === '_EMPTY') return;
@@ -1785,10 +1891,11 @@
                 const li = document.createElement('li');
                 li.className = 'flex justify-between items-center p-3';
                 
+                // REFINEMENT 2: Emphasized the hours display with a badge
                 li.innerHTML = `
                     <div class="flex items-center space-x-2">
                         <span class="font-medium px-3 py-1 rounded-lg ${shift.color} ${shift.textColor}">${shift.text}</span>
-                        <span class="text-sm text-gray-600">(${shift.hours || 0}h)</span>
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">${shift.hours || 0}h</span>
                     </div>
                     <div class="flex items-center space-x-2">
                         ${shift.isDefault ? '<span class="text-sm text-gray-500 italic">Default</span>' : ''}
@@ -1800,10 +1907,9 @@
                     </div>
                 `;
                 
-                // MODIFIED: Attach new edit handler
                 li.querySelector('.edit-label-btn').addEventListener('click', (e) => {
                     const key = e.target.getAttribute('data-label-key');
-                    populateLabelFormForEdit(key);
+                    openEditLabelModal(key);
                 });
                 
                 if (!shift.isDefault) {
@@ -1820,18 +1926,18 @@
             manageDropdown.classList.add('hidden');
         }
 
-        // MODIFIED: This is now just for ADDING
         async function handleAddLabel(e) {
             e.preventDefault();
-            labelError.textContent = '';
-            const newCode = labelText.value.trim().toUpperCase();
-            const newHours = parseFloat(labelHours.value) || 0;
-            if (!newCode) { labelError.textContent = 'Label text is required.'; return; }
-            if (shiftCodesMap[newCode]) { labelError.textContent = 'This label already exists.'; return; }
+            addLabelError.textContent = '';
+            const newCode = newLabelText.value.trim().toUpperCase();
+            const newHours = parseFloat(newLabelHours.value) || 0; // NEW: Get hours
+            if (!newCode) { addLabelError.textContent = 'Label text is required.'; return; }
+            if (shiftCodesMap[newCode]) { addLabelError.textContent = 'This label already exists.'; return; }
             
-            const selectedColorName = labelColor.value;
+            const selectedColorName = newLabelColor.value;
             const colorInfo = colorOptions[selectedColorName];
             
+            // UPDATED: Add hours
             const newShiftData = {
                 text: newCode, color: colorInfo.color,
                 textColor: colorInfo.textColor, isDefault: false,
@@ -1839,65 +1945,23 @@
             };
             try {
                 await updateDoc(shiftCodesDocRef, { [`data.${newCode}`]: newShiftData });
-                resetLabelFormToCreateMode(); // Reset form
+                addLabelForm.reset();
+                newLabelHours.value = 0; // NEW: Reset hours field after submit
+                
+                const firstColorKey = Object.keys(colorOptions)[0];
+                newLabelColor.value = firstColorKey;
+                document.querySelectorAll('#add-label-color-grid .color-swatch').forEach(s => s.classList.remove('selected'));
+                const firstSwatch = addLabelColorGrid.querySelector(`[data-color-name="${firstColorKey}"]`);
+                if (firstSwatch) {
+                    firstSwatch.classList.add('selected');
+                }
+
             } catch (error) {
                 console.error("Error adding label: ", error);
-                labelError.textContent = 'Error saving label.';
+                addLabelError.textContent = 'Error saving label.';
             }
         }
         
-        // NEW: This function handles EDITING
-        async function handleEditLabel(e) {
-            e.preventDefault();
-            labelError.textContent = '';
-            
-            const labelKeyToEdit = labelKey.value;
-            const newText = labelText.value.trim().toUpperCase();
-            const newHours = parseFloat(labelHours.value) || 0;
-            
-            if (!newText) {
-                labelError.textContent = 'Label text is required.';
-                return;
-            }
-            
-            if (newText !== labelKeyToEdit && shiftCodesMap[newText]) {
-                labelError.textContent = 'This label text (key) already exists.';
-                return;
-            }
-            
-            const selectedColorName = labelColor.value;
-            const colorInfo = colorOptions[selectedColorName];
-            
-            const isDefault = shiftCodesMap[labelKeyToEdit] ? shiftCodesMap[labelKeyToEdit].isDefault : false;
-
-            const updatedShiftData = {
-                text: newText,
-                color: colorInfo.color,
-                textColor: colorInfo.textColor,
-                isDefault: isDefault,
-                hours: newHours
-            };
-
-            try {
-                const updatePayload = {};
-                
-                if (newText === labelKeyToEdit) {
-                    updatePayload[`data.${labelKeyToEdit}`] = updatedShiftData;
-                } else {
-                    updatePayload[`data.${newText}`] = updatedShiftData;
-                    updatePayload[`data.${labelKeyToEdit}`] = deleteField(); 
-                }
-                
-                await updateDoc(shiftCodesDocRef, updatePayload);
-                resetLabelFormToCreateMode(); // Reset form
-                
-            } catch (error) {
-                console.error("Error editing label: ", error);
-                labelError.textContent = 'Error saving changes.';
-            }
-        }
-
-
         async function handleDeleteLabel(code, text) {
             deleteLabelError.textContent = '';
             showConfirmationModal(
@@ -1906,7 +1970,6 @@
                 async () => {
                     try {
                         await updateDoc(shiftCodesDocRef, { [`data.${code}`]: deleteField() });
-                        resetLabelFormToCreateMode(); // Reset form in case the deleted label was being edited
                     } catch (error) {
                         console.error("Error deleting label: ", error);
                         deleteLabelError.textContent = 'Error deleting label.';
@@ -2284,10 +2347,10 @@
                 }
 
                 if (isDataLoaded) renderRoster();
-                // REFINED: Check if the modal is open, and if so, refresh its list
                 if (manageLabelsModal && !manageLabelsModal.classList.contains('hidden')) {
-                    // Only refresh the list, don't reset the form if user is editing
-                    openAddLabelModal(); // This function now handles repopulating the list
+                    if (editLabelModal && editLabelModal.classList.contains('hidden')) {
+                        openAddLabelModal();
+                    }
                 }
             }, (error) => console.error("Error listening to shift codes: ", error));
         }
@@ -2413,12 +2476,12 @@
 
             manageLabelsBtn.addEventListener('click', openAddLabelModal);
             closeLabelsModalBtn.addEventListener('click', closeAddLabelModal);
-            // REFINED: onsubmit is now handled dynamically
-            // labelForm.addEventListener('submit', handleAddLabel); 
-            labelFormCancelBtn.addEventListener('click', resetLabelFormToCreateMode);
+            addLabelForm.addEventListener('submit', handleAddLabel);
             manageLabelsModal.addEventListener('click', (e) => { if (e.target === manageLabelsModal) closeAddLabelModal(); });
 
-            // REMOVED: EditLabelModal listeners
+            closeEditLabelModalBtn.addEventListener('click', closeEditLabelModal);
+            editLabelForm.addEventListener('submit', handleEditLabel);
+            editLabelModal.addEventListener('click', (e) => { if (e.target === editLabelModal) closeEditLabelModal(); });
 
             manageTeamsBtn.addEventListener('click', openManageTeamsModal);
             closeTeamsModalBtn.addEventListener('click', closeManageTeamsModal);
@@ -2591,18 +2654,12 @@
             manageLabelsBtn = document.getElementById('manage-labels-btn');
             manageLabelsModal = document.getElementById('manage-labels-modal');
             closeLabelsModalBtn = document.getElementById('close-labels-modal');
-            // REFINED: Label form elements
-            labelForm = document.getElementById('label-form');
-            labelFormTitle = document.getElementById('label-form-title');
-            labelKey = document.getElementById('label-key');
-            labelText = document.getElementById('label-text');
-            labelHours = document.getElementById('label-hours');
-            labelColor = document.getElementById('label-color');
-            labelColorGrid = document.getElementById('label-color-grid');
-            labelError = document.getElementById('label-error');
-            labelFormSubmitBtn = document.getElementById('label-form-submit-btn');
-            labelFormCancelBtn = document.getElementById('label-form-cancel-btn');
-            // END REFINED
+            addLabelForm = document.getElementById('add-label-form');
+            newLabelText = document.getElementById('new-label-text');
+            newLabelColor = document.getElementById('new-label-color');
+            newLabelHours = document.getElementById('new-label-hours'); // <-- NEW
+            addLabelColorGrid = document.getElementById('add-label-color-grid');
+            addLabelError = document.getElementById('add-label-error');
             deleteLabelError = document.getElementById('delete-label-error');
             labelListUl = document.getElementById('label-list-ul');
             teamFilterBtn = document.getElementById('team-filter-btn');
@@ -2618,7 +2675,15 @@
             selectAllNamesCheckbox = document.getElementById('select-all-names-checkbox');
             nameFilterList = document.getElementById('name-filter-list');
 
-            // REMOVED: editLabelModal elements
+            editLabelModal = document.getElementById('edit-label-modal');
+            closeEditLabelModalBtn = document.getElementById('close-edit-label-modal');
+            editLabelForm = document.getElementById('edit-label-form');
+            editLabelKey = document.getElementById('edit-label-key');
+            editLabelText = document.getElementById('edit-label-text');
+            editLabelColor = document.getElementById('edit-label-color');
+            editLabelHours = document.getElementById('edit-label-hours'); // <-- NEW
+            editLabelColorGrid = document.getElementById('edit-label-color-grid');
+            editLabelError = document.getElementById('edit-label-error');
 
             confirmModal = document.getElementById('confirm-modal');
             confirmModalTitle = document.getElementById('confirm-modal-title');
