@@ -362,7 +362,7 @@
                                 </svg>
                             </button>
                             <div id="manage-dropdown" class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl z-50 hidden border border-gray-200 divide-y divide-gray-100">
-                                <button id="manage-labels-btn" class="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 transition duration-150">Manage Labels</button>
+                                <button id="manage-labels-btn" class="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 transition duration-150">Manage Labels & Shifts</button>
                                 <button id="manage-teams-btn" class="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 transition duration-150">Manage Teams</button>
                             </div>
                         </div>
@@ -484,15 +484,17 @@
     <div id="manage-labels-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg mx-4 modal-fade-in">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-semibold">Manage Labels & Hours</h3>
-                <!-- REFINEMENT 1: Added classes to make the 'X' a more obvious button -->
+                <!-- EDIT 2: Renamed title as requested -->
+                <h3 class="text-xl font-semibold">Manage Labels & Shift Hours</h3>
+                <!-- EDIT 1: Ensured 'X' exit button is present -->
                 <button id="close-labels-modal" class="text-gray-400 hover:text-gray-600 rounded-full p-1 hover:bg-gray-100">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
             
             <form id="add-label-form" class="p-4 border rounded-lg bg-gray-50 mb-6">
-                <h4 class="text-lg font-medium text-gray-800 mb-3">Create New Label</h4>
+                <!-- EDIT 2: Renamed subtitle as requested -->
+                <h4 class="text-lg font-medium text-gray-800 mb-3">Create New Label / Shift</h4>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label for="new-label-text" class="block text-sm font-medium text-gray-700">Label Text (e.g., "TRAIN")</label>
@@ -529,8 +531,9 @@
     <div id="edit-label-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-[55] hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg mx-4 modal-fade-in">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-semibold">Edit Label & Hours</h3>
-                <!-- REFINEMENT 1: Added classes to make the 'X' a more obvious button -->
+                <!-- EDIT 2: Renamed title as requested -->
+                <h3 class="text-xl font-semibold">Edit Label & Shift Hours</h3>
+                <!-- EDIT 1: Ensured 'X' exit button is present -->
                 <button id="close-edit-label-modal" class="text-gray-400 hover:text-gray-600 rounded-full p-1 hover:bg-gray-100">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
