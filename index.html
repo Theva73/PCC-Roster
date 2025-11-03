@@ -261,7 +261,18 @@
             /* End Single Employee Print */
         }
 
-    </style>
+    
+/* === FORCE BLUE for Total Hours column === */
+.total-hours-cell {
+  color: #2563eb !important;    /* Tailwind text-blue-600 */
+  font-weight: 700 !important;
+  text-align: center !important;
+}
+@media print {
+  .total-hours-cell { color: #1e40af !important; } /* darker blue for print */
+}
+
+</style>
 </head>
 <body class="bg-gray-100">
 
@@ -1087,7 +1098,7 @@
                 }
 
                 // D. NEW: Append Total Hours Cell
-                const totalHoursCell = createCell(totalHours + 'h', 'employee-row text-sm p-3 border-b border-l border-gray-200 text-gray-700 font-bold text-center min-w-[80px]');
+                const totalHoursCell = createCell(totalHours + 'h', 'employee-row text-sm p-3 border-b border-l border-gray-200 font-bold text-center min-w-[80px] total-hours-cell text-blue-600');
                 totalHoursCell.dataset.empId = emp.id;
                 rowCells.push(grid.appendChild(totalHoursCell));
 
@@ -2734,5 +2745,38 @@
 })();
 
 </script>
+
+<script>
+(function(){
+  function run(){
+    const grid = document.getElementById('roster-grid');
+    if (!grid || !grid.classList.contains('grid')) return;
+    // find Total Hrs header col index
+    const headers = grid.querySelectorAll('.header-cell');
+    let th=null;
+    headers.forEach(h=>{
+      const t=(h.textContent||'').trim().toLowerCase();
+      if (t==='total hrs' || t==='total hours') th=h;
+    });
+    if (!th) return;
+    const col = parseInt(getComputedStyle(th).gridColumnStart,10);
+    if (!col) return;
+    const cells = grid.querySelectorAll('.employee-row');
+    cells.forEach(c=>{
+      const cs = parseInt(getComputedStyle(c).gridColumnStart,10);
+      if (cs===col) c.classList.add('total-hours-cell');
+    });
+  }
+  const grid = document.getElementById('roster-grid');
+  if (grid) {
+    run();
+    const obs = new MutationObserver(run);
+    obs.observe(grid, {childList:true, subtree:true});
+  } else {
+    document.addEventListener('DOMContentLoaded', run);
+  }
+})();
+</script>
+
 </body>
 </html>
