@@ -481,10 +481,14 @@
             
             <form id="add-label-form" class="p-4 border rounded-lg bg-gray-50 mb-6">
                 <h4 class="text-lg font-medium text-gray-800 mb-3">Add New Label</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label for="new-label-text" class="block text-sm font-medium text-gray-700">Label Text (e.g., "TRAIN")</label>
                         <input type="text" id="new-label-text" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm" maxlength="5" required>
+                    </div>
+                    <div>
+                        <label for="new-label-hours" class="block text-sm font-medium text-gray-700">Working Hours</label>
+                        <input type="number" id="new-label-hours" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm" value="0" min="0" max="24" step="0.5">
                     </div>
                     <div>
                         <label for="new-label-color" class="block text-sm font-medium text-gray-700">Color</label>
@@ -521,10 +525,14 @@
             
             <form id="edit-label-form" class="p-4 border rounded-lg bg-gray-50 mb-6">
                 <input type="hidden" id="edit-label-key">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label for="edit-label-text" class="block text-sm font-medium text-gray-700">Label Text (e.g., "TRAIN")</label>
                         <input type="text" id="edit-label-text" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm" maxlength="5" required>
+                    </div>
+                    <div>
+                        <label for="edit-label-hours" class="block text-sm font-medium text-gray-700">Working Hours</label>
+                        <input type="number" id="edit-label-hours" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm" value="0" min="0" max="24" step="0.5">
                     </div>
                     <div>
                         <label for="edit-label-color" class="block text-sm font-medium text-gray-700">Color</label>
@@ -774,18 +782,19 @@
         let tempPatternArray = [];
         
         // --- 1. DATA DEFINITIONS ---
+        // UPDATED: Added 'hours' property to each shift code
         const defaultShiftCodes = {
-            '1':    { text: '1',    color: 'bg-white', textColor: 'text-gray-800', isDefault: true },
-            '2':    { text: '2',    color: 'bg-white', textColor: 'text-gray-800', isDefault: true },
-            '1A':   { text: '1A',   color: 'bg-teal-100', textColor: 'text-teal-800', isDefault: true },
-            '2N':   { text: '2N',   color: 'bg-yellow-200', textColor: 'text-yellow-800', isDefault: true },
-            'OFF':  { text: 'OFF',  color: 'bg-green-200', textColor: 'text-green-800', isDefault: true },
-            'AL':   { text: 'AL',   color: 'bg-blue-200', textColor: 'text-blue-800', isDefault: true },
-            'AD':   { text: 'AD',   color: 'bg-cyan-200', textColor: 'text-cyan-800', isDefault: true },
-            'PPT':  { text: 'PPT',  color: 'bg-lime-200', textColor: 'text-lime-800', isDefault: true },
-            'PCT':  { text: 'PCT',  color: 'bg-orange-200', textColor: 'text-orange-800', isDefault: true },
-            'BCLS': { text: 'BCLS', color: 'bg-red-200', textColor: 'text-red-800', isDefault: true },
-            '_EMPTY': { text: '',   color: 'bg-gray-50', textColor: 'text-gray-400', isDefault: true } // Empty
+            '1':    { text: '1',    color: 'bg-white', textColor: 'text-gray-800', isDefault: true, hours: 8 },
+            '2':    { text: '2',    color: 'bg-white', textColor: 'text-gray-800', isDefault: true, hours: 8 },
+            '1A':   { text: '1A',   color: 'bg-teal-100', textColor: 'text-teal-800', isDefault: true, hours: 12 },
+            '2N':   { text: '2N',   color: 'bg-yellow-200', textColor: 'text-yellow-800', isDefault: true, hours: 12 },
+            'OFF':  { text: 'OFF',  color: 'bg-green-200', textColor: 'text-green-800', isDefault: true, hours: 0 },
+            'AL':   { text: 'AL',   color: 'bg-blue-200', textColor: 'text-blue-800', isDefault: true, hours: 0 },
+            'AD':   { text: 'AD',   color: 'bg-cyan-200', textColor: 'text-cyan-800', isDefault: true, hours: 0 },
+            'PPT':  { text: 'PPT',  color: 'bg-lime-200', textColor: 'text-lime-800', isDefault: true, hours: 0 },
+            'PCT':  { text: 'PCT',  color: 'bg-orange-200', textColor: 'text-orange-800', isDefault: true, hours: 0 },
+            'BCLS': { text: 'BCLS', color: 'bg-red-200', textColor: 'text-red-800', isDefault: true, hours: 0 },
+            '_EMPTY': { text: '',   color: 'bg-gray-50', textColor: 'text-gray-400', isDefault: true, hours: 0 } // Empty
         };
         let shiftCodesMap = { ...defaultShiftCodes };
 
@@ -845,14 +854,16 @@
             deleteTeamModalName,
             modalEmployeeNameInput, modalEmployeeIdInput, saveDetailsBtn, saveDetailsStatus, 
             manageLabelsBtn, manageLabelsModal, closeLabelsModalBtn, addLabelForm, 
-            newLabelText, newLabelColor, addLabelColorGrid, addLabelError, 
+            newLabelText, newLabelColor, newLabelHours, // <-- NEW: Added newLabelHours
+            addLabelColorGrid, addLabelError, 
             deleteLabelError, labelListUl,
             teamFilterBtn, teamFilterDropdown, teamFilterList, selectAllTeamsCheckbox,
             manageMenuBtn, manageDropdown,
             modalEmployeeRoleInput,
             nameFilterBtn, nameFilterDropdown, nameFilterSearch, selectAllNamesCheckbox, nameFilterList,
             editLabelModal, closeEditLabelModalBtn, editLabelForm, editLabelKey, 
-            editLabelText, editLabelColor, editLabelColorGrid, editLabelError,
+            editLabelText, editLabelColor, editLabelHours, // <-- NEW: Added editLabelHours
+            editLabelColorGrid, editLabelError,
             employeeCalendarModal, employeeCalendarName, employeeCalendarDetails, 
             employeeCalendarWeekdays, employeeCalendarGrid, closeEmployeeCalendarBtn,
             confirmModal, confirmModalTitle, confirmModalBody, confirmModalCancel, confirmModalConfirm,
@@ -905,10 +916,10 @@
 
         function getShiftForEmployee(emp, fullDate) {
             if (!shiftCodesMap['_EMPTY']) {
-                shiftCodesMap['_EMPTY'] = { text: '', color: 'bg-gray-50', textColor: 'text-gray-400', isDefault: true };
+                shiftCodesMap['_EMPTY'] = defaultShiftCodes['_EMPTY'];
             }
             const emptyShiftInfo = shiftCodesMap['_EMPTY'];
-            const getShiftInfo = (code) => shiftCodesMap[code] || emptyShiftInfo;
+            const getShiftInfo = (code) => shiftCodesMap[code] || { ...emptyShiftInfo, text: code }; // Handle missing codes gracefully
 
             const empRoster = rosterData[emp.id] || {};
             const manualShift = empRoster[fullDate]; 
@@ -954,7 +965,8 @@
                 grid.classList.remove('grid');
                 renderSingleEmployeeCalendarView(visibleEmployees[0], daysInMonth);
             } else {
-                grid.style.gridTemplateColumns = `100px 80px minmax(180px, 1fr) repeat(${daysInMonth}, minmax(60px, 1fr))`;
+                // UPDATED: Added new 80px column for Total Hours
+                grid.style.gridTemplateColumns = `100px 80px minmax(180px, 1fr) 80px repeat(${daysInMonth}, minmax(60px, 1fr))`;
                 grid.classList.add('grid');
                 renderMultiEmployeeGridView(visibleEmployees, daysInMonth);
             }
@@ -974,6 +986,9 @@
             nameHeader.querySelector('#select-all-checkbox').addEventListener('change', (e) => handleSelectAll(e.target.checked));
             grid.appendChild(nameHeader);
             
+            // NEW: Add Total Hours Header
+            grid.appendChild(createCell('Total Hrs', 'header-cell font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 min-w-[80px] text-center'));
+
             for (let day = 1; day <= daysInMonth; day++) {
                 const d = new Date(currentYear, currentMonth, day);
                 const dayName = weekdays[d.getDay()];
@@ -1000,8 +1015,9 @@
             });
             
             if (visibleEmployees.length === 0) {
+                 // UPDATED: Added 1 to span
                  const noDataCell = createCell('No employees to display. Check your team and name filters.', 'text-center p-6 text-gray-500');
-                 noDataCell.style.gridColumn = `span ${3 + daysInMonth}`;
+                 noDataCell.style.gridColumn = `span ${4 + daysInMonth}`;
                  grid.appendChild(noDataCell);
             }
 
@@ -1011,34 +1027,35 @@
 
                 if (teamName !== currentTeamName) {
                     currentTeamName = teamName;
+                    // UPDATED: Added 1 to span
                     const teamHeader = createCell(currentTeamName, 'team-header-row text-left p-3 font-bold text-base text-indigo-700 bg-indigo-50 border-t border-b border-indigo-200');
-                    teamHeader.style.gridColumn = `span ${3 + daysInMonth}`;
-                    teamHeader.dataset.teamId = emp.team_id; // MODIFIED: Add team ID for printing
+                    teamHeader.style.gridColumn = `span ${4 + daysInMonth}`;
+                    teamHeader.dataset.teamId = emp.team_id; 
                     grid.appendChild(teamHeader);
                 }
                 
                 const rowCells = [];
 
-                // MODIFIED: Add data-emp-id to all cells in the row
+                // Service ID Cell
                 const empServiceIdCell = createCell(emp.id, 'employee-row text-sm p-3 border-b border-l border-gray-200 text-gray-600 min-w-[100px] sm:min-w-[120px]');
                 empServiceIdCell.dataset.empId = emp.id;
                 rowCells.push(grid.appendChild(empServiceIdCell));
                 
+                // Emp ID Cell (Sticky)
                 const empShortIdCell = createCell(emp.emp_id || '', 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600 min-w-[80px] sm:min-w-[100px]');
                 empShortIdCell.dataset.empId = emp.id;
                 rowCells.push(grid.appendChild(empShortIdCell));
                 
+                // Name Cell
                 let roleIcon = '';
                 if (emp.role === 'leader') {
                     roleIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor" title="Team Leader"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.54-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>';
                 } else if (emp.role === 'assistant') {
                     roleIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" title="Assistant"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.54-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>';
                 }
-
                 const nameCell = document.createElement('div');
                 nameCell.className = 'employee-row text-sm p-3 border-b border-gray-200 text-gray-700 font-medium flex justify-between items-center min-w-[150px] sm:min-w-[200px]';
-                nameCell.dataset.empId = emp.id; // MODIFIED: Add data-emp-id
-
+                nameCell.dataset.empId = emp.id; 
                 const nameContainer = document.createElement('div');
                 nameContainer.className = 'flex items-center space-x-2 cursor-pointer';
                 nameContainer.innerHTML = `
@@ -1046,34 +1063,42 @@
                     ${roleIcon}
                     <span class="break-words whitespace-normal" title="${emp.name}">${emp.name}</span>
                 `;
-
                 const deleteButton = document.createElement('button');
                 deleteButton.className = 'delete-btn text-red-400 hover:text-red-700 font-bold text-xl ml-2 p-0 leading-none rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-100 opacity-0 transition-opacity duration-150';
                 deleteButton.title = `Delete ${emp.name}`;
                 deleteButton.innerHTML = '&#215;';
-
                 nameCell.appendChild(nameContainer);
                 nameCell.appendChild(deleteButton);
-
                 nameCell.querySelector('.emp-checkbox').checked = selectedEmployeeIds.has(emp.id);
                 nameCell.querySelector('.emp-checkbox').addEventListener('change', (e) => handleSelectEmployee(emp.id, e.target.checked));
                 deleteButton.addEventListener('click', () => { openDeleteModal(emp.id, emp.name); });
-
                 nameContainer.addEventListener('click', (e) => {
                     if (e.target.closest('input.emp-checkbox')) return;
                     openEmployeeCalendar(emp.id);
                 });
-                
                 rowCells.push(grid.appendChild(nameCell));
 
+                // C. NEW: Calculate Total Hours
+                let totalHours = 0;
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const fullDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const { shiftInfo } = getShiftForEmployee(emp, fullDate);
+                    totalHours += (shiftInfo.hours || 0); // Add hours, default to 0 if not defined
+                }
 
-                // C. DYNAMIC ROSTER CELLS
+                // D. NEW: Append Total Hours Cell
+                const totalHoursCell = createCell(totalHours + 'h', 'employee-row text-sm p-3 border-b border-l border-gray-200 text-gray-700 font-bold text-center min-w-[80px]');
+                totalHoursCell.dataset.empId = emp.id;
+                rowCells.push(grid.appendChild(totalHoursCell));
+
+
+                // E. DYNAMIC ROSTER CELLS (Existing)
                 for (let day = 1; day <= daysInMonth; day++) {
                     const fullDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                     const { shift, shiftInfo, isAuto } = getShiftForEmployee(emp, fullDate);
                     
                     const dataCell = createCell(shiftInfo.text, `employee-row text-center p-3 border-b border-l border-gray-200 cursor-pointer hover:bg-gray-100 transition duration-150 font-semibold ${shiftInfo.color} ${shiftInfo.textColor}`);
-                    dataCell.dataset.empId = emp.id; // MODIFIED: Add data-emp-id
+                    dataCell.dataset.empId = emp.id; 
                     if (isAuto) dataCell.classList.add('auto-shift');
                     dataCell.addEventListener('click', () => openModal(dataCell, emp.id, emp.name, fullDate));
                     rowCells.push(grid.appendChild(dataCell));
@@ -1112,14 +1137,24 @@
             const team = teamsMap.get(emp.team_id);
             const teamName = team?.name || 'Unassigned';
 
+            // NEW: Calculate Total Hours
+            let totalHours = 0;
+            for (let day = 1; day <= daysInMonth; day++) {
+                const fullDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const { shiftInfo } = getShiftForEmployee(emp, fullDate);
+                totalHours += (shiftInfo.hours || 0);
+            }
+
             const infoHeader = document.createElement('div');
             infoHeader.className = 'p-4 bg-gray-50 border-b border-gray-200';
+            // UPDATED: Added Total Hours to innerHTML
             infoHeader.innerHTML = `
                 <h2 class="text-xl font-bold text-gray-800">${emp.name}</h2>
                 <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600 mt-1">
                     <span><strong>Service ID:</strong> ${emp.id}</span>
                     <span><strong>Emp ID:</strong> ${emp.emp_id || 'N/A'}</span>
                     <span><strong>Team:</strong> ${teamName}</span>
+                    <span class="font-bold text-indigo-600"><strong>Total:</strong> ${totalHours} Hours</span>
                 </div>
             `;
             grid.appendChild(infoHeader);
@@ -1190,7 +1225,20 @@
             const serviceId = emp.id || '';
             const empIdStr = emp.emp_id || '';
             const teamName = teamsMap.get(emp.team_id)?.name || 'Unassigned';
-            employeeCalendarDetails.textContent = `Service ID: ${serviceId}${empIdStr ? ' \u2022 Emp ID: ' + empIdStr : ''}${teamName ? ' \u2022 Team: ' + teamName : ''}`;
+            
+            // NEW: Calculate total hours for the modal
+            const year = currentYear;
+            const month = currentMonth;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            let totalHours = 0;
+            for (let day = 1; day <= daysInMonth; day++) {
+                const fullDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const { shiftInfo } = getShiftForEmployee(emp, fullDate);
+                totalHours += (shiftInfo.hours || 0);
+            }
+            
+            // UPDATED: Added Total Hours
+            employeeCalendarDetails.textContent = `Service ID: ${serviceId}${empIdStr ? ' \u2022 Emp ID: ' + empIdStr : ''}${teamName ? ' \u2022 Team: ' + teamName : ''} \u2022 Total Hours: ${totalHours}`;
             
             employeeCalendarWeekdays.innerHTML = '';
             employeeCalendarGrid.innerHTML = '';
@@ -1203,9 +1251,6 @@
                 employeeCalendarWeekdays.appendChild(headerCell);
             });
             
-            const year = currentYear;
-            const month = currentMonth;
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
             const firstDayOfWeek = new Date(year, month, 1).getDay();
             
             for (let i = 0; i < firstDayOfWeek; i++) {
@@ -1214,8 +1259,7 @@
                 employeeCalendarGrid.appendChild(emptyCell);
             }
             
-            const emptyShiftInfo = shiftCodesMap['_EMPTY'] || { text: '', color: 'bg-gray-50', textColor: 'text-gray-400', isDefault: true };
-            const getShiftInfo = (code) => shiftCodesMap[code] || emptyShiftInfo;
+            const emptyShiftInfo = shiftCodesMap['_EMPTY'] || defaultShiftCodes['_EMPTY'];
             
             for (let day = 1; day <= daysInMonth; day++) {
                 const fullDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -1568,7 +1612,7 @@
         
         function renderVisualPatternCells() {
             if (!shiftCodesMap['_EMPTY']) {
-                shiftCodesMap['_EMPTY'] = { text: '', color: 'bg-gray-50', textColor: 'text-gray-400', isDefault: true };
+                shiftCodesMap['_EMPTY'] = defaultShiftCodes['_EMPTY'];
             }
             const emptyShiftInfo = shiftCodesMap['_EMPTY'];
             
@@ -1675,6 +1719,7 @@
             editLabelError.textContent = '';
             editLabelKey.value = labelKey;
             editLabelText.value = shift.text;
+            editLabelHours.value = shift.hours || 0; // NEW: Set hours
             
             editLabelColor.innerHTML = '';
             editLabelColorGrid.innerHTML = '';
@@ -1726,6 +1771,7 @@
             
             const labelKey = editLabelKey.value;
             const newText = editLabelText.value.trim().toUpperCase();
+            const newHours = parseFloat(editLabelHours.value) || 0; // NEW: Get hours
             
             if (!newText) {
                 editLabelError.textContent = 'Label text is required.';
@@ -1742,11 +1788,13 @@
             
             const isDefault = shiftCodesMap[labelKey] ? shiftCodesMap[labelKey].isDefault : false;
 
+            // UPDATED: Added hours
             const updatedShiftData = {
                 text: newText,
                 color: colorInfo.color,
                 textColor: colorInfo.textColor,
-                isDefault: isDefault
+                isDefault: isDefault,
+                hours: newHours
             };
 
             try {
@@ -1772,6 +1820,7 @@
             addLabelError.textContent = '';
             deleteLabelError.textContent = '';
             newLabelText.value = '';
+            newLabelHours.value = 0; // NEW: Reset hours field
             newLabelColor.innerHTML = '';
             addLabelColorGrid.innerHTML = '';
             let firstColorKey = null;
@@ -1807,8 +1856,12 @@
                 const li = document.createElement('li');
                 li.className = 'flex justify-between items-center p-3';
                 
+                // UPDATED: Show hours
                 li.innerHTML = `
-                    <span class="font-medium px-3 py-1 rounded-lg ${shift.color} ${shift.textColor}">${shift.text}</span>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-medium px-3 py-1 rounded-lg ${shift.color} ${shift.textColor}">${shift.text}</span>
+                        <span class="text-sm text-gray-600">(${shift.hours || 0}h)</span>
+                    </div>
                     <div class="flex items-center space-x-2">
                         ${shift.isDefault ? '<span class="text-sm text-gray-500 italic">Default</span>' : ''}
                         <button class="edit-label-btn text-sm text-indigo-600 hover:text-indigo-800 font-medium" data-label-key="${code}">Edit</button>
@@ -1842,17 +1895,23 @@
             e.preventDefault();
             addLabelError.textContent = '';
             const newCode = newLabelText.value.trim().toUpperCase();
+            const newHours = parseFloat(newLabelHours.value) || 0; // NEW: Get hours
             if (!newCode) { addLabelError.textContent = 'Label text is required.'; return; }
             if (shiftCodesMap[newCode]) { addLabelError.textContent = 'This label already exists.'; return; }
+            
             const selectedColorName = newLabelColor.value;
             const colorInfo = colorOptions[selectedColorName];
+            
+            // UPDATED: Add hours
             const newShiftData = {
                 text: newCode, color: colorInfo.color,
-                textColor: colorInfo.textColor, isDefault: false
+                textColor: colorInfo.textColor, isDefault: false,
+                hours: newHours
             };
             try {
                 await updateDoc(shiftCodesDocRef, { [`data.${newCode}`]: newShiftData });
                 addLabelForm.reset();
+                newLabelHours.value = 0; // NEW: Reset hours field after submit
                 
                 const firstColorKey = Object.keys(colorOptions)[0];
                 newLabelColor.value = firstColorKey;
@@ -2563,6 +2622,7 @@
             addLabelForm = document.getElementById('add-label-form');
             newLabelText = document.getElementById('new-label-text');
             newLabelColor = document.getElementById('new-label-color');
+            newLabelHours = document.getElementById('new-label-hours'); // <-- NEW
             addLabelColorGrid = document.getElementById('add-label-color-grid');
             addLabelError = document.getElementById('add-label-error');
             deleteLabelError = document.getElementById('delete-label-error');
@@ -2586,6 +2646,7 @@
             editLabelKey = document.getElementById('edit-label-key');
             editLabelText = document.getElementById('edit-label-text');
             editLabelColor = document.getElementById('edit-label-color');
+            editLabelHours = document.getElementById('edit-label-hours'); // <-- NEW
             editLabelColorGrid = document.getElementById('edit-label-color-grid');
             editLabelError = document.getElementById('edit-label-error');
 
@@ -2675,4 +2736,3 @@
 </script>
 </body>
 </html>
-
