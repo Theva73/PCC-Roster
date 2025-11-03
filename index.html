@@ -357,7 +357,7 @@
                         <div class="relative">
                             <button id="manage-menu-btn" class="p-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition duration-150">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.573-1.066z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826 3.31 2.37-2.37.996.608 2.296.096 2.573-1.066z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                             </button>
@@ -435,8 +435,10 @@
     <!-- MODALS -->
 
     <!-- Shift Selector Modal (Main) -->
-    <div id="shift-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
+    <!-- UPDATED: Replaced items-center with items-start, added p-4 and overflow-y-auto -->
+    <div id="shift-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-start z-50 hidden p-4 overflow-y-auto">
+        <!-- UPDATED: Removed mx-4 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Select Shift & Edit Details</h3>
                 <button id="close-modal" class="text-gray-400 hover:text-gray-600">
@@ -481,8 +483,10 @@
     </div>
 
     <!-- Manage Shift Labels Modal -->
-    <div id="manage-labels-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg mx-4 modal-fade-in">
+    <!-- UPDATED: Replaced items-center with items-start, added p-4 and overflow-y-auto -->
+    <div id="manage-labels-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-start z-50 hidden p-4 overflow-y-auto">
+        <!-- UPDATED: Removed mx-4 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <!-- EDIT 2: Renamed title as requested -->
                 <h3 class="text-xl font-semibold">Manage Labels & Shift Hours</h3>
@@ -515,6 +519,7 @@
                 <div id="add-label-error" class="text-red-600 text-sm mt-3 h-4"></div>
                 <div class="text-right mt-3">
                     <button type="submit" class="px-5 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition">Add Label</button>
+
                 </div>
             </form>
 
@@ -528,8 +533,10 @@
     </div>
 
     <!-- Edit Shift Label Modal -->
-    <div id="edit-label-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-[55] hidden">
-        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg mx-4 modal-fade-in">
+    <!-- UPDATED: Replaced items-center with items-start, added p-4 and overflow-y-auto -->
+    <div id="edit-label-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-start z-[55] hidden p-4 overflow-y-auto">
+        <!-- UPDATED: Removed mx-4 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <!-- EDIT 2: Renamed title as requested -->
                 <h3 class="text-xl font-semibold">Edit Label & Shift Hours</h3>
@@ -568,8 +575,10 @@
     </div>
     
     <!-- Shift Selector Modal (for Pattern Builder) -->
-    <div id="pattern-shift-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[60] hidden">
-        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
+    <!-- UPDATED: Replaced items-center with items-start, added p-4 and overflow-y-auto -->
+    <div id="pattern-shift-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-start z-[60] hidden p-4 overflow-y-auto">
+        <!-- UPDATED: Removed mx-4 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Set Pattern Shift</h3>
                  <button id="close-pattern-modal" class="text-gray-400 hover:text-gray-600">
@@ -582,8 +591,10 @@
     </div>
 
     <!-- Add Employee Modal -->
-    <div id="add-employee-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
+    <!-- UPDATED: Replaced items-center with items-start, added p-4 and overflow-y-auto -->
+    <div id="add-employee-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-start z-50 hidden p-4 overflow-y-auto">
+        <!-- UPDATED: Removed mx-4 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Add New Employee</h3>
                 <button id="close-add-modal" class="text-gray-400 hover:text-gray-600">
@@ -670,8 +681,10 @@
     </div>
 
     <!-- Edit Team (Visual Pattern Builder) Modal -->
-    <div id="edit-team-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-[55] hidden">
-        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-2xl mx-4 modal-fade-in">
+    <!-- UPDATED: Replaced items-center with items-start, added p-4 and overflow-y-auto -->
+    <div id="edit-team-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-start z-[55] hidden p-4 overflow-y-auto">
+        <!-- UPDATED: Removed mx-4 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-2xl modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Edit Team & Pattern</h3>
                 <button id="close-edit-team-modal" class="text-gray-400 hover:text-gray-600">
@@ -735,7 +748,7 @@
             </div>
             <p class="text-gray-600 mb-4">Select which staff to include in the printout.</p>
             <div class="space-y-3">
-                <button id="print-all-visible-btn" class="w-full px-5 py-3 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition duration-150 flex items-center justify-center space-x-2">
+                <button id="print-all-visible-btn" class="w-full px-5 py-3 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-7B00 transition duration-150 flex items-center justify-center space-x-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-8V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
                     <span>Print All Visible Staff</span>
                 </button>
