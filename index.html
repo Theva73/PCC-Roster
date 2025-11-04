@@ -553,11 +553,12 @@
 }
 
 @media print {
-  /* A4 portrait safe sizing */
-  @page { size: A4 portrait; margin: 10mm; }
+  /* A4 portrait safe sizing for daily attendance only */
+  body.printing-daily-list @page { size: A4 portrait; margin: 10mm; }
   #daily-list-content table th, #daily-list-content table td { font-size: 10.5px !important; padding: 2px 4px !important; }
-  thead { display: table-header-group !important; }
-  tr { page-break-inside: avoid !important; }
+  /* Ensure table headers and rows in the daily list behave correctly when printing */
+  #daily-list-content thead { display: table-header-group !important; }
+  #daily-list-content tr { page-break-inside: avoid !important; }
 }
 
 </style>
