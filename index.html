@@ -503,6 +503,54 @@
   text-overflow: ellipsis !important;
 }
 
+/*
+  Responsive adjustments for small screens (mobile):
+  When the viewport is narrow we can't display all seven columns at full width. To
+  ensure the remarks column remains visible on mobile devices we make the
+  following changes for screens 600px wide or less:
+    • Hide the END TIME column to free horizontal space.
+    • Reduce the width of the NAME, UNIT and START columns and allow them to wrap.
+    • Allow the REMARKS column to wrap and increase its width slightly.
+  These rules rely on the original column order (after hiding TEAM and ROLE) so
+  nth‑child indices still reference the unhidden positions. If additional columns
+  are added in the future adjust the indices accordingly.
+*/
+@media (max-width: 600px) {
+  /* Hide END (8th child) column on mobile */
+  #daily-list-content table th:nth-child(8),
+  #daily-list-content table td:nth-child(8) {
+    display: none !important;
+  }
+
+  /* NAME column: shrink width and allow wrapping */
+  #daily-list-content table th:nth-child(3),
+  #daily-list-content table td:nth-child(3) {
+    width: 30mm !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+
+  /* UNIT column: slightly narrower */
+  #daily-list-content table th:nth-child(6),
+  #daily-list-content table td:nth-child(6) {
+    width: 18mm !important;
+  }
+
+  /* START column: slightly narrower */
+  #daily-list-content table th:nth-child(7),
+  #daily-list-content table td:nth-child(7) {
+    width: 12mm !important;
+  }
+
+  /* REMARKS column: allow wrapping and widen a bit */
+  #daily-list-content table th:nth-child(9),
+  #daily-list-content table td:nth-child(9) {
+    width: 28mm !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+}
+
 @media print {
   /* A4 portrait safe sizing */
   @page { size: A4 portrait; margin: 10mm; }
