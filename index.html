@@ -459,6 +459,32 @@
   th.col-remark,td.col-remark{ width: 20mm !important; }
 }
 
+
+/* === Embedded by ChatGPT: NAME no-overlap (Daily Attendance) === */
+#daily-list-content table {
+  table-layout: fixed !important; /* lock column widths */
+}
+#daily-list-content table th, 
+#daily-list-content table td {
+  box-sizing: border-box !important; /* avoid bleed when borders/padding applied */
+}
+/* Fix NAME overlap by constraining width and adding ellipsis */
+#daily-list-content table th:nth-child(3),
+#daily-list-content table td:nth-child(3) {
+  width: 70mm !important;         /* fixed width for NAME */
+  white-space: nowrap !important;
+  overflow: hidden !important;     /* stop visual overlap into UNIT */
+  text-overflow: ellipsis !important;
+}
+/* Keep UNIT stable so NAME cannot push into it */
+#daily-list-content table th:nth-child(4),
+#daily-list-content table td:nth-child(4) {
+  width: 22mm !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
 </style>
 </head>
 <body class="bg-gray-100">
