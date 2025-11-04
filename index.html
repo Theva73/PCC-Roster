@@ -468,7 +468,8 @@
 /* NAME (3rd column): fixed width, single line, ellipsis */
 #daily-list-content table th:nth-child(3),
 #daily-list-content table td:nth-child(3) {
-  width: 70mm !important;
+  /* Shrink NAME column width slightly to free space for other columns */
+  width: 60mm !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
