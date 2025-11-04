@@ -439,6 +439,26 @@
   body.printing-daily-list #daily-list-content table td:nth-child(5) { display:none !important; }
 }
 
+
+/* === Embedded by ChatGPT: Fix NAME overlap & rebalance widths (A4 portrait) === */
+@media print {
+  th.col-sn,    td.col-sn    { width: 6mm  !important; text-align:center !important; }
+  th.col-empid, td.col-empid { width: 16mm !important; }
+  th.col-rank,  td.col-rank  { width: 12mm !important; }
+  th.col-svc,   td.col-svc   { width: 16mm !important; }
+  th.col-name,  td.col-name  {
+    width: 70mm !important;             /* much wider for long names */
+    white-space: nowrap !important;
+    overflow: hidden !important;        /* prevent overlap into UNIT */
+    text-overflow: clip !important;     /* print full where possible; clip at edge */
+    font-size: 10.5px !important;
+  }
+  th.col-unit,  td.col-unit  { width: 18mm !important; }
+  th.col-start, td.col-start { width: 14mm !important; text-align:center !important; }
+  th.col-end,   td.col-end   { width: 14mm !important; text-align:center !important; }
+  th.col-remark,td.col-remark{ width: 20mm !important; }
+}
+
 </style>
 </head>
 <body class="bg-gray-100">
