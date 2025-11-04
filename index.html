@@ -417,13 +417,13 @@
 #daily-list-content table td:nth-child(5) {
   display: none !important; /* hide TEAM and ROLE everywhere */
 }
-
-/* Make NAME full-length (no wrap, no ellipsis) */
+/* Fix NAME overlap by constraining width and adding ellipsis */
 #daily-list-content table th:nth-child(3),
 #daily-list-content table td:nth-child(3) {
+  width: 70mm !important; /* Set fixed width */
   white-space: nowrap !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
+  overflow: hidden !important; /* STOP the overlap */
+  text-overflow: ellipsis !important; /* Show ... for long names */
 }
 
 /* Ensure fit on A4 portrait both screen preview and print */
@@ -3453,4 +3453,3 @@
 </script>
 </body>
 </html>
-
