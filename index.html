@@ -460,29 +460,54 @@
 }
 
 
-/* === Embedded by ChatGPT: NAME no-overlap (Daily Attendance) === */
-#daily-list-content table {
-  table-layout: fixed !important; /* lock column widths */
-}
-#daily-list-content table th, 
-#daily-list-content table td {
-  box-sizing: border-box !important; /* avoid bleed when borders/padding applied */
-}
-/* Fix NAME overlap by constraining width and adding ellipsis */
+/* === Embedded by ChatGPT: Daily Attendance print/layout fixes (Nov 5, 2025) === */
+#daily-list-content table { table-layout: fixed !important; }
+#daily-list-content table th, #daily-list-content table td { box-sizing: border-box !important; }
+
+/* NAME (3rd column): fixed width, single line, ellipsis */
 #daily-list-content table th:nth-child(3),
 #daily-list-content table td:nth-child(3) {
-  width: 70mm !important;         /* fixed width for NAME */
+  width: 70mm !important;
   white-space: nowrap !important;
-  overflow: hidden !important;     /* stop visual overlap into UNIT */
+  overflow: hidden !important;
   text-overflow: ellipsis !important;
 }
-/* Keep UNIT stable so NAME cannot push into it */
+
+/* UNIT (4th column): keep stable */
 #daily-list-content table th:nth-child(4),
 #daily-list-content table td:nth-child(4) {
   width: 22mm !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+}
+
+/* START (5th) & END (6th): compact & centered */
+#daily-list-content table th:nth-child(5),
+#daily-list-content table td:nth-child(5),
+#daily-list-content table th:nth-child(6),
+#daily-list-content table td:nth-child(6) {
+  width: 16mm !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+/* REMARKS (7th): ensure visible with width and ellipsis */
+#daily-list-content table th:nth-child(7),
+#daily-list-content table td:nth-child(7) {
+  display: table-cell !important;
+  width: 24mm !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+@media print {
+  /* A4 portrait safe sizing */
+  @page { size: A4 portrait; margin: 10mm; }
+  #daily-list-content table th, #daily-list-content table td { font-size: 10.5px !important; padding: 2px 4px !important; }
+  thead { display: table-header-group !important; }
+  tr { page-break-inside: avoid !important; }
 }
 
 </style>
@@ -3479,4 +3504,3 @@
 </script>
 </body>
 </html>
-
