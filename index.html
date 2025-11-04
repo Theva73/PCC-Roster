@@ -362,6 +362,33 @@
   .total-hours-cell { color: #1e40af !important; } /* darker blue for print */
 }
 
+
+/* === Embedded by ChatGPT: Daily Attendance A4 Portrait Fit === */
+@media print {
+  body.printing-daily-list @page { size: A4 portrait; margin: 10mm; }
+  body.printing-daily-list table { width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; }
+  body.printing-daily-list th, body.printing-daily-list td {
+    border: 1px solid #999 !important; padding: 2px 4px !important;
+    font-size: 11px !important; line-height: 1.15 !important;
+    white-space: normal !important; word-break: break-word !important;
+  }
+  body.printing-daily-list th.col-sn,    body.printing-daily-list td.col-sn    { width: 6mm  !important; text-align:center !important; }
+  body.printing-daily-list th.col-empid, body.printing-daily-list td.col-empid { width: 18mm !important; }
+  body.printing-daily-list th.col-rank,  body.printing-daily-list td.col-rank  { width: 14mm !important; }
+  body.printing-daily-list th.col-svc,   body.printing-daily-list td.col-svc   { width: 18mm !important; }
+  body.printing-daily-list th.col-name,  body.printing-daily-list td.col-name  { width: auto !important; }
+  body.printing-daily-list th.col-unit,  body.printing-daily-list td.col-unit  { width: 22mm !important; }
+  body.printing-daily-list th.col-start, body.printing-daily-list td.col-start { width: 16mm !important; text-align:center !important; }
+  body.printing-daily-list th.col-end,   body.printing-daily-list td.col-end   { width: 16mm !important; text-align:center !important; }
+  body.printing-daily-list th.col-remark,body.printing-daily-list td.col-remark{ width: 26mm !important; }
+  body.printing-daily-list th.col-act,   body.printing-daily-list td.col-act   { display: none !important; }
+  body.printing-daily-list select, body.printing-daily-list .daily-unit-select {
+    border:none !important; background:transparent !important;
+    appearance:none !important; -webkit-appearance:none !important;
+    font:inherit !important; padding:0 !important;
+  }
+}
+
 </style>
 </head>
 <body class="bg-gray-100">
@@ -3333,5 +3360,26 @@
       </div>
     </div>
 
+<script>
+/* === Embedded by ChatGPT: tag Daily Attendance columns for print-fit === */
+(function(){
+  function tagDailyColumns(scope){
+    try{
+      (scope||document).querySelectorAll('#daily-list-content table').forEach(function(tbl){
+        var map = ['col-sn','col-empid','col-rank','col-svc','col-name','col-unit','col-start','col-end','col-remark','col-act'];
+        var head = tbl.querySelector('thead tr');
+        if(head){ Array.from(head.children).forEach(function(th,i){ th.classList.add(map[i]||('col-'+i)); }); }
+        Array.from(tbl.querySelectorAll('tbody tr')).forEach(function(tr){
+          Array.from(tr.children).forEach(function(td,i){ td.classList.add(map[i]||('col-'+i)); });
+        });
+      });
+    }catch(e){}
+  }
+  document.addEventListener('daily-list-rendered', function(){ tagDailyColumns(); });
+  window.addEventListener('beforeprint', function(){ tagDailyColumns(); });
+  setTimeout(function(){ tagDailyColumns(); }, 1200);
+})();
+
+</script>
 </body>
 </html>
