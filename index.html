@@ -389,6 +389,26 @@
   }
 }
 
+
+/* === Embedded by ChatGPT: No-wrap + Single-page A4 tweaks (iPhone-safe) === */
+@media print {
+  html, body { -webkit-text-size-adjust: 100% !important; }
+  body.printing-daily-list th,
+  body.printing-daily-list td {
+    white-space: nowrap !important;     /* don't wrap names/roles/teams */
+    overflow: hidden !important;        /* clip overflow */
+    text-overflow: ellipsis !important; /* show ... if clipped */
+    font-size: 10.5px !important;       /* slightly smaller to fit */
+    line-height: 1.1 !important;
+    padding: 1.5px 3px !important;      /* tighter padding */
+  }
+  body.printing-daily-list table {
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+  }
+}
+
 </style>
 </head>
 <body class="bg-gray-100">
