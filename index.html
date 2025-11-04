@@ -409,6 +409,36 @@
   }
 }
 
+
+/* === Embedded by ChatGPT (05-Nov-2025): Remove TEAM & ROLE columns (screen + print) and expand NAME === */
+#daily-list-content table th:nth-child(4),
+#daily-list-content table td:nth-child(4),
+#daily-list-content table th:nth-child(5),
+#daily-list-content table td:nth-child(5) {
+  display: none !important; /* hide TEAM and ROLE everywhere */
+}
+
+/* Make NAME full-length (no wrap, no ellipsis) */
+#daily-list-content table th:nth-child(3),
+#daily-list-content table td:nth-child(3) {
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+/* Ensure fit on A4 portrait both screen preview and print */
+@media print {
+  body.printing-daily-list @page { size: A4 portrait; margin: 10mm; }
+  body.printing-daily-list #daily-list-content table { width:100% !important; table-layout: fixed !important; }
+  body.printing-daily-list #daily-list-content th,
+  body.printing-daily-list #daily-list-content td { font-size: 10.5px !important; padding: 2px 4px !important; white-space: nowrap !important; }
+  /* Hide the same columns in print explicitly (safety) */
+  body.printing-daily-list #daily-list-content table th:nth-child(4),
+  body.printing-daily-list #daily-list-content table td:nth-child(4),
+  body.printing-daily-list #daily-list-content table th:nth-child(5),
+  body.printing-daily-list #daily-list-content table td:nth-child(5) { display:none !important; }
+}
+
 </style>
 </head>
 <body class="bg-gray-100">
@@ -3403,4 +3433,3 @@
 </script>
 </body>
 </html>
-
