@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change of Shift Application</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        input:disabled, select:disabled, textarea:disabled,
+        .form-input-readonly {
+            background-color: #f3f4f6;
+            color: #6b7280;
+            cursor: not-allowed;
+            opacity: 1;
+        }
+        .form-section {
+            @apply bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200;
+        }
+        .form-label {
+            @apply block text-sm font-medium text-gray-700 mb-1;
+        }
+        .form-input, .form-select {
+            @apply w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500;
+        }
+        .form-value {
+            @apply w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center;
+        }
+        .btn {
+            @apply w-full px-4 py-2 rounded-lg shadow-md font-semibold text-white transition-all duration-150 flex items-center justify-center space-x-2;
+        }
+        .btn-primary { @apply bg-indigo-600 hover:bg-indigo-700; }
+        .btn-success { @apply bg-green-600 hover:bg-green-700; }
+        .btn-danger { @apply bg-red-600 hover:bg-red-700; }
+        .btn-secondary { @apply bg-gray-500 hover:bg-gray-600; }
+        .btn-whatsapp { @apply bg-green-500 hover:bg-green-600; }
+        
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .status-banner {
+            @apply p-4 rounded-lg text-center font-bold text-lg mb-6;
+        }
+        .status-pending_colleague { @apply bg-yellow-100 text-yellow-800; }
+        .status-pending_manager { @apply bg-blue-100 text-blue-800; }
+        .status-approved { @apply bg-green-100 text-green-800; }
+        .status-rejected_colleague, .status-rejected_manager { @apply bg-red-100 text-red-800; }
+
+        .ts-control {
+            @apply w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus-within:ring-indigo-500 focus-within:border-indigo-500 !important;
+            padding-top: 0.55rem !important;
+            padding-bottom: 0.55rem !important;
+        }
+        .ts-control .ts-input {
+            @apply shadow-none p-0 m-0 !important;
+        }
+        .ts-dropdown {
+            @apply border-gray-300 rounded-lg shadow-lg !important;
+        }
+        .ts-dropdown .ts-option.active, .ts-dropdown .ts-option:hover {
+            @apply bg-indigo-50 text-indigo-700 !important;
+        }
+        .ts-dropdown .optgroup-header {
+            @apply text-xs font-semibold uppercase text-gray-500 bg-gray-50 p-2 !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- Main Container -->
+    <div class="container mx-auto max-w-2xl p-4 py-8">
+        
+        <header class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Change of Shift Application Form</h1>
+            <p class="text-gray-600" id="app-subtitle">Submit a new request or view an existing one.</p>
+        </header>
+
+        <div id="loading-view" class="text-center p-10">
+            <div class="loader"></div>
+            <p id="loading-text" class="text-gray-600">Loading...</p>
+        </div>
+
+        <div id="new-request-view" class="hidden space-y-6">
+            <form id="new-request-form">
+                <!-- Requesting APO's Detail -->
+                <div class="form-section space-y-4">
+                    <h2 class="text-xl font-semibold text-gray-900">1. Requesting APO's Detail</h2>
+                    
+                    <div>
+                        <label for="requesterName" class="form-label">Name:</label>
+                        <select id="requesterName" placeholder="Type to search your name..." required>
+                            <option value="">-- Select Your Name --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="requesterRankId" class="form-label">Emp ID:</label>
+                            <input type="text" id="requesterRankId" class="form-input" disabled>
+                        </div>
+                        <div>
+                            <label for="requesterTeam" class="form-label">Unit/Team:</label>
+                            <input type="text" id="requesterTeam" class="form-input" disabled>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="shiftDate" class="form-label">Date/Day of Change:</label>
+                        <input type="date" id="shiftDate" class="form-input" required>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="requesterOriginalShift" class="form-label">Original Shift:</label>
+                            <input type="text" id="requesterOriginalShift" class="form-input" placeholder="e.g., 2" required>
+                        </div>
+                        <div>
+                            <label for="requesterNewShift" class="form-label">Change Shift to:</label>
+                            <input type="text" id="requesterNewShift" class="form-input form-input-readonly" readonly>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="reason" class="form-label">Reason for change:</label>
+                        <textarea id="reason" rows="2" class="form-input" placeholder="e.g., Family gathering" required></textarea>
+                    </div>
+                </div>
+
+                <!-- Changing with APO's Detail -->
+                <div class="form-section space-y-4">
+                    <h2 class="text-xl font-semibold text-gray-900">2. Changing with APO's Detail</h2>
+                    
+                    <div>
+                        <label for="colleagueName" class="form-label">Name:</label>
+                        <select id="colleagueName" placeholder="Type to search colleague's name..." required>
+                            <option value="">-- Select Requester First --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="colleagueRankId" class="form-label">Emp ID:</label>
+                            <input type="text" id="colleagueRankId" class="form-input" disabled>
+                        </div>
+                        <div>
+                            <label for="colleagueTeam" class="form-label">Unit/Team:</label>
+                            <input type="text" id="colleagueTeam" class="form-input" disabled>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="colleagueOriginalShift" class="form-label">Colleague's Original Shift:</label>
+                            <input type="text" id="colleagueOriginalShift" class="form-input" placeholder="e.g., 1" required>
+                            <p class="text-xs text-gray-500 mt-1">Note: Your 'Change Shift to' should match this.</p>
+                        </div>
+                        <div>
+                            <label for="colleagueNewShift" class="form-label">Colleague's New Shift:</label>
+                            <input type="text" id="colleagueNewShift" class="form-input form-input-readonly" readonly>
+                             <p class="text-xs text-gray-500 mt-1">Note: This should match your 'Original Shift'.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agreement -->
+                <div class="form-section">
+                    <h3 class="font-semibold text-gray-900 mb-2">3. Agreement</h3>
+                    <div class="text-xs text-gray-600 space-y-2">
+                        <p>We, hereby understand and acknowledged that:</p>
+                        <ul class="list-disc list-inside pl-2 space-y-1">
+                            <li>Changes are subject to approval by TL/OIC/OC.</li>
+                            <li>Changes shall only be effective upon approval TL/OIC/OC.</li>
+                            <li>In any event, anyone of us do not turn up as requested, we understand that we are liable to report back to duty as per original shift/roster.</li>
+                            <li>It is our responsibility to remind TL or OIC on the changes.</li>
+                            <li>*All shift changes shall be made at least 7 days before the actual shift for approval by TL/OIC/OC.</li>
+                        </ul>
+                    </div>
+                    <div class="mt-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="agreement" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" required>
+                            <span class="ml-2 text-sm text-gray-700">By submitting, I (the requester) agree to the terms.</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <button type="submit" id="submit-request-btn" class="btn btn-primary">
+                        <span>Submit Request</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- View Request View -->
+        <div id="view-request-view" class="hidden space-y-6">
+            <div id="status-banner-container"></div>
+            
+            <div class="form-section space-y-4">
+                <h2 class="text-xl font-semibold text-gray-900">Request Details</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <span class="form-label">Date of Change:</span>
+                        <div id="view-shiftDate" class="form-value font-bold"></div>
+                    </div>
+                    <div>
+                        <span class="form-label">Reason for Change:</span>
+                        <div id="view-reason" class="form-value"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <!-- Requesting APO -->
+                <div class="form-section space-y-4">
+                    <h3 class="text-lg font-semibold text-indigo-700">Requesting APO</h3>
+                    <div>
+                        <span class="form-label">Name:</span>
+                        <div id="view-requesterName" class="form-value"></div>
+                    </div>
+                    <div>
+                        <span class="form-label">Emp ID:</span>
+                        <div id="view-requesterRankId" class="form-value"></div>
+                    </div>
+                    <div>
+                        <span class="form-label">Unit/Team:</span>
+                        <div id="view-requesterTeam" class="form-value"></div>
+                    </div>
+                    <div>
+                        <span class="form-label">Original Shift:</span>
+                        <div id="view-requesterOriginalShift" class="form-value font-semibold text-red-600"></div>
+                    </div>
+                    <div>
+                        <span class="form-label">Change Shift to:</span>
+                        <div id="view-requesterNewShift" class="form-value font-semibold text-green-600"></div>
+                    </div>
+                    <div>
+                        <span class="form-label">Submitted:</span>
+                        <div id="view-requesterSignature" class="form-value text-sm"></div>
+                    </div>
+                </div>
+                
+                <!-- Changing with APO -->
+                <div class="form-section space-y-4">
+                    <h3 class="text-lg font-semibold text-blue-700">Changing with APO</h3>
+                    <div>
+                        <span class="form-label">Name:</span>
+                        <div id="view-colleagueName" class="form-value"></div>
+                    </div>
+                    <div>
+                        <span class="form-label">Emp ID:</span>
+                        <div id="view-colleagueRankId" class="form-value"></div>
+                    </div>
+                     <div>
+                        <span class="form-label">Unit/Team:</span>
+                        <div id="view-colleagueTeam" class="form-value"></div>
+                    </div>
+                    <div>
+                        <span class="form-label">Original Shift:</span>
+                        <div id="view-colleagueOriginalShift" class="form-value font-semibold text-red-600"></div>
+                    </div>
+                    <div>
+                        <span class="form-label">Change Shift to:</span>
+                        <div id="view-colleagueNewShift" class="form-value font-semibold text-green-600"></div>
+                    </div>
+                    <div>
+                        <span class="form-label">Agreed:</span>
+                        <div id="view-colleagueSignature" class="form-value text-sm"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section space-y-4">
+                <h2 class="text-xl font-semibold text-gray-900">3. Approval / Disapproval</h2>
+                <div>
+                    <span class="form-label">Manager Comments:</span>
+                    <div id="view-managerComments" class="form-value"></div>
+                </div>
+                <div>
+                    <span class="form-label">Supervisor's Signature:</span>
+                    <div id="view-managerSignature" class="form-value text-sm"></div>
+                </div>
+            </div>
+
+            <div id="action-container" class="space-y-4"></div>
+        </div>
+
+        <!-- Success/Message View -->
+        <div id="message-view" class="hidden text-center form-section">
+            <h2 id="message-title" class="text-2xl font-bold text-green-600">Success!</h2>
+            <p id="message-text" class="mt-4 text-gray-700">Your request has been submitted.</p>
+            
+            <a id="whatsapp-share-btn" href="#" target="_blank" class="btn btn-whatsapp mt-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.627-2.961 6.58-6.591 6.58zM5.59 5.603a.35.35 0 0 0-.273.512c.16.32.555 1.22 1.232 1.89C7.882 9.173 8.82 9.3 9.13 9.21c.31-.09.72-.372 1.038-.724.318-.35.555-.8.7-1.285.145-.485.08-.936-.026-1.083-.105-.146-.318-.24-.635-.426-.318-.187-.72-.187-.986-.113-.265.074-.469.165-.65.339-.181.174-.29.4-.395.572-.105.173-.21.265-.364.265-.155 0-.318-.09-.46-.21a4.9 4.9 0 0 1-1.6-1.485 5 5 0 0 1-1.04-1.745s-.105-.146.026-.28c.13-.134.288-.174.395-.21.105-.036.18-.01.264.04s.24.09.352.21c.112.12.164.195.21.318.047.123.027.265-.04.395-.07.13-.127.21-.184.288a.35.35 0 0 1-.264.112c-.09 0-.17-.036-.21-.074-.047-.036-.144-.165-.21-.28z"/>
+                </svg>
+                <span id="whatsapp-share-text">Share on WhatsApp</span>
+            </a>
+
+            <div id="message-link-container" class="mt-6 p-4 bg-gray-100 rounded-lg">
+                <p class="text-sm font-medium text-gray-800">Or copy this link:</p>
+                <input type="text" id="message-link" class="form-input text-sm text-indigo-600" readonly>
+                <button id="copy-link-btn" class="mt-2 px-4 py-2 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700">Copy Link</button>
+                <span id="copy-status" class="ml-2 text-sm text-green-600"></span>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, doc, getDoc, setDoc, updateDoc,
+            collection, query, getDocs, addDoc, serverTimestamp, setLogLevel
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- 0. FIREBASE SETUP ---
+        let firebaseConfig;
+        const standaloneConfig = {
+            apiKey: "AIzaSyAP7b4KcwRYPMZjNc2TWsNqMvC3ywImhOM",
+            authDomain: "roster-4a997.firebaseapp.com",
+            projectId: "roster-4a997",
+            storageBucket: "roster-4a997.firebasestorage.app",
+            messagingSenderId: "901381868881",
+            appId: "1:901381868881:web:92930481d6c1c85fedd770"
+        };
+
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+        } else {
+            firebaseConfig = standaloneConfig;
+        }
+
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        setLogLevel('Debug');
+
+        // --- 1. GLOBAL VARIABLES & COLLECTIONS ---
+        let employeesCollection, teamsCollection, rosterCollection, shiftRequestsCollection;
+        let allEmployees = [];
+        let teamsMap = new Map();
+        let currentRequestId = null;
+        let currentRequestAction = null;
+        let currentRequestData = null;
+        const patternAnchorDate = '2025-01-01';
+
+        let requesterSelect, colleagueSelect;
+
+        // --- 2. DOM ELEMENTS ---
+        const loadingView = document.getElementById('loading-view');
+        const loadingText = document.getElementById('loading-text');
+        const newRequestView = document.getElementById('new-request-view');
+        const viewRequestView = document.getElementById('view-request-view');
+        const messageView = document.getElementById('message-view');
+        const newRequestForm = document.getElementById('new-request-form');
+        
+        const requesterNameSelect = document.getElementById('requesterName');
+        const requesterRankId = document.getElementById('requesterRankId');
+        const requesterTeam = document.getElementById('requesterTeam');
+        const colleagueNameSelect = document.getElementById('colleagueName');
+        const colleagueRankId = document.getElementById('colleagueRankId');
+        const colleagueTeam = document.getElementById('colleagueTeam');
+        const shiftDateInput = document.getElementById('shiftDate');
+        const requesterOriginalShift = document.getElementById('requesterOriginalShift');
+        const requesterNewShift = document.getElementById('requesterNewShift');
+        const colleagueOriginalShift = document.getElementById('colleagueOriginalShift');
+        const colleagueNewShift = document.getElementById('colleagueNewShift');
+
+        const statusBannerContainer = document.getElementById('status-banner-container');
+        const actionContainer = document.getElementById('action-container');
+
+        // --- 3. HELPER FUNCTIONS ---
+
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            currentRequestId = params.get('requestId');
+            currentRequestAction = params.get('action');
+        }
+
+        function showView(view) {
+            loadingView.classList.add('hidden');
+            newRequestView.classList.add('hidden');
+            viewRequestView.classList.add('hidden');
+            messageView.classList.add('hidden');
+            
+            if (view === 'loading') {
+                loadingView.classList.remove('hidden');
+            } else if (view === 'new') {
+                newRequestView.classList.remove('hidden');
+            } else if (view === 'view') {
+                viewRequestView.classList.remove('hidden');
+            } else if (view === 'message') {
+                messageView.classList.remove('hidden');
+            }
+        }
+        
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return "Pending...";
+            let date;
+            if (timestamp.toDate) { date = timestamp.toDate(); } 
+            else { date = new Date(timestamp); }
+            return date.toLocaleString('en-SG', { 
+                dateStyle: 'medium', 
+                timeStyle: 'short',
+                timeZone: 'Asia/Singapore'
+            });
+        }
+        
+        function getDaysBetween(dateStr1, dateStr2) {
+            try {
+                const [y1, m1, d1] = dateStr1.split('-').map(Number);
+                const [y2, m2, d2] = dateStr2.split('-').map(Number);
+                const utcDate1 = Date.UTC(y1, m1 - 1, d1);
+                const utcDate2 = Date.UTC(y2, m2 - 1, d2);
+                if (isNaN(utcDate1) || isNaN(utcDate2)) { return 0; }
+                return Math.round((utcDate1 - utcDate2) / 86400000);
+            } catch (e) { console.error("Error in getDaysBetween", e); return 0; }
+        }
+        
+        function getOppositeShift(shift) {
+            const normalizedShift = shift ? shift.trim().toUpperCase() : "";
+            switch (normalizedShift) {
+                case '1': return '2';
+                case '2': return '1';
+                case '1A': return '2N';
+                case '2N': return '1A';
+                default: return '';
+            }
+        }
+
+        async function fetchInitialData() {
+            if (allEmployees.length > 0 && teamsMap.size > 0) return;
+
+            loadingText.textContent = "Fetching employee and team list...";
+            try {
+                const [empSnapshot, teamSnapshot] = await Promise.all([
+                    getDocs(query(employeesCollection)),
+                    getDocs(query(teamsCollection))
+                ]);
+
+                allEmployees = empSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                allEmployees.sort((a, b) => a.name.localeCompare(b.name));
+                
+                teamsMap.clear();
+                teamSnapshot.docs.forEach(doc => {
+                    teamsMap.set(doc.id, doc.data());
+                });
+
+            } catch (error) {
+                console.error("Error fetching initial data: ", error);
+                loadingText.textContent = "Error fetching data. Cannot proceed.";
+                throw error;
+            }
+        }
+
+        async function getShiftFromRoster(employeeId, date) {
+            if (!employeeId || !date) return "";
+            
+            try {
+                const rosterDocRef = doc(rosterCollection, employeeId);
+                const rosterDocSnap = await getDoc(rosterDocRef);
+                
+                if (rosterDocSnap.exists() && rosterDocSnap.data()[date]) {
+                    return rosterDocSnap.data()[date];
+                }
+
+                const emp = allEmployees.find(e => e.id === employeeId);
+                if (!emp) return "";
+                
+                const team = teamsMap.get(emp.team_id);
+                if (team && team.shiftPattern && team.shiftPattern.length > 0) {
+                    const pattern = team.shiftPattern;
+                    const anchor = team.patternStartDate || patternAnchorDate;
+                    const daysSinceAnchor = getDaysBetween(date, anchor);
+                    
+                    if (isNaN(daysSinceAnchor)) {
+                        console.error("getDaysBetween returned NaN", {date, anchor});
+                        return "";
+                    }
+
+                    const patternIndex = (daysSinceAnchor % pattern.length + pattern.length) % pattern.length;
+                    return pattern[patternIndex] || "";
+                }
+            } catch (error) {
+                console.error(`Error in getShiftFromRoster for ${employeeId} on ${date}:`, error);
+                return "Error";
+            }
+            return "";
+        }
+
+        // --- 4. APP LOGIC - NEW REQUEST ---
+
+        async function initNewRequestForm() {
+            await fetchInitialData();
+            initTomSelectInputs();
+            
+            const today = new Date();
+            today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+            shiftDateInput.min = today.toISOString().split('T')[0];
+
+            shiftDateInput.addEventListener('change', async () => { 
+                await fetchRequesterShiftAndColleagues(); 
+            });
+            
+            newRequestForm.addEventListener('submit', handleFormSubmit);
+            
+            showView('new');
+        }
+
+        function initTomSelectInputs() {
+            const tomSelectSettings = {
+                create: false,
+                sortField: { field: "text", direction: "asc" },
+                valueField: 'value',
+                labelField: 'text',
+                searchField: 'text'
+            };
+
+            const employeeOptions = allEmployees.map(emp => ({
+                value: emp.id,
+                text: emp.name
+            }));
+            
+            requesterSelect = new TomSelect(requesterNameSelect, {
+                ...tomSelectSettings,
+                options: employeeOptions,
+                onChange: async (value) => {
+                    await updateEmployeeDetails(value, 'requester'); 
+                }
+            });
+
+            colleagueSelect = new TomSelect(colleagueNameSelect, {
+                ...tomSelectSettings,
+                onChange: async (value) => {
+                    await updateEmployeeDetails(value, 'colleague');
+                }
+            });
+            
+            colleagueSelect.disable();
+            colleagueSelect.clearOptions();
+            colleagueSelect.addOption({ value: "", text: "-- Select Requester First --" });
+        }
+        
+        async function updateEmployeeDetails(employeeId, type) {
+            const emp = allEmployees.find(e => e.id === employeeId);
+            let rankIdInput, teamInput;
+
+            if (type === 'requester') {
+                rankIdInput = requesterRankId;
+                teamInput = requesterTeam;
+            } else {
+                rankIdInput = colleagueRankId;
+                teamInput = colleagueTeam;
+            }
+
+            if (!emp) {
+                rankIdInput.value = "";
+                teamInput.value = "";
+                return;
+            }
+
+            const team = teamsMap.get(emp.team_id);
+            const teamName = team ? team.name : (emp.team_id || 'N/A');
+
+            rankIdInput.value = emp.emp_id || 'N/A';
+            teamInput.value = teamName;
+            
+            if (type === 'requester') {
+                await fetchRequesterShiftAndColleagues(); 
+            } else {
+                await fetchColleagueShift(employeeId);
+            }
+        }
+        
+        async function fetchColleagueShift(colleagueId) {
+             const date = shiftDateInput.value;
+             if (!date || !colleagueId) return;
+             
+             try {
+                colleagueOriginalShift.value = "Fetching...";
+                const colOrigShift = await getShiftFromRoster(colleagueId, date);
+                colleagueOriginalShift.value = colOrigShift;
+                
+                const colNewShift = getOppositeShift(colOrigShift);
+                colleagueNewShift.value = colNewShift;
+            } catch (error) {
+                console.error("Error fetching colleague shift:", error);
+                colleagueOriginalShift.value = "Error";
+            }
+        }
+
+        async function fetchRequesterShiftAndColleagues() {
+            const date = shiftDateInput.value;
+            const requesterId = requesterSelect.getValue();
+            
+            if (!date || !requesterId) {
+                // If no date or requester, just ensure colleague dropdown is reset
+                await updateColleagueDropdown(requesterId, date, "");
+                return;
+            }
+
+            let reqOrigShift = '';
+            let reqNewShift = '';
+            try {
+                requesterOriginalShift.value = "Fetching...";
+                reqOrigShift = await getShiftFromRoster(requesterId, date);
+                requesterOriginalShift.value = reqOrigShift;
+                reqNewShift = getOppositeShift(reqOrigShift);
+                requesterNewShift.value = reqNewShift;
+            } catch (error) {
+                console.error("Error fetching requester shift:", error);
+                requesterOriginalShift.value = "Error";
+            } 
+            
+            // ALWAYS update colleague dropdown, even if shift fetch failed
+            try {
+                await updateColleagueDropdown(requesterId, date, reqNewShift);
+            } catch (dropdownError) {
+                console.error("Error updating colleague dropdown:", dropdownError);
+                colleagueSelect.disable();
+                colleagueSelect.clearOptions();
+                colleagueSelect.addOption({ value: "", text: "-- Error loading --" });
+                colleagueSelect.enable(); // Enable it so user isn't stuck
+            }
+        }
+
+        async function updateColleagueDropdown(requesterId, date, requesterWantsShift) {
+            const normalizedRequesterWantsShift = requesterWantsShift ? requesterWantsShift.trim().toUpperCase() : "";
+
+            if (!requesterId) {
+                colleagueSelect.disable();
+                colleagueSelect.clearOptions();
+                colleagueSelect.addOption({ value: "", text: "-- Select Requester First --" });
+                return;
+            }
+
+            colleagueSelect.disable();
+            colleagueSelect.clear();
+            colleagueSelect.clearOptions();
+            colleagueSelect.load(onLoad => {
+                onLoad([{ value: "", text: "Loading colleagues..." }]);
+            });
+
+            const requester = allEmployees.find(e => e.id === requesterId);
+            if (!requester) {
+                 colleagueSelect.enable();
+                 return;
+            }
+
+            const requesterTeamId = requester.team_id;
+
+            const eligibleColleagues = allEmployees.filter(emp => 
+                emp.id !== requesterId && emp.team_id !== requesterTeamId
+            );
+
+            let bestMatches = [];
+            let otherColleagues = [];
+
+            if (date && normalizedRequesterWantsShift && normalizedRequesterWantsShift.length > 0) {
+                const shiftPromises = eligibleColleagues.map(colleague => 
+                    getShiftFromRoster(colleague.id, date)
+                );
+                const shifts = await Promise.all(shiftPromises);
+
+                shifts.forEach((shift, index) => {
+                    const colleague = eligibleColleagues[index];
+                    if (shift && shift.trim().toUpperCase() === normalizedRequesterWantsShift) {
+                        bestMatches.push(colleague);
+                    } else {
+                        otherColleagues.push(colleague);
+                    }
+                });
+            } else {
+                otherColleagues = eligibleColleagues;
+            }
+
+            colleagueSelect.clearOptions();
+            colleagueSelect.addOption({ value: "", text: "-- Select Colleague's Name --" });
+
+            if (bestMatches.length > 0) {
+                colleagueSelect.addOptionGroup('best', { label: "Best Matches (Working your desired shift)" });
+                bestMatches.forEach(emp => {
+                    colleagueSelect.addOption({ value: emp.id, text: emp.name, optgroup: 'best' });
+                });
+            }
+
+            if (otherColleagues.length > 0) {
+                colleagueSelect.addOptionGroup('other', { label: "Other Colleagues (Not on your team)" });
+                otherColleagues.forEach(emp => {
+                    colleagueSelect.addOption({ value: emp.id, text: emp.name, optgroup: 'other' });
+                });
+            }
+
+            if (bestMatches.length === 0 && otherColleagues.length === 0) {
+                colleagueSelect.clearOptions();
+                colleagueSelect.addOption({ value: "", text: "-- No eligible colleagues found --" });
+            }
+
+            colleagueSelect.enable();
+            colleagueSelect.setValue("");
+        }
+
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            document.getElementById('submit-request-btn').disabled = true;
+            document.getElementById('submit-request-btn').textContent = "Submitting...";
+
+            const requesterId = requesterSelect.getValue();
+            const colleagueId = colleagueSelect.getValue();
+            
+            if (requesterId === colleagueId) {
+                alert("You cannot change shifts with yourself.");
+                document.getElementById('submit-request-btn').disabled = false;
+                document.getElementById('submit-request-btn').textContent = "Submit Request";
+                return;
+            }
+            if (!requesterId || !colleagueId) {
+                 alert("Please select both a requester and a colleague.");
+                document.getElementById('submit-request-btn').disabled = false;
+                document.getElementById('submit-request-btn').textContent = "Submit Request";
+                return;
+            }
+            
+            const requester = allEmployees.find(e => e.id === requesterId);
+            const colleague = allEmployees.find(e => e.id === colleagueId);
+
+            const requesterTeamObj = teamsMap.get(requester.team_id);
+            const requesterTeamName = requesterTeamObj ? requesterTeamObj.name : (requester.team_id || 'N/A');
+            const colleagueTeamObj = teamsMap.get(colleague.team_id);
+            const colleagueTeamName = colleagueTeamObj ? colleagueTeamObj.name : (colleague.team_id || 'N/A');
+
+            const requestData = {
+                requesterId: requesterId,
+                requesterName: requester.name,
+                requesterRankId: requester.emp_id || 'N/A',
+                requesterTeam: requesterTeamName,
+                
+                colleagueId: colleagueId,
+                colleagueName: colleague.name,
+                colleagueRankId: colleague.emp_id || 'N/A',
+                colleagueTeam: colleagueTeamName,
+                
+                shiftDate: shiftDateInput.value,
+                requesterOriginalShift: requesterOriginalShift.value,
+                requesterNewShift: requesterNewShift.value,
+                colleagueOriginalShift: colleagueOriginalShift.value,
+                colleagueNewShift: colleagueNewShift.value,
+                
+                reason: document.getElementById('reason').value,
+                status: 'pending_colleague',
+                
+                requesterSignatureTimestamp: serverTimestamp(),
+                colleagueSignatureTimestamp: null,
+                managerSignatureTimestamp: null,
+                managerComments: "",
+            };
+
+            if (requestData.requesterNewShift !== requestData.colleagueOriginalShift ||
+                requestData.requesterOriginalShift !== requestData.colleagueNewShift) {
+                
+                alert("Shift mismatch. The requester's new shift must match the colleague's original shift, and vice-versa. Please re-select the names and date.");
+                document.getElementById('submit-request-btn').disabled = false;
+                document.getElementById('submit-request-btn').textContent = "Submit Request";
+                return;
+            }
+
+            try {
+                const docRef = await addDoc(shiftRequestsCollection, requestData);
+                
+                const whatsAppMessage = `Hi ${colleague.name}, ${requester.name} has requested a shift swap with you for ${requestData.shiftDate}. Please review and agree at this link:`;
+                const whatsAppLink = `${window.location.origin}${window.location.pathname}?requestId=${docRef.id}&action=colleague`;
+
+                showMessage(
+                    "Request Submitted!",
+                    `Your request has been created. Please send the link below to <strong>${colleague.name}</strong> for their agreement.`,
+                    whatsAppLink,
+                    whatsAppMessage,
+                    "Share to Colleague"
+                );
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                alert("An error occurred. Please try again.");
+                document.getElementById('submit-request-btn').disabled = false;
+                document.getElementById('submit-request-btn').textContent = "Submit Request";
+            }
+        }
+        
+        function showMessage(title, text, link, whatsAppMessage, buttonText) {
+            document.getElementById('message-title').textContent = title;
+            document.getElementById('message-text').innerHTML = text;
+            const linkInput = document.getElementById('message-link');
+            linkInput.value = link;
+            
+            document.getElementById('copy-link-btn').onclick = () => {
+                linkInput.select();
+                try {
+                    document.execCommand('copy');
+                    document.getElementById('copy-status').textContent = "Copied!";
+                } catch (err) {
+                     document.getElementById('copy-status').textContent = "Error copying.";
+                }
+                setTimeout(() => { document.getElementById('copy-status').textContent = ""; }, 2000);
+            };
+
+            const waBtn = document.getElementById('whatsapp-share-btn');
+            const waBtnText = document.getElementById('whatsapp-share-text');
+
+            if (whatsAppMessage && buttonText) {
+                const encodedMessage = encodeURIComponent(`${whatsAppMessage}\n\n${link}`);
+                const waHref = `https://wa.me/?text=${encodedMessage}`;
+                waBtn.href = waHref;
+                waBtnText.textContent = buttonText;
+                waBtn.classList.remove('hidden');
+            } else {
+                waBtn.classList.add('hidden');
+            }
+
+            showView('message');
+        }
+
+        // --- 5. APP LOGIC - VIEW REQUEST ---
+
+        async function initViewRequest() {
+            await fetchInitialData();
+            loadingText.textContent = "Loading request details...";
+            
+            const docRef = doc(shiftRequestsCollection, currentRequestId);
+            const docSnap = await getDoc(docRef);
+
+            if (!docSnap.exists()) {
+                loadingText.textContent = "Error: This request does not exist.";
+                return;
+            }
+
+            currentRequestData = docSnap.data();
+            
+            document.getElementById('view-shiftDate').textContent = currentRequestData.shiftDate;
+            document.getElementById('view-reason').textContent = currentRequestData.reason;
+            
+            document.getElementById('view-requesterName').textContent = currentRequestData.requesterName;
+            document.getElementById('view-requesterRankId').textContent = currentRequestData.requesterRankId;
+            document.getElementById('view-requesterTeam').textContent = currentRequestData.requesterTeam;
+            document.getElementById('view-requesterOriginalShift').textContent = currentRequestData.requesterOriginalShift;
+            document.getElementById('view-requesterNewShift').textContent = currentRequestData.requesterNewShift;
+            document.getElementById('view-requesterSignature').textContent = formatTimestamp(currentRequestData.requesterSignatureTimestamp);
+            
+            document.getElementById('view-colleagueName').textContent = currentRequestData.colleagueName;
+            document.getElementById('view-colleagueRankId').textContent = currentRequestData.colleagueRankId;
+            document.getElementById('view-colleagueTeam').textContent = currentRequestData.colleagueTeam;
+            document.getElementById('view-colleagueOriginalShift').textContent = currentRequestData.colleagueOriginalShift;
+            document.getElementById('view-colleagueNewShift').textContent = currentRequestData.colleagueNewShift;
+            document.getElementById('view-colleagueSignature').textContent = formatTimestamp(currentRequestData.colleagueSignatureTimestamp);
+            
+            document.getElementById('view-managerComments').textContent = currentRequestData.managerComments || "No comments.";
+            document.getElementById('view-managerSignature').textContent = formatTimestamp(currentRequestData.managerSignatureTimestamp);
+
+            const status = currentRequestData.status;
+            let statusText = status.replace('_', ' ').toUpperCase();
+            statusBannerContainer.innerHTML = `<div class="status-banner status-${status}">${statusText}</div>`;
+
+            renderActionButtons();
+            showView('view');
+        }
+
+        function renderActionButtons() {
+            actionContainer.innerHTML = "";
+            const status = currentRequestData.status;
+
+            if (status === 'pending_colleague' && currentRequestAction === 'colleague') {
+                actionContainer.innerHTML = `
+                    <div class="text-center mb-4">
+                        <h3 class="text-xl font-semibold">Hi ${currentRequestData.colleagueName},</h3>
+                        <p class="text-gray-700">${currentRequestData.requesterName} has requested to change shifts with you. Do you agree?</p>
+                    </div>
+                    <div classs="grid grid-cols-2 gap-4">
+                        <button id="colleague-agree-btn" class="btn btn-success mb-2">I Agree</button>
+                        <button id="colleague-disagree-btn" class="btn btn-danger">I Disagree</button>
+                    </div>
+                `;
+                document.getElementById('colleague-agree-btn').addEventListener('click', () => handleColleagueAction(true));
+                document.getElementById('colleague-disagree-btn').addEventListener('click', () => handleColleagueAction(false));
+            }
+            else if (status === 'pending_manager' && currentRequestAction === 'manager') {
+                 actionContainer.innerHTML = `
+                    <div class="text-center mb-4">
+                        <h3 class="text-xl font-semibold">Manager Approval</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="managerCommentsInput" class="form-label">Comments (Optional):</label>
+                            <textarea id="managerCommentsInput" rows="2" class="form-input"></textarea>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button id="manager-approve-btn" class="btn btn-success">Approve</button>
+                            <button id="manager-reject-btn" class="btn btn-danger">Reject</button>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('manager-approve-btn').addEventListener('click', () => handleManagerAction(true));
+                document.getElementById('manager-reject-btn').addEventListener('click', () => handleManagerAction(false));
+            }
+            else {
+                actionContainer.innerHTML = `<p class="text-center text-gray-600">This request is now finalized. No further actions are needed.</p>`;
+                if (currentRequestAction && (status.includes('approved') || status.includes('rejected'))) {
+                    actionContainer.innerHTML = `<p class="text-center text-gray-600">This request has already been <strong>${status.replace('_', ' ').toUpperCase()}</strong>.</p>`;
+                }
+            }
+        }
+
+        async function handleColleagueAction(didAgree) {
+            const docRef = doc(shiftRequestsCollection, currentRequestId);
+            
+            try {
+                if (didAgree) {
+                    await updateDoc(docRef, {
+                        status: 'pending_manager',
+                        colleagueSignatureTimestamp: serverTimestamp()
+                    });
+                    
+                    const whatsAppMessage = `Hi Manager, this is a shift change request for ${currentRequestData.requesterName} and ${currentRequestData.colleagueName} on ${currentRequestData.shiftDate}. We have both agreed. Please approve:`;
+                    const whatsAppLink = `${window.location.origin}${window.location.pathname}?requestId=${currentRequestId}&action=manager`;
+
+                    showMessage(
+                        "Agreement Submitted!",
+                        `Thank you! Your agreement has been recorded. Please forward the link below to your manager for final approval.`,
+                        whatsAppLink,
+                        whatsAppMessage,
+                        "Share to Manager"
+                    );
+                } else {
+                    await updateDoc(docRef, {
+                        status: 'rejected_colleague',
+                        colleagueSignatureTimestamp: serverTimestamp()
+                    });
+                    showMessage(
+                        "Request Rejected",
+                        `You have rejected this request. The requester has been notified (implicitly).`,
+                        `${window.location.origin}${window.location.pathname}?requestId=${currentRequestId}`,
+                        null, null
+                    );
+                }
+            } catch (error) {
+                console.error("Error updating request: ", error);
+                alert("An error occurred. Please try again.");
+            }
+        }
+        
+        async function handleManagerAction(didApprove) {
+            const docRef = doc(shiftRequestsCollection, currentRequestId);
+            const managerComments = document.getElementById('managerCommentsInput') ? document.getElementById('managerCommentsInput').value : "";
+
+            try {
+                if (didApprove) {
+                    const { requesterId, colleagueId, shiftDate, requesterNewShift, colleagueNewShift } = currentRequestData;
+                    
+                    const requesterRosterRef = doc(rosterCollection, requesterId);
+                    const colleagueRosterRef = doc(rosterCollection, colleagueId);
+                    
+                    await setDoc(requesterRosterRef, { [shiftDate]: requesterNewShift }, { merge: true });
+                    await setDoc(colleagueRosterRef, { [shiftDate]: colleagueNewShift }, { merge: true });
+                    
+                    await updateDoc(docRef, {
+                        status: 'approved',
+                        managerComments: managerComments,
+                        managerSignatureTimestamp: serverTimestamp()
+                    });
+                    
+                    showMessage(
+                        "Request Approved!",
+                        `The request has been approved and the roster has been updated automatically.`,
+                        `${window.location.origin}${window.location.pathname}?requestId=${currentRequestId}`,
+                        null, null
+                    );
+
+                } else {
+                    await updateDoc(docRef, {
+                        status: 'rejected_manager',
+                        managerComments: managerComments,
+                        managerSignatureTimestamp: serverTimestamp()
+                    });
+                    
+                    showMessage(
+                        "Request Rejected",
+                        `The request has been rejected. The roster was not changed.`,
+                        `${window.location.origin}${window.location.pathname}?requestId=${currentRequestId}`,
+                        null, null
+                    );
+                }
+            } catch (error) {
+                console.error("Error finalizing request: ", error);
+                alert("An error occurred. The roster may not have been updated. Please try again.");
+            }
+        }
+
+        // --- 6. INITIALIZATION ---
+        
+        // NEW: Re-implemented auth logic based on your working roster file
+        let authStateProcessed = false;
+        
+        async function initFirebase() {
+            loadingText.textContent = "Authenticating...";
+            
+            const authTimeout = setTimeout(() => {
+                if (!authStateProcessed) {
+                    console.error("Authentication timed out.");
+                    if (loadingText) loadingText.textContent = "Authentication Timed Out. Please check your network and refresh.";
+                }
+            }, 10000); // 10 second timeout
+
+            onAuthStateChanged(auth, async (user) => {
+                authStateProcessed = true;
+                clearTimeout(authTimeout);
+
+                if (user) {
+                    console.log("User authenticated:", user.uid);
+                    loadingText.textContent = "Authentication successful. Loading data...";
+                    
+                    try {
+                        // Define collections *after* auth is successful
+                        employeesCollection = collection(db, "employees");
+                        teamsCollection = collection(db, "teams");
+                        rosterCollection = collection(db, "roster");
+                        shiftRequestsCollection = collection(db, "shiftRequests");
+
+                        // Now run the app logic
+                        getUrlParams();
+                        if (currentRequestId) {
+                            await initViewRequest();
+                        } else {
+                            await initNewRequestForm();
+                        }
+                    } catch (error) {
+                        console.error("Error during app initialization:", error);
+                        loadingText.textContent = `Error: ${error.message}. Please refresh.`;
+                    }
+
+                } else {
+                    console.log("User not signed in.");
+                    loadingText.textContent = "Authentication Failed. User is not signed in.";
+                }
+            });
+
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Authentication Error:", error);
+                authStateProcessed = true;
+                clearTimeout(authTimeout);
+                loadingText.textContent = "Authentication Failed. Please refresh.";
+            }
+        }
+
+        // Start the app
+        initFirebase();
+        
+    </script>
+</body>
+</html>
+
+
