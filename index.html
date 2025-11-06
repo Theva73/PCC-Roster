@@ -561,6 +561,138 @@
   #daily-list-content tr { page-break-inside: avoid !important; }
 }
 
+
+/* =========================
+   PATCH (06-Nov-2025): Split print scopes cleanly
+   - Monthly Roster (A4 landscape) applies when the body DOES NOT have .printing-daily-list
+   - Daily Admission (A4 portrait) remains under .printing-daily-list
+   ========================= */
+
+/* ——— MONTHLY ROSTER PRINT (A4 landscape), scoped away from daily list ——— */
+@media print {
+  /* Page setup only when NOT daily */
+  body:not(.printing-daily-list) @page { size: A4 landscape; margin: 0.5cm; }
+
+  /* Show only the roster area */
+  body:not(.printing-daily-list) .main-container,
+  body:not(.printing-daily-list) #roster-container,
+  body:not(.printing-daily-list) #roster-grid {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    max-height: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide UI chrome in monthly print */
+  body:not(.printing-daily-list) header,
+  body:not(.printing-daily-list) .modal,
+  body:not(.printing-daily-list) #print-modal,
+  body:not(.printing-daily-list) #header-actions,
+  body:not(.printing-daily-list) #batch-delete-container,
+  body:not(.printing-daily-list) .delete-btn,
+  body:not(.printing-daily-list) .emp-checkbox,
+  body:not(.printing-daily-list) .edit-team-btn,
+  body:not(.printing-daily-list) #add-employee-btn,
+  body:not(.printing-daily-list) #team-filter-btn,
+  body:not(.printing-daily-list) #name-filter-btn,
+  body:not(.printing-daily-list) #manage-menu-btn,
+  body:not(.printing-daily-list) #print-btn,
+  body:not(.printing-daily-list) #daily-list-btn {
+    display: none !important;
+  }
+
+  /* Grid enforcement + text */
+  body:not(.printing-daily-list) #roster-grid.grid {
+    display: grid !important;
+    font-size: 10px !important;   /* readability */
+    color: #000 !important;
+  }
+
+  /* Reset stickies for print */
+  body:not(.printing-daily-list) .sticky-col,
+  body:not(.printing-daily-list) .header-cell,
+  body:not(.printing-daily-list) .sticky-header-col {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    z-index: 1 !important;
+    background-color: #f8fafc !important;
+  }
+
+  /* Borders/centering/bold like the previous monthly PDF */
+  body:not(.printing-daily-list) .header-cell,
+  body:not(.printing-daily-list) .employee-row,
+  body:not(.printing-daily-list) .team-header-row {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    border: 1px solid #9ca3af !important;
+    color: #000 !important;
+    padding: 2px 4px !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  /* Center all roster cells (excluding the name sticky cell) and keep bold */
+  body:not(.printing-daily-list) #roster-grid.grid > .employee-row:not(.font-medium),
+  body:not(.printing-daily-list) #roster-grid.grid .header-cell {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    padding: 0 !important;
+  }
+  body:not(.printing-daily-list) #roster-grid.grid > .employee-row:not(.font-medium) > * {
+    display: block !important;
+    width: 100% !important;
+    text-align: center !important;
+    margin: 0 auto !important;
+  }
+
+  /* Preserve label colors but print text black, and show dashed borders for auto shifts */
+  body:not(.printing-daily-list) #roster-grid.grid .employee-row[class*="bg-"],
+  body:not(.printing-daily-list) #roster-grid:not(.grid) .grid > div[class*="bg-"] {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  body:not(.printing-daily-list) #roster-grid .employee-row [class*="text-"],
+  body:not(.printing-daily-list) #roster-grid:not(.grid) .grid > div [class*="text-"] {
+    color: #000 !important;
+  }
+  body:not(.printing-daily-list) .employee-row { font-weight: 700 !important; }
+  body:not(.printing-daily-list) .header-cell,
+  body:not(.printing-daily-list) .team-header-row { font-weight: 600 !important; }
+  body:not(.printing-daily-list) .auto-shift { opacity: 1 !important; border-style: dashed !important; }
+
+  /* Single-employee calendar print (unchanged, just scoped) */
+  body:not(.printing-daily-list) #roster-grid:not(.grid) { padding: 1rem !important; }
+  body:not(.printing-daily-list) #roster-grid:not(.grid) > div { display: block !important; border: none !important; padding: 0 !important; }
+  body:not(.printing-daily-list) #roster-grid:not(.grid) .grid {
+    padding: 0 !important; gap: 1px !important;
+    background-color: #9ca3af !important; border: 1px solid #9ca3af !important;
+  }
+  body:not(.printing-daily-list) #roster-grid:not(.grid) .grid > div {
+    background-color: #fff !important; padding: 2px !important; border: none !important;
+    min-height: 4rem !important; font-size: 10px !important; font-weight: 700 !important;
+    display: flex !important; flex-direction: column !important; justify-content: flex-start !important;
+  }
+  body:not(.printing-daily-list) #roster-grid:not(.grid) .grid > div > div {
+    display: flex !important; flex-grow: 1 !important; align-items: center !important; justify-content: center !important; width: 100% !important;
+  }
+  body:not(.printing-daily-list) #roster-grid:not(.grid) .grid > div > span {
+    flex-grow: 0 !important; flex-shrink: 0 !important;
+  }
+}
+
+/* ——— DAILY ADMISSION PRINT stays as-is under body.printing-daily-list (already present in your file) ——— */
+/* No changes required here. */
 </style>
 </head>
 <body class="bg-gray-100">
@@ -3553,5 +3685,30 @@
 })();
 
 </script>
+
+<script>
+(function () {
+  function byId(id){return document.getElementById(id)}
+  // Monthly roster print
+  var monthlyBtn = byId('print-btn');
+  if (monthlyBtn && !monthlyBtn.__patchedPrint) {
+    monthlyBtn.__patchedPrint = true;
+    monthlyBtn.addEventListener('click', function () {
+      document.body.classList.remove('printing-daily-list');
+      window.print();
+    }, true);
+  }
+  // Daily admission print
+  var dailyBtn = byId('daily-list-btn');
+  if (dailyBtn && !dailyBtn.__patchedPrint) {
+    dailyBtn.__patchedPrint = true;
+    dailyBtn.addEventListener('click', function () {
+      document.body.classList.add('printing-daily-list');
+      window.print();
+    }, true);
+  }
+})();
+</script>
+
 </body>
 </html>
