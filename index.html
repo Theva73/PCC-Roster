@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -86,41 +87,127 @@
 
         /* --- PRINT STYLES --- */
         @media print {
+            /* Hide everything by default */
+            body.printing-daily-list > *:not(#daily-list-modal),
+            body:not(.printing-daily-list) > *:not(.main-container) {
+                display: none !important;
+            }
 
-/* === PRINT: force centering & bold for all roster cells incl. OFF === */
-/* MODIFIED: Corrected selector to target data/ID cells, excluding the name cell */
-#roster-grid.grid > .employee-row:not(.font-medium),
-#roster-grid.grid .header-cell {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    text-align: center !important;
-    font-size: 12px !important;
-    font-weight: 700 !important;
-    padding: 0 !important;
-}
-/* ensure inner tags also center */
-/* MODIFIED: Corrected selector */
-#roster-grid.grid > .employee-row:not(.font-medium) > * {
-    display: block !important;
-    width: 100% !important;
-    text-align: center !important;
-    margin: 0 auto !important;
-}
-/* keep colors and make text dark for print */
-#roster-grid.grid .employee-row[class*="bg-"],
-#roster-grid:not(.grid) .grid > div[class*="bg-"] {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-}
-#roster-grid .employee-row [class*="text-"],
-#roster-grid:not(.grid) .grid > div [class*="text-"] {
-    color: #000 !important;
-}
+            /* --- Daily List Print --- */
+            body.printing-daily-list #daily-list-modal {
+                display: block !important;
+                visibility: visible !important;
+                position: static !important;
+                background: #fff !important;
+            }
+            body.printing-daily-list #daily-list-modal-content {
+                box-shadow: none !important;
+                border: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                height: auto !important;
+                max-height: none !important;
+                overflow: visible !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            body.printing-daily-list #daily-list-header {
+                display: none !important; /* Hide modal header/buttons */
+            }
+            body.printing-daily-list #daily-list-print-header {
+                display: block !important; /* Show print-only header */
+            }
+            body.printing-daily-list #daily-list-content {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+            body.printing-daily-list h1, body.printing-daily-list h2, body.printing-daily-list h3 {
+                page-break-after: avoid;
+            }
+            body.printing-daily-list table {
+                page-break-inside: auto;
+                width: 100% !important;
+                border-collapse: collapse !important;
+            }
+            body.printing-daily-list tr {
+                page-break-inside: avoid;
+            }
+            body.printing-daily-list th, body.printing-daily-list td {
+                border: 1px solid #ddd !important;
+                padding: 4px 6px !important;
+                font-size: 10px !important;
+            }
+            body.printing-daily-list th {
+                background-color: #f4f4f4 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            body.printing-daily-list .shift-group-header {
+                background-color: #e0e7ff !important; /* indigo-100 */
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                font-size: 12px !important;
+                font-weight: bold !important;
+                padding: 6px !important;
+            }
+            
+            /* NEW: Print styles for the Unit dropdown */
+            body.printing-daily-list .daily-unit-select {
+                -webkit-appearance: none !important;
+                appearance: none !important;
+                border: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                font-size: 10px !important;
+                color: #000 !important;
+                width: 100%;
+            }
+            body.printing-daily-list .daily-unit-select option {
+                display: none !important; /* Hide dropdown arrow in print */
+            }
 
-/* Selective print visibility */
-.printing-selective .employee-row { display: none !important; }
-.printing-selective .employee-row.selected-for-print { display: grid !important; }
+
+            /* --- Roster Grid Print --- */
+            body:not(.printing-daily-list) .main-container {
+                display: block !important;
+                visibility: visible !important;
+            }
+
+            /* === PRINT: force centering & bold for all roster cells incl. OFF === */
+            /* MODIFIED: Corrected selector to target data/ID cells, excluding the name cell */
+            #roster-grid.grid > .employee-row:not(.font-medium),
+            #roster-grid.grid .header-cell {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                text-align: center !important;
+                font-size: 12px !important;
+                font-weight: 700 !important;
+                padding: 0 !important;
+            }
+            /* ensure inner tags also center */
+            /* MODIFIED: Corrected selector */
+            #roster-grid.grid > .employee-row:not(.font-medium) > * {
+                display: block !important;
+                width: 100% !important;
+                text-align: center !important;
+                margin: 0 auto !important;
+            }
+            /* keep colors and make text dark for print */
+            #roster-grid.grid .employee-row[class*="bg-"],
+            #roster-grid:not(.grid) .grid > div[class*="bg-"] {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            #roster-grid .employee-row [class*="text-"],
+            #roster-grid:not(.grid) .grid > div [class*="text-"] {
+                color: #000 !important;
+            }
+
+            /* Selective print visibility */
+            .printing-selective .employee-row { display: none !important; }
+            .printing-selective .employee-row.selected-for-print { display: grid !important; }
 
 
             /* Page setup */
@@ -128,12 +215,16 @@
                 size: A4 landscape;
                 margin: 0.5cm;
             }
-
-            /* Hide everything by default */
-            body > *:not(.main-container) { display: none; }
             
+            body.printing-daily-list @page {
+                size: A4 portrait;
+                margin: 1cm;
+            }
+
             /* Show only the roster */
-            .main-container, #roster-container, #roster-grid {
+            body:not(.printing-daily-list) .main-container, 
+            body:not(.printing-daily-list) #roster-container, 
+            body:not(.printing-daily-list) #roster-grid {
                 display: block !important;
                 visibility: visible !important;
                 width: 100% !important;
@@ -149,7 +240,7 @@
             /* Hide all UI elements */
             header, .modal, #print-modal, #header-actions, #batch-delete-container, 
             .delete-btn, .emp-checkbox, .edit-team-btn,
-            #add-employee-btn, #team-filter-btn, #name-filter-btn, #manage-menu-btn, #print-btn {
+            #add-employee-btn, #team-filter-btn, #name-filter-btn, #manage-menu-btn, #print-btn, #daily-list-btn {
                 display: none !important;
             }
 
@@ -272,6 +363,204 @@
   .total-hours-cell { color: #1e40af !important; } /* darker blue for print */
 }
 
+
+/* === Embedded by ChatGPT: Daily Attendance A4 Portrait Fit === */
+@media print {
+  body.printing-daily-list @page { size: A4 portrait; margin: 10mm; }
+  body.printing-daily-list table { width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; }
+  body.printing-daily-list th, body.printing-daily-list td {
+    border: 1px solid #999 !important; padding: 2px 4px !important;
+    font-size: 11px !important; line-height: 1.15 !important;
+    white-space: normal !important; word-break: break-word !important;
+  }
+  body.printing-daily-list th.col-sn,    body.printing-daily-list td.col-sn    { width: 6mm  !important; text-align:center !important; }
+  body.printing-daily-list th.col-empid, body.printing-daily-list td.col-empid { width: 18mm !important; }
+  body.printing-daily-list th.col-rank,  body.printing-daily-list td.col-rank  { width: 14mm !important; }
+  body.printing-daily-list th.col-svc,   body.printing-daily-list td.col-svc   { width: 18mm !important; }
+  body.printing-daily-list th.col-name,  body.printing-daily-list td.col-name  { width: auto !important; }
+  body.printing-daily-list th.col-unit,  body.printing-daily-list td.col-unit  { width: 22mm !important; }
+  body.printing-daily-list th.col-start, body.printing-daily-list td.col-start { width: 16mm !important; text-align:center !important; }
+  body.printing-daily-list th.col-end,   body.printing-daily-list td.col-end   { width: 16mm !important; text-align:center !important; }
+  body.printing-daily-list th.col-remark,body.printing-daily-list td.col-remark{ width: 26mm !important; }
+  body.printing-daily-list th.col-10,   body.printing-daily-list td.col-10   { display: none !important; }
+  body.printing-daily-list select, body.printing-daily-list .daily-unit-select {
+    border:none !important; background:transparent !important;
+    appearance:none !important; -webkit-appearance:none !important;
+    font:inherit !important; padding:0 !important;
+  }
+}
+
+
+/* === Embedded by ChatGPT: No-wrap + Single-page A4 tweaks (iPhone-safe) === */
+@media print {
+  html, body { -webkit-text-size-adjust: 100% !important; }
+  body.printing-daily-list th,
+  body.printing-daily-list td {
+    white-space: nowrap !important;     /* don't wrap names/roles/teams */
+    overflow: hidden !important;        /* clip overflow */
+    text-overflow: ellipsis !important; /* show ... if clipped */
+    font-size: 10.5px !important;       /* slightly smaller to fit */
+    line-height: 1.1 !important;
+    padding: 1.5px 3px !important;      /* tighter padding */
+  }
+  body.printing-daily-list table {
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+  }
+}
+
+
+/* === Embedded by ChatGPT (05-Nov-2025): Remove TEAM & ROLE columns (screen + print) and expand NAME === */
+#daily-list-content table th:nth-child(4),
+#daily-list-content table td:nth-child(4),
+#daily-list-content table th:nth-child(5),
+#daily-list-content table td:nth-child(5) {
+  display: none !important; /* hide TEAM and ROLE everywhere */
+}
+/* Fix NAME overlap by constraining width and adding ellipsis */
+#daily-list-content table th:nth-child(3),
+#daily-list-content table td:nth-child(3) {
+  width: 70mm !important; /* Set fixed width */
+  white-space: nowrap !important;
+  overflow: hidden !important; /* STOP the overlap */
+  text-overflow: ellipsis !important; /* Show ... for long names */
+}
+
+/* Ensure fit on A4 portrait both screen preview and print */
+@media print {
+  body.printing-daily-list @page { size: A4 portrait; margin: 10mm; }
+  body.printing-daily-list #daily-list-content table { width:100% !important; table-layout: fixed !important; }
+  body.printing-daily-list #daily-list-content th,
+  body.printing-daily-list #daily-list-content td { font-size: 10.5px !important; padding: 2px 4px !important; white-space: nowrap !important; }
+  /* Hide the same columns in print explicitly (safety) */
+  body.printing-daily-list #daily-list-content table th:nth-child(4),
+  body.printing-daily-list #daily-list-content table td:nth-child(4),
+  body.printing-daily-list #daily-list-content table th:nth-child(5),
+  body.printing-daily-list #daily-list-content table td:nth-child(5) { display:none !important; }
+}
+
+
+/* === Embedded by ChatGPT: Fix NAME overlap & rebalance widths (A4 portrait) === */
+@media print {
+  th.col-sn,    td.col-sn    { width: 6mm  !important; text-align:center !important; }
+  th.col-empid, td.col-empid { width: 16mm !important; }
+  th.col-rank,  td.col-rank  { width: 12mm !important; }
+  th.col-svc,   td.col-svc   { width: 16mm !important; }
+  th.col-name,  td.col-name  {
+    width: 70mm !important;             /* much wider for long names */
+    white-space: nowrap !important;
+    overflow: hidden !important;        /* prevent overlap into UNIT */
+    text-overflow: clip !important;     /* print full where possible; clip at edge */
+    font-size: 10.5px !important;
+  }
+  th.col-unit,  td.col-unit  { width: 18mm !important; }
+  th.col-start, td.col-start { width: 14mm !important; text-align:center !important; }
+  th.col-end,   td.col-end   { width: 14mm !important; text-align:center !important; }
+  th.col-remark,td.col-remark{ width: 20mm !important; }
+}
+
+
+/* === Embedded by ChatGPT: Daily Attendance print/layout fixes (Nov 5, 2025) === */
+#daily-list-content table { table-layout: fixed !important; }
+#daily-list-content table th, #daily-list-content table td { box-sizing: border-box !important; }
+
+/* NAME (3rd column): fixed width, single line, ellipsis */
+#daily-list-content table th:nth-child(3),
+#daily-list-content table td:nth-child(3) {
+  /* Shrink NAME column width slightly to free space for other columns */
+  width: 60mm !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* UNIT (6th column): keep stable */
+#daily-list-content table th:nth-child(6),
+#daily-list-content table td:nth-child(6) {
+  width: 22mm !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* START (7th) & END (8th): compact & centered */
+#daily-list-content table th:nth-child(7),
+#daily-list-content table td:nth-child(7),
+#daily-list-content table th:nth-child(8),
+#daily-list-content table td:nth-child(8) {
+  width: 16mm !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+/* REMARKS (9th): ensure visible with width and ellipsis */
+#daily-list-content table th:nth-child(9),
+#daily-list-content table td:nth-child(9) {
+  display: table-cell !important;
+  width: 24mm !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/*
+  Responsive adjustments for small screens (mobile):
+  When the viewport is narrow we can't display all seven columns at full width. To
+  ensure the remarks column remains visible on mobile devices we make the
+  following changes for screens 600px wide or less:
+    • Hide the END TIME column to free horizontal space.
+    • Reduce the width of the NAME, UNIT and START columns and allow them to wrap.
+    • Allow the REMARKS column to wrap and increase its width slightly.
+  These rules rely on the original column order (after hiding TEAM and ROLE) so
+  nth‑child indices still reference the unhidden positions. If additional columns
+  are added in the future adjust the indices accordingly.
+*/
+@media (max-width: 600px) {
+  /* Hide END (8th child) column on mobile */
+  #daily-list-content table th:nth-child(8),
+  #daily-list-content table td:nth-child(8) {
+    display: none !important;
+  }
+
+  /* NAME column: shrink width and allow wrapping */
+  #daily-list-content table th:nth-child(3),
+  #daily-list-content table td:nth-child(3) {
+    width: 30mm !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+
+  /* UNIT column: slightly narrower */
+  #daily-list-content table th:nth-child(6),
+  #daily-list-content table td:nth-child(6) {
+    width: 18mm !important;
+  }
+
+  /* START column: slightly narrower */
+  #daily-list-content table th:nth-child(7),
+  #daily-list-content table td:nth-child(7) {
+    width: 12mm !important;
+  }
+
+  /* REMARKS column: allow wrapping and widen a bit */
+  #daily-list-content table th:nth-child(9),
+  #daily-list-content table td:nth-child(9) {
+    width: 28mm !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+}
+
+@media print {
+  /* A4 portrait safe sizing for daily attendance only */
+  body.printing-daily-list @page { size: A4 portrait; margin: 10mm; }
+  #daily-list-content table th, #daily-list-content table td { font-size: 10.5px !important; padding: 2px 4px !important; }
+  /* Ensure table headers and rows in the daily list behave correctly when printing */
+  #daily-list-content thead { display: table-header-group !important; }
+  #daily-list-content tr { page-break-inside: avoid !important; }
+}
+
 </style>
 </head>
 <body class="bg-gray-100">
@@ -357,17 +646,24 @@
                         <div class="relative">
                             <button id="manage-menu-btn" class="p-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition duration-150">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.573-1.066z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826 3.31 2.37-2.37.996.608 2.296.096 2.573-1.066z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                             </button>
                             <div id="manage-dropdown" class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl z-50 hidden border border-gray-200 divide-y divide-gray-100">
-                                <button id="manage-labels-btn" class="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 transition duration-150">Manage Labels</button>
+                                <button id="manage-labels-btn" class="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 transition duration-150">Manage Labels & Shifts</button>
                                 <button id="manage-teams-btn" class="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 transition duration-150">Manage Teams</button>
                             </div>
                         </div>
+                        
+                        <!-- NEW: Daily List Button -->
+                        <button id="daily-list-btn" class="p-2 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition duration-150">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </button>
 
-                        <!-- NEW: Print Button -->
+                        <!-- Print Button -->
                         <button id="print-btn" class="p-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition duration-150">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-8V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -435,8 +731,10 @@
     <!-- MODALS -->
 
     <!-- Shift Selector Modal (Main) -->
-    <div id="shift-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
+    <!-- UPDATED: Replaced items-center with items-start, added p-4 and overflow-y-auto -->
+    <div id="shift-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-start z-50 hidden p-4 overflow-y-auto">
+        <!-- UPDATED: Removed mx-4 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Select Shift & Edit Details</h3>
                 <button id="close-modal" class="text-gray-400 hover:text-gray-600">
@@ -481,17 +779,22 @@
     </div>
 
     <!-- Manage Shift Labels Modal -->
-    <div id="manage-labels-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg mx-4 modal-fade-in">
+    <!-- UPDATED: Replaced items-center with items-start, added p-4 and overflow-y-auto -->
+    <div id="manage-labels-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-start z-50 hidden p-4 overflow-y-auto">
+        <!-- UPDATED: Removed mx-4 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg modal-fade-in">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-semibold">Manage Labels & Hours</h3>
-                <button id="close-labels-modal" class="text-gray-400 hover:text-gray-600">
+                <!-- EDIT 2: Renamed title as requested -->
+                <h3 class="text-xl font-semibold">Manage Labels & Shift Hours</h3>
+                <!-- EDIT 1: Ensured 'X' exit button is present -->
+                <button id="close-labels-modal" class="text-gray-400 hover:text-gray-600 rounded-full p-1 hover:bg-gray-100">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
             
             <form id="add-label-form" class="p-4 border rounded-lg bg-gray-50 mb-6">
-                <h4 class="text-lg font-medium text-gray-800 mb-3">Create New Label</h4>
+                <!-- EDIT 2: Renamed subtitle as requested -->
+                <h4 class="text-lg font-medium text-gray-800 mb-3">Create New Label / Shift</h4>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label for="new-label-text" class="block text-sm font-medium text-gray-700">Label Text (e.g., "TRAIN")</label>
@@ -512,6 +815,7 @@
                 <div id="add-label-error" class="text-red-600 text-sm mt-3 h-4"></div>
                 <div class="text-right mt-3">
                     <button type="submit" class="px-5 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition">Add Label</button>
+
                 </div>
             </form>
 
@@ -525,11 +829,15 @@
     </div>
 
     <!-- Edit Shift Label Modal -->
-    <div id="edit-label-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-[55] hidden">
-        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg mx-4 modal-fade-in">
+    <!-- UPDATED: Replaced items-center with items-start, added p-4 and overflow-y-auto -->
+    <div id="edit-label-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-start z-[55] hidden p-4 overflow-y-auto">
+        <!-- UPDATED: Removed mx-4 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg modal-fade-in">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-semibold">Edit Label & Hours</h3>
-                <button id="close-edit-label-modal" class="text-gray-400 hover:text-gray-600">
+                <!-- EDIT 2: Renamed title as requested -->
+                <h3 class="text-xl font-semibold">Edit Label & Shift Hours</h3>
+                <!-- EDIT 1: Ensured 'X' exit button is present -->
+                <button id="close-edit-label-modal" class="text-gray-400 hover:text-gray-600 rounded-full p-1 hover:bg-gray-100">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
@@ -553,7 +861,7 @@
                 </div>
                 <div id="edit-label-color-grid" class="mt-4 flex flex-wrap gap-2">
                 </div>
-                <div id="edit-label-error" class="text-red-600 text-sm mt-3 h-4"></div>
+                <div id="edit-label-error" classG="text-red-600 text-sm mt-3 h-4"></div>
                 <div class="text-right mt-3">
                     <button type="submit" class="px-5 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition">Save Changes</button>
 
@@ -563,8 +871,10 @@
     </div>
     
     <!-- Shift Selector Modal (for Pattern Builder) -->
-    <div id="pattern-shift-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[60] hidden">
-        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
+    <!-- UPDATED: Replaced items-center with items-start, added p-4 and overflow-y-auto -->
+    <div id="pattern-shift-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-start z-[60] hidden p-4 overflow-y-auto">
+        <!-- UPDATED: Removed mx-4 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Set Pattern Shift</h3>
                  <button id="close-pattern-modal" class="text-gray-400 hover:text-gray-600">
@@ -577,8 +887,10 @@
     </div>
 
     <!-- Add Employee Modal -->
-    <div id="add-employee-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 modal-fade-in">
+    <!-- UPDATED: Replaced items-center with items-start, added p-4 and overflow-y-auto -->
+    <div id="add-employee-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-start z-50 hidden p-4 overflow-y-auto">
+        <!-- UPDATED: Removed mx-4 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Add New Employee</h3>
                 <button id="close-add-modal" class="text-gray-400 hover:text-gray-600">
@@ -665,8 +977,10 @@
     </div>
 
     <!-- Edit Team (Visual Pattern Builder) Modal -->
-    <div id="edit-team-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-[55] hidden">
-        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-2xl mx-4 modal-fade-in">
+    <!-- UPDATED: Replaced items-center with items-start, added p-4 and overflow-y-auto -->
+    <div id="edit-team-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-start z-[55] hidden p-4 overflow-y-auto">
+        <!-- UPDATED: Removed mx-4 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-2xl modal-fade-in">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Edit Team & Pattern</h3>
                 <button id="close-edit-team-modal" class="text-gray-400 hover:text-gray-600">
@@ -719,7 +1033,7 @@
         </div>
     </div>
 
-    <!-- NEW: Print Options Modal -->
+    <!-- Print Options Modal -->
     <div id="print-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4 modal-fade-in">
             <div class="flex justify-between items-center mb-4">
@@ -736,8 +1050,46 @@
                 </button>
                 <button id="print-selected-btn" class="w-full px-5 py-3 bg-gray-600 text-white rounded-lg shadow hover:bg-gray-700 transition duration-150 flex items-center justify-center space-x-2" disabled>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+
                     <span>Print Selected Staff (0)</span>
                 </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- NEW: Daily Attendance List Modal -->
+    <div id="daily-list-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-start justify-center z-50 hidden p-4 overflow-y-auto">
+        <div id="daily-list-modal-content" class="bg-white rounded-2xl shadow-xl w-full max-w-5xl modal-fade-in mt-10"> <!-- MODIFIED: max-w-3xl to max-w-5xl -->
+            <!-- Modal Header -->
+            <div id="daily-list-header" class="flex justify-between items-center p-5 border-b border-gray-200">
+                <div class="flex items-center space-x-4">
+                    <h3 class="text-xl font-semibold text-gray-900">Daily Attendance List</h3>
+                    <input type="date" id="daily-list-date" class="rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button id="print-daily-list-btn" class="p-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition duration-150">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-8V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg>
+                    </button>
+                    <button id="close-daily-list-modal" class="text-gray-400 hover:text-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                    <button id="manage-units-btn" class="px-3 py-1 bg-gray-700 text-white rounded-lg shadow hover:bg-gray-800 transition text-sm">Manage Units</button>
+                    <button id="add-adhoc-row-btn" class="px-3 py-1 bg-green-700 text-white rounded-lg shadow hover:bg-green-800 transition text-sm">+ Ad-hoc Row</button>
+                    <button id="save-adhoc-btn" class="px-3 py-1 bg-indigo-700 text-white rounded-lg shadow hover:bg-indigo-800 transition text-sm">Save Ad-hoc</button>
+                </div>
+            </div>
+            
+            <!-- Print-Only Header -->
+            <div id="daily-list-print-header" class="hidden p-4 border-b border-gray-300">
+                <h1 class="text-2xl font-bold text-center">Daily Attendance Roster</h1>
+                <h2 id="daily-list-print-date" class="text-lg font-semibold text-center text-gray-700"></h2>
+            </div>
+
+            <!-- Modal Body -->
+            <div id="daily-list-content" class="p-6 max-h-[70vh] overflow-y-auto">
+                <!-- Content generated by JavaScript -->
             </div>
         </div>
     </div>
@@ -878,11 +1230,36 @@
             employeeCalendarModal, employeeCalendarName, employeeCalendarDetails, 
             employeeCalendarWeekdays, employeeCalendarGrid, closeEmployeeCalendarBtn,
             confirmModal, confirmModalTitle, confirmModalBody, confirmModalCancel, confirmModalConfirm,
-            // NEW: Print Modal Elements
-            printBtn, printModal, closePrintModalBtn, printAllVisibleBtn, printSelectedBtn;
+            // Print Modal Elements
+            printBtn, printModal, closePrintModalBtn, printAllVisibleBtn, printSelectedBtn,
+            // NEW: Daily List Modal Elements
+            dailyListBtn, dailyListModal, closeDailyListModalBtn, dailyListDate,
+            dailyListContent, printDailyListBtn, dailyListPrintDate;
 
 
         // --- 4. HELPER FUNCTIONS ---
+        // === SHIFT/AUTO-TIME + UNITS GLOBALS ===
+        const SHIFT_TIME_RULES = {
+            morning: { codes: ['1','1A'], start: '08:00', end: '20:00' },
+            night:   { codes: ['2','2N'], start: '20:00', end: '08:00' }
+        };
+        function getStartEndByShiftCode(code){
+            if(!code) return {start:'',end:''};
+            const c=String(code).toUpperCase().trim();
+            if (SHIFT_TIME_RULES.morning.codes.includes(c)) return {start:'08:00', end:'20:00'};
+            if (SHIFT_TIME_RULES.night.codes.includes(c))   return {start:'20:00', end:'08:00'};
+            return {start:'', end:''};
+        }
+        // Units list persisted locally (does not touch DB)
+        const DEFAULT_UNITS = ["PCC","DIVISION SUPPORT","OPS","HQ","BUFFER"];
+        function loadUnits(){ try { return JSON.parse(localStorage.getItem('unitsList')) || DEFAULT_UNITS.slice(); } catch(e){ return DEFAULT_UNITS.slice(); } }
+        function saveUnits(list){ localStorage.setItem('unitsList', JSON.stringify(list)); }
+        let unitsList = loadUnits();
+        // Ad-hoc rows per-date
+        const adhocKeyForDate = (isoDate)=> `dailyAdhoc:${isoDate}`;
+        const loadAdhocRows = (d)=> { try { return JSON.parse(localStorage.getItem(adhocKeyForDate(d))) || []; } catch(e){ return []; } };
+        const saveAdhocRows = (d, rows)=> localStorage.setItem(adhocKeyForDate(d), JSON.stringify(rows||[]));
+
         function getDaysBetween(dateStr1, dateStr2) {
             try {
                 const [y1, m1, d1] = dateStr1.split('-').map(Number);
@@ -906,6 +1283,14 @@
                 case 'leader': return 1;
                 case 'assistant': return 2;
                 default: return 3;
+            }
+        }
+        
+        function getRoleDisplayName(role) {
+            switch (role) {
+                case 'leader': return 'Team Leader';
+                case 'assistant': return 'Assistant';
+                default: return 'Member';
             }
         }
 
@@ -955,6 +1340,315 @@
             }
             return { shift, shiftInfo, isAuto };
         }
+        
+        // --- NEW: Daily List Functions ---
+        function openDailyListModal() {
+            const today = new Date();
+            // Adjust for timezone offset to get local date in YYYY-MM-DD format
+            today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+            dailyListDate.value = today.toISOString().split('T')[0];
+            
+            renderDailyList();
+            dailyListModal.classList.remove('hidden');
+        }
+
+        function closeDailyListModal() {
+            dailyListModal.classList.add('hidden');
+        }
+
+        // === MODIFIED: renderDailyList() function ===
+        function renderDailyList() {
+            const selectedDate = dailyListDate.value;
+            if (!selectedDate) {
+                dailyListContent.innerHTML = `<p class="text-gray-500">Please select a date.</p>`;
+                return;
+            }
+            
+            const formattedDate = new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { 
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+            });
+            dailyListPrintDate.textContent = formattedDate;
+
+            const shiftGroups = {};
+            let totalStaff = 0;
+
+            const visibleEmployees = employeeData.filter(emp => 
+                visibleTeamIDs.has(emp.team_id) && visibleEmployeeIDs.has(emp.id)
+            );
+            
+            // Sort employees by team, then role, then name
+             visibleEmployees.sort((a, b) => {
+                const teamAName = teamsMap.get(a.team_id)?.name || 'Unassigned';
+                const teamBName = teamsMap.get(b.team_id)?.name || 'Unassigned';
+                if (teamAName !== teamBName) return teamAName.localeCompare(teamBName);
+                const roleAValue = getRoleSortValue(a.role);
+                const roleBValue = getRoleSortValue(b.role);
+                if (roleAValue !== roleBValue) return roleAValue - roleBValue;
+                return (a.name || '').localeCompare(b.name || '');
+            });
+
+            visibleEmployees.forEach(emp => {
+                const { shiftInfo } = getShiftForEmployee(emp, selectedDate);
+                const key = shiftInfo.text || 'Unassigned';
+                
+                if (!shiftGroups[key]) {
+                    shiftGroups[key] = {
+                        info: shiftInfo,
+                        employees: []
+                    };
+                }
+                shiftGroups[key].employees.push(emp);
+                totalStaff++;
+            });
+
+            let html = `<h2 class="text-xl font-semibold mb-4">Attendance for ${formattedDate} (${totalStaff} Total Staff)</h2>`;
+            
+            const sortedKeys = Object.keys(shiftGroups).sort((a, b) => {
+                // Sort 'OFF' and 'AL' to the bottom
+                if (a === 'OFF' || a === 'AL') return 1;
+                if (b === 'OFF' || b === 'AL') return -1;
+                // Sort 'Unassigned' to the very bottom
+                if (a === 'Unassigned') return 1;
+                if (b === 'Unassigned') return -1;
+                return a.localeCompare(b);
+            });
+
+            // Build options for Unit dropdown once
+            const unitOptionsHtml = unitsList.map(u=>`<option>${u}</option>`).join('');
+
+            if (sortedKeys.length === 0) {
+                html += `<p class="text-gray-500">No visible staff for this date.</p>`;
+                dailyListContent.innerHTML = html;
+                return;
+            }
+
+            for (const key of sortedKeys) {
+                const group = shiftGroups[key];
+                const shiftInfo = group.info;
+                const employees = group.employees;
+                
+                // NEW: Logic for Start and End Times based on Shift
+                let startTime = '';
+                let endTime = '';
+                const codeUpper = String(shiftInfo.text||'').toUpperCase();
+                if (['1','1A','AM','AM SHIFT','MORNING'].includes(codeUpper)) {
+                    startTime = '08:00'; endTime = '20:00';
+                } else if (['2','2N','PM','NIGHT','NIGHT SHIFT'].includes(codeUpper)) {
+                    startTime = '20:00'; endTime = '08:00';
+                }
+                // Other shifts will remain blank
+
+                html += `
+                    <div class="mb-6">
+                        <h3 class="shift-group-header text-lg font-bold p-3 rounded-t-lg ${shiftInfo.color} ${shiftInfo.textColor}">
+                            ${shiftInfo.text || 'Unassigned'} 
+                            <span class="font-medium">(${employees.length} Staff)</span>
+                        </h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">SN</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Emp ID</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">Team</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Role</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">Unit</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Start Time</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">End Time</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                `;
+
+                employees.forEach((emp, index) => {
+                    const teamName = teamsMap.get(emp.team_id)?.name || 'N/A';
+                    html += `
+                        <tr>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">${index + 1}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">${emp.emp_id || ''}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${emp.name}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">${teamName}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">${getRoleDisplayName(emp.role)}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                                <select class="daily-unit-select w-full border border-gray-300 rounded px-1 py-0.5">
+                                    ${unitOptionsHtml}
+                                </select>
+                            </td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">${startTime}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">${endTime}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                                <!-- Empty for remarks -->
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+            // Append Ad-hoc section
+            const adhocRows = loadAdhocRows(selectedDate);
+            html += `
+                <div class="mb-6">
+                    <h3 class="shift-group-header text-lg font-bold p-3 rounded-t-lg bg-gray-700 text-white">
+                        AD-HOC (Local Only) <span class="font-medium">(${adhocRows.length} Rows)</span>
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table id="adhoc-table" class="min-w-full divide-y divide-gray-200 border border-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-2 w-12 text-xs text-gray-500 uppercase">SN</th>
+                                    <th class="px-4 py-2 w-32 text-xs text-gray-500 uppercase">Emp ID</th>
+                                    <th class="px-4 py-2 text-xs text-gray-500 uppercase">Name</th>
+                                    <th class="px-4 py-2 w-24 text-xs text-gray-500 uppercase">Rank</th>
+                                    <th class="px-4 py-2 w-40 text-xs text-gray-500 uppercase">Team</th>
+                                    <th class="px-4 py-2 w-32 text-xs text-gray-500 uppercase">Role</th>
+                                    <th class="px-4 py-2 w-28 text-xs text-gray-500 uppercase">Unit</th>
+                                    <th class="px-4 py-2 w-24 text-xs text-gray-500 uppercase">Start</th>
+                                    <th class="px-4 py-2 w-24 text-xs text-gray-500 uppercase">End</th>
+                                    <th class="px-4 py-2 w-40 text-xs text-gray-500 uppercase">Remarks</th>
+                                    <th class="px-4 py-2 w-20 text-xs text-gray-500 uppercase"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </div>`;
+            dailyListContent.innerHTML = html;
+            // Fill adhoc body now (needs DOM)
+            const adhocTBody = document.querySelector('#adhoc-table tbody');
+            if (adhocTBody){
+                const unitOptionsHtmlLocal = unitsList.map(u=>`<option>${u}</option>`).join('');
+                adhocRows.forEach((r, i)=>{
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="px-4 py-2 text-sm text-gray-700 text-center">${i+1}</td>
+                        <td class="px-4 py-2 text-sm text-gray-700" contenteditable="true">${r.emp_id||''}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900 font-medium" contenteditable="true">${r.name||''}</td>
+                        <td class="px-4 py-2 text-sm text-gray-700" contenteditable="true">${r.rank||''}</td>
+                        <td class="px-4 py-2 text-sm text-gray-700" contenteditable="true">${r.team||''}</td>
+                        <td class="px-4 py-2 text-sm text-gray-700" contenteditable="true">${r.role||''}</td>
+                        <td class="px-4 py-2 text-sm text-gray-700">
+                            <select class="daily-unit-select w-full border border-gray-300 rounded px-1 py-0.5">
+                                ${unitOptionsHtmlLocal}
+                            </select>
+                        </td>
+                        <td class="px-4 py-2 text-sm text-gray-700" contenteditable="true">${r.start||''}</td>
+                        <td class="px-4 py-2 text-sm text-gray-700" contenteditable="true">${r.end||''}</td>
+                        <td class="px-4 py-2 text-sm text-gray-700" contenteditable="true">${r.remarks||'ADHOC'}</td>
+                        <td class="px-4 py-2 text-sm text-gray-700 text-center">
+                            <button class="del-adhoc px-2 py-1 text-xs bg-red-600 text-white rounded" data-idx="${i}">Delete</button>
+                        </td>
+                    `;
+                    tr.querySelector('select').value = r.unit || (unitsList[0]||'PCC');
+                    adhocTBody.appendChild(tr);
+                });
+                adhocTBody.querySelectorAll('.del-adhoc').forEach(btn=>{
+                    btn.onclick=(e)=>{
+                        const idx = Number(e.currentTarget.dataset.idx);
+                        const d = dailyListDate.value;
+                        const rows = loadAdhocRows(d);
+                        rows.splice(idx,1);
+                        saveAdhocRows(d, rows);
+                        renderDailyList();
+                    };
+                });
+            }
+        }
+        // === END of MODIFIED renderDailyList() ===
+        
+        function printDailyList() {
+            document.body.classList.add('printing-daily-list');
+            window.print();
+        }
+
+        // === Manage Units wiring ===
+        (function(){
+            const manageUnitsBtn = document.getElementById('manage-units-btn');
+            const manageUnitsModal = document.getElementById('manage-units-modal');
+            const closeManageUnits = document.getElementById('close-manage-units');
+            const unitsUl = document.getElementById('units-ul');
+            const newUnitInput = document.getElementById('new-unit-input');
+            const addUnitBtn = document.getElementById('add-unit-btn');
+            function renderUnitsList(){
+              if(!unitsUl) return;
+              unitsUl.innerHTML='';
+              unitsList.forEach((u,idx)=>{
+                const li=document.createElement('li');
+                li.className='flex items-center justify-between px-3 py-2';
+                li.innerHTML=`<span class="text-sm">${u}</span>
+                  <button data-idx="${idx}" class="rm-unit px-2 py-1 text-xs bg-red-600 text-white rounded">Delete</button>`;
+                unitsUl.appendChild(li);
+              });
+              unitsUl.querySelectorAll('.rm-unit').forEach(btn=>{
+                btn.onclick=(e)=>{
+                  const i=Number(e.currentTarget.dataset.idx);
+                  unitsList.splice(i,1); saveUnits(unitsList); renderUnitsList();
+                  // refresh dropdowns
+                  if (typeof renderDailyList==='function') renderDailyList();
+                };
+              });
+            }
+            if (manageUnitsBtn){
+              manageUnitsBtn.onclick = ()=>{ renderUnitsList(); manageUnitsModal.classList.remove('hidden'); };
+            }
+            if (closeManageUnits){ closeManageUnits.onclick = ()=> manageUnitsModal.classList.add('hidden'); }
+            if (addUnitBtn){
+              addUnitBtn.onclick = ()=>{
+                const v=(newUnitInput.value||'').trim(); if(!v) return;
+                if(!unitsList.includes(v)) unitsList.push(v); saveUnits(unitsList); newUnitInput.value=''; renderUnitsList(); 
+                if (typeof renderDailyList==='function') renderDailyList();
+              };
+            }
+        })();
+
+        // === Ad-hoc handling ===
+        (function(){
+            const addBtn = document.getElementById('add-adhoc-row-btn');
+            const saveBtn = document.getElementById('save-adhoc-btn');
+            if (addBtn){
+              addBtn.onclick = ()=>{
+                const d = dailyListDate.value;
+                const rows = loadAdhocRows(d);
+                rows.push({emp_id:'',name:'',rank:'',team:'',role:'',unit: unitsList[0]||'PCC', start:'', end:'', remarks:'ADHOC'});
+                saveAdhocRows(d, rows);
+                renderDailyList();
+              };
+            }
+            if (saveBtn){
+              saveBtn.onclick = ()=>{
+                const d = dailyListDate.value;
+                const table = document.getElementById('adhoc-table');
+                if (!table){ alert('No ad-hoc rows.'); return; }
+                const rows=[];
+                table.querySelectorAll('tbody tr').forEach(tr=>{
+                  const tds = tr.querySelectorAll('td');
+                  rows.push({
+                    emp_id: tds[1].innerText.trim(),
+                    name: tds[2].innerText.trim(),
+                    rank: tds[3].innerText.trim(),
+                    team: tds[4].innerText.trim(),
+                    role: tds[5].innerText.trim(),
+                    unit: tds[6].querySelector('select')?.value || '',
+                    start: tds[7].innerText.trim(),
+                    end:   tds[8].innerText.trim(),
+                    remarks: tds[9].innerText.trim(),
+                  });
+                });
+                saveAdhocRows(d, rows);
+                alert('Ad-hoc entries saved for '+d);
+                renderDailyList();
+              };
+            }
+        })();
+
+        // --- End of Daily List Functions ---
 
         // --- 5. CORE RENDER FUNCTIONS ---
 
@@ -1518,6 +2212,23 @@
                 headerActions.classList.remove('hidden');
                 batchDeleteContainer.classList.add('hidden');
             }
+            
+            // NEW: Also update the print button count
+            const printBtn = document.getElementById('print-selected-btn');
+            if(printBtn) {
+                const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+                if (count > 0) {
+                    printBtn.disabled = false;
+                    printBtn.innerHTML = `${svgIcon} <span>Print Selected Staff (${count})</span>`;
+                    printBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                    printBtn.classList.add('bg-gray-600', 'hover:bg-gray-700');
+                } else {
+                    printBtn.disabled = true;
+                    printBtn.innerHTML = `${svgIcon} <span>Print Selected Staff (0)</span>`;
+                    printBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                    printBtn.classList.remove('bg-gray-600', 'hover:bg-gray-700');
+                }
+            }
         }
         
         function openBatchDeleteModal() {
@@ -1808,14 +2519,17 @@
                 hours: newHours
             };
 
+            // *** START OF FIX ***
             try {
                 const updatePayload = {};
                 
                 if (newText === labelKey) {
+                    // Just update the existing field
                     updatePayload[`data.${labelKey}`] = updatedShiftData;
                 } else {
-                    updatePayload[`data.${newText}`] = updatedShiftData;
-                    updatePayload[`data.${labelKey}`] = deleteField(); 
+                    // This is a rename. Add the new field and delete the old one.
+                    updatePayload[`data.${newText}`] = updatedShiftData; // Add the new field
+                    updatePayload[`data.${labelKey}`] = deleteField(); // Delete the old field
                 }
                 
                 await updateDoc(shiftCodesDocRef, updatePayload);
@@ -1825,6 +2539,7 @@
                 console.error("Error editing label: ", error);
                 editLabelError.textContent = 'Error saving changes.';
             }
+            // *** END OF FIX ***
         }
 
         function openAddLabelModal() {
@@ -1867,11 +2582,11 @@
                 const li = document.createElement('li');
                 li.className = 'flex justify-between items-center p-3';
                 
-                // UPDATED: Show hours
+                // REFINEMENT 2: Emphasized the hours display with a badge
                 li.innerHTML = `
                     <div class="flex items-center space-x-2">
                         <span class="font-medium px-3 py-1 rounded-lg ${shift.color} ${shift.textColor}">${shift.text}</span>
-                        <span class="text-sm text-gray-600">(${shift.hours || 0}h)</span>
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">${shift.hours || 0}h</span>
                     </div>
                     <div class="flex items-center space-x-2">
                         ${shift.isDefault ? '<span class="text-sm text-gray-500 italic">Default</span>' : ''}
@@ -2115,7 +2830,7 @@
             manageDropdown.classList.toggle('hidden');
         }
         
-        // --- NEW: Print Functions ---
+        // --- Print Functions ---
         function openPrintModal() {
             const count = selectedEmployeeIds.size;
             const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
@@ -2525,14 +3240,24 @@
                 e.stopPropagation();
             });
 
-            // NEW: Print Listeners
+            // Print Listeners
             printBtn.addEventListener('click', openPrintModal);
             closePrintModalBtn.addEventListener('click', closePrintModal);
             printModal.addEventListener('click', (e) => { if (e.target === printModal) closePrintModal(); });
             printAllVisibleBtn.addEventListener('click', () => handlePrint(false));
             printSelectedBtn.addEventListener('click', () => handlePrint(true));
+            
+            // NEW: Daily List Listeners
+            dailyListBtn.addEventListener('click', openDailyListModal);
+            closeDailyListModalBtn.addEventListener('click', closeDailyListModal);
+            dailyListModal.addEventListener('click', (e) => { if (e.target === dailyListModal) closeDailyListModal(); });
+            dailyListDate.addEventListener('change', renderDailyList);
+            printDailyListBtn.addEventListener('click', printDailyList);
+
+
             window.onafterprint = () => {
                 document.body.classList.remove('printing-selective');
+                document.body.classList.remove('printing-daily-list');
                 document.querySelectorAll('.no-print').forEach(cell => cell.classList.remove('no-print'));
             };
 
@@ -2674,12 +3399,21 @@
             employeeCalendarGrid = document.getElementById('employee-calendar-grid');
             closeEmployeeCalendarBtn = document.getElementById('close-employee-calendar-btn');
 
-            // NEW: Assign Print Modal Elements
+            // Assign Print Modal Elements
             printBtn = document.getElementById('print-btn');
             printModal = document.getElementById('print-modal');
             closePrintModalBtn = document.getElementById('close-print-modal');
             printAllVisibleBtn = document.getElementById('print-all-visible-btn');
             printSelectedBtn = document.getElementById('print-selected-btn');
+            
+            // NEW: Assign Daily List Modal Elements
+            dailyListBtn = document.getElementById('daily-list-btn');
+            dailyListModal = document.getElementById('daily-list-modal');
+            closeDailyListModalBtn = document.getElementById('close-daily-list-modal');
+            dailyListDate = document.getElementById('daily-list-date');
+            dailyListContent = document.getElementById('daily-list-content');
+            printDailyListBtn = document.getElementById('print-daily-list-btn');
+            dailyListPrintDate = document.getElementById('daily-list-print-date');
         }
 
         // --- 8. INITIALIZATION ---
@@ -2778,5 +3512,46 @@
 })();
 </script>
 
+
+    <!-- Manage Units Modal -->
+    <div id="manage-units-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 hidden z-[61] flex items-start justify-center p-4">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 modal-fade-in mt-16">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">Manage Units</h3>
+          <button id="close-manage-units" class="text-gray-400 hover:text-gray-600">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div class="space-y-2">
+          <ul id="units-ul" class="divide-y border rounded-lg bg-gray-50 max-h-60 overflow-y-auto"></ul>
+          <div class="flex gap-2">
+            <input id="new-unit-input" type="text" placeholder="Add unit (e.g., DIVISION SUPPORT)" class="flex-1 rounded-lg border-gray-300 shadow-sm px-3 py-2">
+            <button id="add-unit-btn" class="px-3 py-2 bg-indigo-600 text-white rounded-lg">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<script>
+/* === Embedded by ChatGPT: tag Daily Attendance columns for print-fit === */
+(function(){
+  function tagDailyColumns(scope){
+    try{
+      (scope||document).querySelectorAll('#daily-list-content table').forEach(function(tbl){
+        var map = ['col-sn','col-empid','col-rank','col-svc','col-name','col-unit','col-start','col-end','col-remark','col-act'];
+        var head = tbl.querySelector('thead tr');
+        if(head){ Array.from(head.children).forEach(function(th,i){ th.classList.add(map[i]||('col-'+i)); }); }
+        Array.from(tbl.querySelectorAll('tbody tr')).forEach(function(tr){
+          Array.from(tr.children).forEach(function(td,i){ td.classList.add(map[i]||('col-'+i)); });
+        });
+      });
+    }catch(e){}
+  }
+  document.addEventListener('daily-list-rendered', function(){ tagDailyColumns(); });
+  window.addEventListener('beforeprint', function(){ tagDailyColumns(); });
+  setTimeout(function(){ tagDailyColumns(); }, 1200);
+})();
+
+</script>
 </body>
 </html>
