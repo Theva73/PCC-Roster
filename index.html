@@ -563,136 +563,142 @@
 
 
 /* =========================
-   PATCH (06-Nov-2025): Split print scopes cleanly
-   - Monthly Roster (A4 landscape) applies when the body DOES NOT have .printing-daily-list
-   - Daily Admission (A4 portrait) remains under .printing-daily-list
+   PATCH v2 (06-Nov-2025): Match "Interactive Roster System" PDF layout
+   Scope: Monthly roster print only (body:not(.printing-daily-list))
+   Key points:
+   - A4 landscape with ~8mm margins
+   - Heavy grid borders, header banding, bold centered shift codes
+   - Fixed widths for Service ID / Emp ID / Employee Name
+   - Two-line day header: day number + weekday label stacked and centered
+   - Team header row spans full width with stronger band
    ========================= */
-
-/* ——— MONTHLY ROSTER PRINT (A4 landscape), scoped away from daily list ——— */
 @media print {
-  /* Page setup only when NOT daily */
-  body:not(.printing-daily-list) @page { size: A4 landscape; margin: 0.5cm; }
+  /* Page size/margins (Monthly only) */
+  body:not(.printing-daily-list) @page { size: A4 landscape; margin: 8mm; }
+  body:not(.printing-daily-list) { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
-  /* Show only the roster area */
-  body:not(.printing-daily-list) .main-container,
-  body:not(.printing-daily-list) #roster-container,
+  /* Base font for print */
+  body:not(.printing-daily-list) #roster-container, 
   body:not(.printing-daily-list) #roster-grid {
-    display: block !important;
-    visibility: visible !important;
-    width: 100% !important;
-    height: auto !important;
-    overflow: visible !important;
-    max-height: none !important;
-    box-shadow: none !important;
-    border: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif !important;
+    color: #000 !important;
   }
 
-  /* Hide UI chrome in monthly print */
+  /* Hide non-roster UI for monthly print */
   body:not(.printing-daily-list) header,
+  body:not(.printing-daily-list) nav,
+  body:not(.printing-daily-list) .toolbar,
+  body:not(.printing-daily-list) .controls,
   body:not(.printing-daily-list) .modal,
   body:not(.printing-daily-list) #print-modal,
   body:not(.printing-daily-list) #header-actions,
-  body:not(.printing-daily-list) #batch-delete-container,
-  body:not(.printing-daily-list) .delete-btn,
-  body:not(.printing-daily-list) .emp-checkbox,
-  body:not(.printing-daily-list) .edit-team-btn,
-  body:not(.printing-daily-list) #add-employee-btn,
-  body:not(.printing-daily-list) #team-filter-btn,
-  body:not(.printing-daily-list) #name-filter-btn,
+  body:not(.printing-daily-list) #daily-list-btn,
   body:not(.printing-daily-list) #manage-menu-btn,
-  body:not(.printing-daily-list) #print-btn,
-  body:not(.printing-daily-list) #daily-list-btn {
-    display: none !important;
-  }
+  body:not(.printing-daily-list) #add-employee-btn,
+  body:not(.printing-daily-list) .delete-btn,
+  body:not(.printing-daily-list) .emp-checkbox { display:none !important; }
 
-  /* Grid enforcement + text */
+  /* Reset stickies/fixed positioning for clean print */
+  body:not(.printing-daily-list) .sticky-col,
+  body:not(.printing-daily-list) .sticky-header-col,
+  body:not(.printing-daily-list) .header-cell { position: static !important; left:auto !important; top:auto !important; box-shadow:none !important; }
+
+  /* Grid container */
   body:not(.printing-daily-list) #roster-grid.grid {
     display: grid !important;
-    font-size: 10px !important;   /* readability */
-    color: #000 !important;
+    width: 100% !important;
+    gap: 0 !important;
+    border: 1px solid #000 !important;
+    background: #000 !important; /* hairline between cells */
   }
 
-  /* Reset stickies for print */
-  body:not(.printing-daily-list) .sticky-col,
-  body:not(.printing-daily-list) .header-cell,
-  body:not(.printing-daily-list) .sticky-header-col {
-    position: static !important;
-    left: auto !important;
-    top: auto !important;
-    z-index: 1 !important;
-    background-color: #f8fafc !important;
+  /* Cells */
+  body:not(.printing-daily-list) #roster-grid.grid > * {
+    background: #fff !important;
+    border: 1px solid #000 !important;
+    margin: 0 !important;
   }
 
-  /* Borders/centering/bold like the previous monthly PDF */
-  body:not(.printing-daily-list) .header-cell,
-  body:not(.printing-daily-list) .employee-row,
-  body:not(.printing-daily-list) .team-header-row {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-    border: 1px solid #9ca3af !important;
-    color: #000 !important;
+  /* Header row (days) */
+  body:not(.printing-daily-list) .header-cell {
+    font-weight: 700 !important;
+    font-size: 12px !important;
+    text-align: center !important;
+    background: #e5e7eb !important; /* light gray band */
     padding: 2px 4px !important;
-    min-width: 0 !important;
+    line-height: 1.15 !important;
+  }
+  /* If day header contains two lines: number + weekday */
+  body:not(.printing-daily-list) .header-cell .day-number { display:block; font-size: 12px !important; font-weight:700 !important; }
+  body:not(.printing-daily-list) .header-cell .weekday   { display:block; font-size: 10px !important; font-weight:600 !important; }
+
+  /* Team section header row (e.g., Alpha, Bravo, etc.) */
+  body:not(.printing-daily-list) .team-header-row,
+  body:not(.printing-daily-list) .team-header,
+  body:not(.printing-daily-list) .team-title {
+    grid-column: 1 / -1 !important;
+    background: #d1d5db !important; /* darker band */
+    color: #000 !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    padding: 4px 6px !important;
+    text-transform: none !important; /* keep as-is from data */
+  }
+
+  /* Row: shift cells */
+  body:not(.printing-daily-list) .employee-row { font-size: 12px !important; font-weight: 700 !important; }
+  body:not(.printing-daily-list) .employee-row > div,
+  body:not(.printing-daily-list) .employee-row > span {
+    display:flex !important; align-items:center !important; justify-content:center !important;
+    padding: 0 !important; text-align: center !important; min-height: 16px !important;
     white-space: nowrap !important;
   }
 
-  /* Center all roster cells (excluding the name sticky cell) and keep bold */
-  body:not(.printing-daily-list) #roster-grid.grid > .employee-row:not(.font-medium),
-  body:not(.printing-daily-list) #roster-grid.grid .header-cell {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    text-align: center !important;
-    font-size: 12px !important;
-    font-weight: 700 !important;
-    padding: 0 !important;
+  /* Left columns: Service ID / Emp ID / Employee Name with fixed widths and alignment */
+  /* Try common class/id names used in previous versions; fall back to nth-child positions */
+  body:not(.printing-daily-list) .col-service-id,
+  body:not(.printing-daily-list) .service-id,
+  body:not(.printing-daily-list) #col-service-id,
+  body:not(.printing-daily-list) .employee-row > :nth-child(1) {
+    width: 18mm !important; max-width:18mm !important; min-width:18mm !important;
+    text-align: left !important; justify-content:flex-start !important; padding: 2px 3px !important; font-weight:600 !important;
   }
-  body:not(.printing-daily-list) #roster-grid.grid > .employee-row:not(.font-medium) > * {
-    display: block !important;
-    width: 100% !important;
-    text-align: center !important;
-    margin: 0 auto !important;
+  body:not(.printing-daily-list) .col-emp-id,
+  body:not(.printing-daily-list) .emp-id,
+  body:not(.printing-daily-list) #col-emp-id,
+  body:not(.printing-daily-list) .employee-row > :nth-child(2) {
+    width: 22mm !important; max-width:22mm !important; min-width:22mm !important;
+    text-align: left !important; justify-content:flex-start !important; padding: 2px 3px !important; font-weight:600 !important;
+  }
+  body:not(.printing-daily-list) .col-emp-name,
+  body:not(.printing-daily-list) .emp-name,
+  body:not(.printing-daily-list) #col-emp-name,
+  body:not(.printing-daily-list) .employee-row > :nth-child(3) {
+    width: 48mm !important; max-width:48mm !important; min-width:48mm !important;
+    text-align: left !important; justify-content:flex-start !important; padding: 2px 3px !important;
+    white-space: normal !important; word-break: break-word !important; line-height: 1.05 !important;
+    font-weight:700 !important;
   }
 
-  /* Preserve label colors but print text black, and show dashed borders for auto shifts */
-  body:not(.printing-daily-list) #roster-grid.grid .employee-row[class*="bg-"],
-  body:not(.printing-daily-list) #roster-grid:not(.grid) .grid > div[class*="bg-"] {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+  /* Day columns distribute the remaining width evenly */
+  body:not(.printing-daily-list) .day-col, 
+  body:not(.printing-daily-list) .day-cell,
+  body:not(.printing-daily-list) .employee-row > :nth-child(n+4) {
+    min-width: 0 !important;
   }
-  body:not(.printing-daily-list) #roster-grid .employee-row [class*="text-"],
-  body:not(.printing-daily-list) #roster-grid:not(.grid) .grid > div [class*="text-"] {
-    color: #000 !important;
-  }
-  body:not(.printing-daily-list) .employee-row { font-weight: 700 !important; }
-  body:not(.printing-daily-list) .header-cell,
-  body:not(.printing-daily-list) .team-header-row { font-weight: 600 !important; }
-  body:not(.printing-daily-list) .auto-shift { opacity: 1 !important; border-style: dashed !important; }
 
-  /* Single-employee calendar print (unchanged, just scoped) */
-  body:not(.printing-daily-list) #roster-grid:not(.grid) { padding: 1rem !important; }
-  body:not(.printing-daily-list) #roster-grid:not(.grid) > div { display: block !important; border: none !important; padding: 0 !important; }
-  body:not(.printing-daily-list) #roster-grid:not(.grid) .grid {
-    padding: 0 !important; gap: 1px !important;
-    background-color: #9ca3af !important; border: 1px solid #9ca3af !important;
-  }
-  body:not(.printing-daily-list) #roster-grid:not(.grid) .grid > div {
-    background-color: #fff !important; padding: 2px !important; border: none !important;
-    min-height: 4rem !important; font-size: 10px !important; font-weight: 700 !important;
-    display: flex !important; flex-direction: column !important; justify-content: flex-start !important;
-  }
-  body:not(.printing-daily-list) #roster-grid:not(.grid) .grid > div > div {
-    display: flex !important; flex-grow: 1 !important; align-items: center !important; justify-content: center !important; width: 100% !important;
-  }
-  body:not(.printing-daily-list) #roster-grid:not(.grid) .grid > div > span {
-    flex-grow: 0 !important; flex-shrink: 0 !important;
-  }
+  /* OFF/shift tokens: always bold, centered, legible */
+  body:not(.printing-daily-list) .employee-row .off,
+  body:not(.printing-daily-list) .employee-row .OFF { font-weight: 800 !important; }
+  body:not(.printing-daily-list) .employee-row .auto-shift { border-style: dashed !important; }
+
+  /* Remove page-breaking surprises */
+  body:not(.printing-daily-list) #roster-grid { page-break-inside: avoid !important; }
+  body:not(.printing-daily-list) .employee-row { break-inside: avoid !important; page-break-inside: avoid !important; }
+
+  /* Footer / watermark suppression */
+  body:not(.printing-daily-list) footer { display:none !important; }
 }
-
-/* ——— DAILY ADMISSION PRINT stays as-is under body.printing-daily-list (already present in your file) ——— */
-/* No changes required here. */
 </style>
 </head>
 <body class="bg-gray-100">
@@ -3689,22 +3695,21 @@
 <script>
 (function () {
   function byId(id){return document.getElementById(id)}
-  // Monthly roster print
   var monthlyBtn = byId('print-btn');
-  if (monthlyBtn && !monthlyBtn.__patchedPrint) {
-    monthlyBtn.__patchedPrint = true;
-    monthlyBtn.addEventListener('click', function () {
+  if (monthlyBtn && !monthlyBtn.__patchedPrintV2) {
+    monthlyBtn.__patchedPrintV2 = true;
+    monthlyBtn.addEventListener('click', function (e) {
       document.body.classList.remove('printing-daily-list');
-      window.print();
+      // small defer to let layout settle
+      setTimeout(function(){ window.print(); }, 0);
     }, true);
   }
-  // Daily admission print
   var dailyBtn = byId('daily-list-btn');
-  if (dailyBtn && !dailyBtn.__patchedPrint) {
-    dailyBtn.__patchedPrint = true;
-    dailyBtn.addEventListener('click', function () {
+  if (dailyBtn && !dailyBtn.__patchedPrintV2) {
+    dailyBtn.__patchedPrintV2 = true;
+    dailyBtn.addEventListener('click', function (e) {
       document.body.classList.add('printing-daily-list');
-      window.print();
+      setTimeout(function(){ window.print(); }, 0);
     }, true);
   }
 })();
