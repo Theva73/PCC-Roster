@@ -31,7 +31,10 @@
         .form-value {
             @apply w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center;
         }
-        /* Removed .btn and .btn-* classes as they are now inlined */
+        /* MODIFIED: Inlined button styles */
+        .btn-base {
+            @apply w-full px-4 py-2 rounded-lg shadow-md font-semibold text-white transition-all duration-150 flex items-center justify-center space-x-2;
+        }
         
         .loader {
             border: 4px solid #f3f3f3;
@@ -192,7 +195,7 @@
                 </div>
 
                 <div class="mt-6">
-                    <button type="submit" id="submit-request-btn" class="w-full px-4 py-2 rounded-lg shadow-md font-semibold text-white transition-all duration-150 flex items-center justify-center space-x-2 bg-indigo-600 hover:bg-indigo-700">
+                    <button type="submit" id="submit-request-btn" class="btn-base bg-indigo-600 hover:bg-indigo-700">
                         <span>Submit Request</span>
                     </button>
                 </div>
@@ -297,15 +300,16 @@
             <h2 id="message-title" class="text-2xl font-bold text-green-600">Success!</h2>
             <p id="message-text" class="mt-4 text-gray-700">Your request has been submitted.</p>
             
-            <!-- MODIFIED: Inlined all .btn and .btn-whatsapp styles and increased icon size -->
-            <a id="whatsapp-share-btn" href="#" target="_blank" class="w-full px-4 py-2 rounded-lg shadow-md font-semibold text-white transition-all duration-150 flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 mt-6">
-                <!-- MODIFIED: Changed from w-5 h-5 to w-6 h-6 for better visibility -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.627-2.961 6.58-6.591 6.58zM5.59 5.603a.35.35 0 0 0-.273.512c.16.32.555 1.22 1.232 1.89C7.882 9.173 8.82 9.3 9.13 9.21c.31-.09.72-.372 1.038-.724.318-.35.555-.8.7-1.285.145-.485.08-.936-.026-1.083-.105-.146-.318-.24-.635-.426-.318-.187-.72-.187-.986-.113-.265.074-.469.165-.65.339-.181.174-.29.4-.395.572-.105.173-.21.265-.364.265-.155 0-.318-.09-.46-.21a4.9 4.9 0 0 1-1.6-1.485 5 5 0 0 1-1.04-1.745s-.105-.146.026-.28c.13-.134.288-.174.395-.21.105-.036.18-.01.264.04s.24.09.352.21c.112.12.164.195.21.318.047.123.027.265-.04.395-.07.13-.127.21-.184.288a.35.35 0 0 1-.264.112c-.09 0-.17-.036-.21-.074-.047-.036-.144-.165-.21-.28z"/>
-                </svg>
-                <span id="whatsapp-share-text">Share on WhatsApp</span>
-            </a>
-
+            <div class="mt-8 mb-6">
+                <a id="whatsapp-share-btn" href="#" target="_blank" 
+                   class="btn-base bg-green-500 hover:bg-green-600 w-full max-w-xs mx-auto py-3 text-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.627-2.961 6.58-6.591 6.58zM5.59 5.603a.35.35 0 0 0-.273.512c.16.32.555 1.22 1.232 1.89C7.882 9.173 8.82 9.3 9.13 9.21c.31-.09.72-.372 1.038-.724.318-.35.555-.8.7-1.285.145-.485.08-.936-.026-1.083-.105-.146-.318-.24-.635-.426-.318-.187-.72-.187-.986-.113-.265.074-.469.165-.65.339-.181.174-.29.4-.395.572-.105.173-.21.265-.364.265-.155 0-.318-.09-.46-.21a4.9 4.9 0 0 1-1.6-1.485 5 5 0 0 1-1.04-1.745s-.105-.146.026-.28c.13-.134.288-.174.395-.21.105-.036.18-.01.264.04s.24.09.352.21c.112.12.164.195.21.318.047.123.027.265-.04.395-.07.13-.127.21-.184.288a.35.35 0 0 1-.264.112c-.09 0-.17-.036-.21-.074-.047-.036-.144-.165-.21-.28z"/>
+                    </svg>
+                    <span id="whatsapp-share-text">Share on WhatsApp</span>
+                </a>
+            </div>
+            
             <div id="message-link-container" class="mt-6 p-4 bg-gray-100 rounded-lg">
                 <p class="text-sm font-medium text-gray-800">Or copy this link:</p>
                 <input type="text" id="message-link" class="form-input text-sm text-indigo-600" readonly>
@@ -318,6 +322,8 @@
 
     <!-- Firebase SDK -->
     <script type="module">
+        console.log("Shift Request App script started."); // DEBUG: Check if script runs
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { 
@@ -337,8 +343,10 @@
         };
 
         if (typeof __firebase_config !== 'undefined') {
+            console.log("Using environment-provided Firebase config.");
             firebaseConfig = JSON.parse(__firebase_config);
         } else {
+            console.log("Using standalone Firebase config.");
             firebaseConfig = standaloneConfig;
         }
 
@@ -350,6 +358,13 @@
         setLogLevel('Debug');
 
         // --- 1. GLOBAL VARIABLES & COLLECTIONS ---
+        
+        // !!!!! IMPORTANT !!!!!
+        // SET THIS TO THE FINAL URL OF YOUR HTML FILE
+        // Example: "https://your-github-username.github.io/your-repo/your-file.html"
+        const APP_URL = "https://theva73.github.io/YOUR_REPO_NAME/Form_07_11_8S.txt";
+        // !!!!! IMPORTANT !!!!!
+
         let employeesCollection, teamsCollection, rosterCollection, shiftRequestsCollection;
         let allEmployees = [];
         let teamsMap = new Map();
@@ -360,30 +375,29 @@
 
         let requesterSelect, colleagueSelect;
 
-        // --- 2. DOM ELEMENTS ---
-        const loadingView = document.getElementById('loading-view');
-        const loadingText = document.getElementById('loading-text');
-        const newRequestView = document.getElementById('new-request-view');
-        const viewRequestView = document.getElementById('view-request-view');
-        const messageView = document.getElementById('message-view');
-        const newRequestForm = document.getElementById('new-request-form');
-        
-        const requesterNameSelect = document.getElementById('requesterName');
-        const requesterRankId = document.getElementById('requesterRankId');
-        const requesterTeam = document.getElementById('requesterTeam');
-        const colleagueNameSelect = document.getElementById('colleagueName');
-        const colleagueRankId = document.getElementById('colleagueRankId');
-        const colleagueTeam = document.getElementById('colleagueTeam');
-        const shiftDateInput = document.getElementById('shiftDate');
-        const requesterOriginalShift = document.getElementById('requesterOriginalShift');
-        const requesterNewShift = document.getElementById('requesterNewShift');
-        const colleagueOriginalShift = document.getElementById('colleagueOriginalShift');
-        const colleagueNewShift = document.getElementById('colleagueNewShift');
-
-        const statusBannerContainer = document.getElementById('status-banner-container');
-        const actionContainer = document.getElementById('action-container');
+        // --- 2. DOM ELEMENTS (Will be assigned in DOMContentLoaded) ---
+        let loadingView, loadingText, newRequestView, viewRequestView, messageView, newRequestForm,
+            requesterNameSelect, requesterRankId, requesterTeam, colleagueNameSelect, colleagueRankId,
+            colleagueTeam, shiftDateInput, requesterOriginalShift, requesterNewShift,
+            colleagueOriginalShift, colleagueNewShift, statusBannerContainer, actionContainer;
 
         // --- 3. HELPER FUNCTIONS ---
+        
+        // FIXED: This function now uses the hardcoded APP_URL
+        function getBaseUrl() {
+            // Check if hardcoded URL is the default
+            if (APP_URL.includes("YOUR_REPO_NAME") || APP_URL.includes("YOUR-REPO-NAME")) {
+                console.warn("APP_URL not set. Falling back to window.location.href, which might fail.");
+                const baseUrl = window.location.href.split('?')[0];
+                if (baseUrl.includes("about:blank") || !baseUrl) {
+                    console.error("Cannot generate link from 'about:blank'. Please set APP_URL in the script.");
+                    return null; // This will cause the form submission to fail safely
+                }
+                return baseUrl;
+            }
+            return APP_URL.split('?')[0];
+        }
+
 
         function getUrlParams() {
             const params = new URLSearchParams(window.location.search);
@@ -459,7 +473,7 @@
                 teamSnapshot.docs.forEach(doc => {
                     teamsMap.set(doc.id, doc.data());
                 });
-
+                console.log(`Fetched ${allEmployees.length} employees and ${teamsMap.size} teams.`);
             } catch (error) {
                 console.error("Error fetching initial data: ", error);
                 loadingText.textContent = "Error fetching data. Cannot proceed.";
@@ -474,8 +488,11 @@
                 const rosterDocRef = doc(rosterCollection, employeeId);
                 const rosterDocSnap = await getDoc(rosterDocRef);
                 
-                if (rosterDocSnap.exists() && rosterDocSnap.data()[date]) {
-                    return rosterDocSnap.data()[date];
+                if (rosterDocSnap.exists()) {
+                    const rosterData = rosterDocSnap.data();
+                    if (rosterData.hasOwnProperty(date)) {
+                        return rosterData[date] || ""; 
+                    }
                 }
 
                 const emp = allEmployees.find(e => e.id === employeeId);
@@ -505,6 +522,7 @@
         // --- 4. APP LOGIC - NEW REQUEST ---
 
         async function initNewRequestForm() {
+            console.log("Initializing new request form...");
             await fetchInitialData();
             initTomSelectInputs();
             
@@ -519,6 +537,7 @@
             newRequestForm.addEventListener('submit', handleFormSubmit);
             
             showView('new');
+            console.log("New request form initialized.");
         }
 
         function initTomSelectInputs() {
@@ -608,7 +627,6 @@
             const requesterId = requesterSelect.getValue();
             
             if (!date || !requesterId) {
-                // If no date or requester, just ensure colleague dropdown is reset
                 await updateColleagueDropdown(requesterId, date, "");
                 return;
             }
@@ -626,7 +644,6 @@
                 requesterOriginalShift.value = "Error";
             } 
             
-            // ALWAYS update colleague dropdown, even if shift fetch failed
             try {
                 await updateColleagueDropdown(requesterId, date, reqNewShift);
             } catch (dropdownError) {
@@ -634,7 +651,7 @@
                 colleagueSelect.disable();
                 colleagueSelect.clearOptions();
                 colleagueSelect.addOption({ value: "", text: "-- Error loading --" });
-                colleagueSelect.enable(); // Enable it so user isn't stuck
+                colleagueSelect.enable();
             }
         }
 
@@ -678,7 +695,8 @@
 
                 shifts.forEach((shift, index) => {
                     const colleague = eligibleColleagues[index];
-                    if (shift && shift.trim().toUpperCase() === normalizedRequesterWantsShift) {
+                    const normalizedShift = (shift || "").trim().toUpperCase(); 
+                    if (normalizedShift && normalizedShift === normalizedRequesterWantsShift) {
                         bestMatches.push(colleague);
                     } else {
                         otherColleagues.push(colleague);
@@ -719,20 +737,19 @@
             e.preventDefault();
             const submitBtn = document.getElementById('submit-request-btn');
             submitBtn.disabled = true;
-            submitBtn.firstElementChild.textContent = "Submitting..."; // Target the span
+            submitBtn.firstElementChild.textContent = "Submitting...";
 
             const requesterId = requesterSelect.getValue();
             const colleagueId = colleagueSelect.getValue();
             
             if (requesterId === colleagueId) {
-                // Using a custom modal/alert soon, for now, just console.error and reset button
-                console.error("You cannot change shifts with yourself.");
+                alert("You cannot change shifts with yourself.");
                 submitBtn.disabled = false;
                 submitBtn.firstElementChild.textContent = "Submit Request";
                 return;
             }
             if (!requesterId || !colleagueId) {
-                 console.error("Please select both a requester and a colleague.");
+                 alert("Please select both a requester and a colleague.");
                 submitBtn.disabled = false;
                 submitBtn.firstElementChild.textContent = "Submit Request";
                 return;
@@ -775,8 +792,7 @@
             if (requestData.requesterNewShift !== requestData.colleagueOriginalShift ||
                 requestData.requesterOriginalShift !== requestData.colleagueNewShift) {
                 
-                console.error("Shift mismatch.");
-                // alert("Shift mismatch. The requester's new shift must match the colleague's original shift, and vice-versa. Please re-select the names and date.");
+                alert("Shift mismatch. The requester's new shift must match the colleague's original shift, and vice-versa. Please re-select the names and date.");
                 submitBtn.disabled = false;
                 submitBtn.firstElementChild.textContent = "Submit Request";
                 return;
@@ -785,8 +801,16 @@
             try {
                 const docRef = await addDoc(shiftRequestsCollection, requestData);
                 
+                const baseUrl = getBaseUrl();
+                if (!baseUrl) {
+                    alert("CRITICAL ERROR: APP_URL is not set correctly. Cannot generate sharing link. Please contact administrator.");
+                    submitBtn.disabled = false;
+                    submitBtn.firstElementChild.textContent = "Submit Request";
+                    return;
+                }
+                
+                const whatsAppLink = `${baseUrl}?requestId=${docRef.id}&action=colleague`;
                 const whatsAppMessage = `Hi ${colleague.name}, ${requester.name} has requested a shift swap with you for ${requestData.shiftDate}. Please review and agree at this link:`;
-                const whatsAppLink = `${window.location.origin}${window.location.pathname}?requestId=${docRef.id}&action=colleague`;
 
                 showMessage(
                     "Request Submitted!",
@@ -797,7 +821,7 @@
                 );
             } catch (error) {
                 console.error("Error adding document: ", error);
-                // alert("An error occurred. Please try again.");
+                alert("An error occurred. Please try again.");
                 submitBtn.disabled = false;
                 submitBtn.firstElementChild.textContent = "Submit Request";
             }
@@ -884,8 +908,7 @@
             actionContainer.innerHTML = "";
             const status = currentRequestData.status;
 
-            // Define button classes here
-            const btnBase = "w-full px-4 py-2 rounded-lg shadow-md font-semibold text-white transition-all duration-150 flex items-center justify-center space-x-2";
+            const btnBase = "btn-base w-full px-4 py-2 rounded-lg shadow-md font-semibold text-white transition-all duration-150 flex items-center justify-center space-x-2";
             const btnSuccess = "bg-green-600 hover:bg-green-700";
             const btnDanger = "bg-red-600 hover:bg-red-700";
 
@@ -934,14 +957,20 @@
             const docRef = doc(shiftRequestsCollection, currentRequestId);
             
             try {
+                const baseUrl = getBaseUrl();
+                if (!baseUrl) {
+                    alert("CRITICAL ERROR: APP_URL is not set correctly. Cannot generate sharing link. Please contact administrator.");
+                    return;
+                }
+
                 if (didAgree) {
                     await updateDoc(docRef, {
                         status: 'pending_manager',
                         colleagueSignatureTimestamp: serverTimestamp()
                     });
                     
+                    const whatsAppLink = `${baseUrl}?requestId=${currentRequestId}&action=manager`;
                     const whatsAppMessage = `Hi Manager, this is a shift change request for ${currentRequestData.requesterName} and ${currentRequestData.colleagueName} on ${currentRequestData.shiftDate}. We have both agreed. Please approve:`;
-                    const whatsAppLink = `${window.location.origin}${window.location.pathname}?requestId=${currentRequestId}&action=manager`;
 
                     showMessage(
                         "Agreement Submitted!",
@@ -955,16 +984,17 @@
                         status: 'rejected_colleague',
                         colleagueSignatureTimestamp: serverTimestamp()
                     });
+
+                    const link = `${baseUrl}?requestId=${currentRequestId}`;
                     showMessage(
                         "Request Rejected",
                         `You have rejected this request. The requester has been notified (implicitly).`,
-                        `${window.location.origin}${window.location.pathname}?requestId=${currentRequestId}`,
-                        null, null
+                        link, null, null
                     );
                 }
             } catch (error) {
                 console.error("Error updating request: ", error);
-                // alert("An error occurred. Please try again.");
+                alert("An error occurred. Please try again.");
             }
         }
         
@@ -979,8 +1009,12 @@
                     const requesterRosterRef = doc(rosterCollection, requesterId);
                     const colleagueRosterRef = doc(rosterCollection, colleagueId);
                     
-                    await setDoc(requesterRosterRef, { [shiftDate]: requesterNewShift }, { merge: true });
-                    await setDoc(colleagueRosterRef, { [shiftDate]: colleagueNewShift }, { merge: true });
+                    // NEW: Add an asterisk (*) as a remark
+                    const requesterShiftWithMark = `${requesterNewShift}*`;
+                    const colleagueShiftWithMark = `${colleagueNewShift}*`;
+                    
+                    await setDoc(requesterRosterRef, { [shiftDate]: requesterShiftWithMark }, { merge: true });
+                    await setDoc(colleagueRosterRef, { [shiftDate]: colleagueShiftWithMark }, { merge: true });
                     
                     await updateDoc(docRef, {
                         status: 'approved',
@@ -988,49 +1022,69 @@
                         managerSignatureTimestamp: serverTimestamp()
                     });
                     
-                    showMessage(
-                        "Request Approved!",
-                        `The request has been approved and the roster has been updated automatically.`,
-                        `${window.location.origin}${window.location.pathname}?requestId=${currentRequestId}`,
-                        null, null
-                    );
-
                 } else {
                     await updateDoc(docRef, {
                         status: 'rejected_manager',
                         managerComments: managerComments,
                         managerSignatureTimestamp: serverTimestamp()
                     });
-                    
-                    showMessage(
-                        "Request Rejected",
-                        `The request has been rejected. The roster was not changed.`,
-                        `${window.location.origin}${window.location.pathname}?requestId=${currentRequestId}`,
-                        null, null
-                    );
                 }
+
+                const baseUrl = getBaseUrl();
+                const link = baseUrl ? `${baseUrl}?requestId=${currentRequestId}` : "Link unavailable (APP_URL not set)";
+                
+                showMessage(
+                    didApprove ? "Request Approved!" : "Request Rejected",
+                    didApprove ? `The request has been approved and the roster has been updated automatically with a '*' remark.` : `The request has been rejected. The roster was not changed.`,
+                    link, null, null
+                );
+
             } catch (error) {
                 console.error("Error finalizing request: ", error);
-                // alert("An error occurred. The roster may not have been updated. Please try again.");
+                alert("An error occurred. The roster may not have been updated. Please try again.");
             }
         }
 
         // --- 6. INITIALIZATION ---
         
-        // NEW: Re-implemented auth logic based on your working roster file
         let authStateProcessed = false;
+        
+        function assignDOMElements() {
+            loadingView = document.getElementById('loading-view');
+            loadingText = document.getElementById('loading-text');
+            newRequestView = document.getElementById('new-request-view');
+            viewRequestView = document.getElementById('view-request-view');
+            messageView = document.getElementById('message-view');
+            newRequestForm = document.getElementById('new-request-form');
+            requesterNameSelect = document.getElementById('requesterName');
+            requesterRankId = document.getElementById('requesterRankId');
+            requesterTeam = document.getElementById('requesterTeam');
+            colleagueNameSelect = document.getElementById('colleagueName');
+            colleagueRankId = document.getElementById('colleagueRankId');
+            colleagueTeam = document.getElementById('colleagueTeam');
+            shiftDateInput = document.getElementById('shiftDate');
+            requesterOriginalShift = document.getElementById('requesterOriginalShift');
+            requesterNewShift = document.getElementById('requesterNewShift');
+            colleagueOriginalShift = document.getElementById('colleagueOriginalShift');
+            colleagueNewShift = document.getElementById('colleagueNewShift');
+            statusBannerContainer = document.getElementById('status-banner-container');
+            actionContainer = document.getElementById('action-container');
+            console.log("DOM elements assigned.");
+        }
         
         async function initFirebase() {
             loadingText.textContent = "Authenticating...";
+            console.log("initFirebase started.");
             
             const authTimeout = setTimeout(() => {
                 if (!authStateProcessed) {
                     console.error("Authentication timed out.");
                     if (loadingText) loadingText.textContent = "Authentication Timed Out. Please check your network and refresh.";
                 }
-            }, 10000); // 10 second timeout
+            }, 10000);
 
             onAuthStateChanged(auth, async (user) => {
+                // FIXED: This logic is now identical to your working roster app
                 authStateProcessed = true;
                 clearTimeout(authTimeout);
 
@@ -1039,19 +1093,14 @@
                     loadingText.textContent = "Authentication successful. Loading data...";
                     
                     try {
-                        // Define collections *after* auth is successful
                         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                        const userId = auth.currentUser?.uid || 'anonymous'; // Use a fallback
-
-                        // Updated collection paths
+                        
                         employeesCollection = collection(db, "employees");
                         teamsCollection = collection(db, "teams");
                         rosterCollection = collection(db, "roster");
-                        // Storing shift requests in a public space for sharing
                         shiftRequestsCollection = collection(db, `artifacts/${appId}/public/data/shiftRequests`);
+                        console.log("Collections defined.");
 
-
-                        // Now run the app logic
                         getUrlParams();
                         if (currentRequestId) {
                             await initViewRequest();
@@ -1071,22 +1120,29 @@
 
             try {
                 if (initialAuthToken) {
+                    console.log("Attempting signInWithCustomToken...");
                     await signInWithCustomToken(auth, initialAuthToken);
                 } else {
+                    console.log("Attempting signInAnonymously...");
                     await signInAnonymously(auth);
                 }
             } catch (error) {
                 console.error("Authentication Error:", error);
-                authStateProcessed = true;
-                clearTimeout(authTimeout);
-                loadingText.textContent = "Authentication Failed. Please refresh.";
+                if (!authStateProcessed) { 
+                    authStateProcessed = true;
+                    clearTimeout(authTimeout);
+                    loadingText.textContent = "Authentication Failed. Please refresh.";
+                }
             }
         }
 
-        // Start the app
-        initFirebase();
+        // Start the app only after the DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM Loaded. Assigning elements and initializing Firebase.");
+            assignDOMElements();
+            initFirebase();
+        });
         
     </script>
 </body>
 </html>
-
