@@ -699,6 +699,15 @@
   /* Footer / watermark suppression */
   body:not(.printing-daily-list) footer { display:none !important; }
 }
+
+/* === Shift-change star highlight (final minimal, non-invasive) === */
+.shift-star {
+  color: red !important;
+  font-weight: 900 !important;
+  font-size: 1.15em !important;
+  line-height: 1em !important;
+}
+
 </style>
 </head>
 <body class="bg-gray-100">
@@ -3711,6 +3720,81 @@
       document.body.classList.add('printing-daily-list');
       setTimeout(function(){ window.print(); }, 0);
     }, true);
+  }
+})();
+</script>
+
+
+<!-- Star Highlight v3: robust text-node replacement across all roster UIs -->
+<script>
+(function(){
+  function wrapTextNode(node){
+    if (!node || !node.nodeValue) return;
+    // Skip if already inside a highlighted span
+    if (node.parentElement && node.parentElement.closest('.shift-star')) return;
+    if (node.nodeValue.indexOf('*') === -1) return;
+    const span = document.createElement('span');
+    // Only replace the literal star; keep surrounding text exactly as-is
+    span.innerHTML = node.nodeValue.replace(/\*/g, '<span class="shift-star">*</span>');
+    node.parentNode.replaceChild(span, node);
+  }
+
+  function walkAndWrap(root){
+    if (!root) return;
+    try {
+      const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+      const targets = [];
+      let n;
+      while ((n = tw.nextNode())) {
+        if (n.nodeValue && n.nodeValue.indexOf('*') !== -1) targets.push(n);
+      }
+      targets.forEach(wrapTextNode);
+    } catch(e){ /* no-op */ }
+  }
+
+  function runOnce(){
+    // Main roster grid (monthly view)
+    walkAndWrap(document.getElementById('roster-grid'));
+    // Single-employee calendar modal (if present)
+    walkAndWrap(document.getElementById('employee-calendar-modal'));
+    walkAndWrap(document.getElementById('employee-calendar-grid'));
+    // Shift selector modal (labels list / preview)
+    walkAndWrap(document.getElementById('shift-modal'));
+    // Fallback: any other late-rendered containers
+    walkAndWrap(document.body);
+  }
+
+  function observe(container){
+    if (!container) return;
+    const mo = new MutationObserver((muts)=>{
+      for (const m of muts){
+        if (m.type === 'characterData'){
+          wrapTextNode(m.target);
+        }
+        m.addedNodes && m.addedNodes.forEach(node=>{
+          if (node.nodeType === 1) walkAndWrap(node);
+          else if (node.nodeType === 3) wrapTextNode(node);
+        });
+      }
+    });
+    mo.observe(container, {subtree:true, childList:true, characterData:true});
+  }
+
+  // Run at DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', ()=>{
+      runOnce();
+      observe(document.getElementById('roster-grid'));
+      observe(document.getElementById('employee-calendar-modal'));
+      observe(document.getElementById('shift-modal'));
+      observe(document.body); // safety
+    });
+  } else {
+    runOnce();
+    observe(document.getElementById('roster-grid'));
+    observe(document.getElementById('employee-calendar-modal'));
+    observe(document.getElementById('shift-modal'));
+    observe(document.body);
   }
 })();
 </script>
