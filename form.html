@@ -42,10 +42,8 @@
 
         /* Status banners - These are simple bg/text/border colors, no @apply */
         .status-pending_colleague { @apply bg-yellow-100 text-yellow-800 border border-yellow-200; }
-        /* CHANGED: pending_manager to pending_tl_oc */
         .status-pending_tl_oc { @apply bg-blue-100 text-blue-800 border border-blue-200; }
         .status-approved { @apply bg-green-100 text-green-800 border border-green-200; }
-        /* CHANGED: rejected_manager to rejected_tl_oc */
         .status-rejected_colleague, .status-rejected_tl_oc { @apply bg-red-100 text-red-800 border border-red-200; }
 
         /* TomSelect overrides - These do not use @apply and are fine */
@@ -194,13 +192,10 @@
                     <div class="text-xs text-gray-600 space-y-2 mt-3">
                         <p>We, hereby understand and acknowledged that:</p>
                         <ul class="list-disc list-inside pl-2 space-y-1">
-                            <!-- CHANGED: TL/OIC/OC -->
                             <li>Changes are subject to approval by TL/OIC/OC.</li>
                             <li>Changes shall only be effective upon approval TL/OIC/OC.</li>
                             <li>In any event, anyone of us do not turn up as requested, we understand that we are liable to report back to duty as per original shift/roster.</li>
-                            <!-- CHANGED: TL or OIC -->
                             <li>It is our responsibility to remind TL or OIC on the changes.</li>
-                            <!-- CHANGED: TL/OIC/OC -->
                             <li>*All shift changes shall be made at least 7 days before the actual shift for approval by TL/OIC/OC.</li>
                         </ul>
                     </div>
@@ -321,15 +316,11 @@
             <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75 space-y-4">
                 <h2 class="text-xl font-semibold text-gray-900 border-b pb-2">3. Approval / Disapproval</h2>
                 <div>
-                    <!-- CHANGED: TL/OC Comments -->
                     <span class="block text-sm font-medium text-gray-700 mb-1">TL/OC Comments:</span>
-                    <!-- CHANGED: view-tl-oc-Comments -->
                     <div id="view-tl-oc-Comments" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[60px] flex items-center"></div>
                 </div>
                 <div>
-                    <!-- CHANGED: Supervisor's Signature to TL/OC's Signature -->
                     <span class="block text-sm font-medium text-gray-700 mb-1">TL/OC's Signature:</span>
-                    <!-- CHANGED: view-tl-oc-Signature -->
                     <div id="view-tl-oc-Signature" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center text-sm"></div>
                 </div>
             </div>
@@ -353,7 +344,8 @@
 
             <!-- Action Card 1: WhatsApp (Primary) -->
             <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4 text-center">Step 2: Get Colleague's Agreement</h3>
+                <!-- CHANGED: Added id="whatsapp-card-title" -->
+                <h3 id="whatsapp-card-title" class="text-lg font-semibold text-gray-900 mb-4 text-center">Step 2: Get Colleague's Agreement</h3>
                 <p class="text-center text-gray-600 mb-5">The easiest way is to send the link via WhatsApp:</p>
                 
                 <!-- FIXED: Big WhatsApp Button with all classes inlined -->
@@ -878,9 +870,7 @@
                 
                 requesterSignatureTimestamp: serverTimestamp(),
                 colleagueSignatureTimestamp: null,
-                // CHANGED: tlOcSignatureTimestamp
                 tlOcSignatureTimestamp: null,
-                // CHANGED: tlOcComments
                 tlOcComments: "",
             };
 
@@ -912,12 +902,14 @@
                 const whatsAppLink = `${baseUrl}?requestId=${docRef.id}&action=colleague`;
                 const whatsAppMessage = `Hi ${colleague.name}, ${requester.name} has requested a shift swap with you for ${requestData.shiftDate}. Please review and agree at this link:`;
 
+                // CHANGED: Added new title argument
                 showMessage(
                     "Request Submitted!",
                     `Your request has been created. Please send the link below to <strong>${colleague.name}</strong> for their agreement.`,
                     whatsAppLink,
                     whatsAppMessage,
-                    "Share to Colleague"
+                    "Share to Colleague",
+                    "Step 2: Get Colleague's Agreement"
                 );
             } catch (error) {
                 console.error("Error adding document: ", error);
@@ -928,7 +920,8 @@
             }
         }
         
-        function showMessage(title, text, link, whatsAppMessage, buttonText) {
+        // CHANGED: Added whatsAppTitle parameter
+        function showMessage(title, text, link, whatsAppMessage, buttonText, whatsAppTitle) {
             document.getElementById('message-title').textContent = title;
             document.getElementById('message-text').innerHTML = text;
             
@@ -974,18 +967,35 @@
 
             const waBtn = document.getElementById('whatsapp-share-btn');
             const waBtnText = document.getElementById('whatsapp-share-text');
-            const waBtnCard = waBtn.closest('.bg-white'); // Find the parent card
+            const waBtnCard = waBtn.closest('.bg-white');
+            // CHANGED: Get title element
+            const waTitleEl = document.getElementById('whatsapp-card-title');
+
+            // CHANGED: Update title element
+            if (waTitleEl) {
+                waTitleEl.textContent = whatsAppTitle || "Step 2: Get Colleague's Agreement";
+            }
 
             if (whatsAppMessage && buttonText) {
+                console.log("showMessage: Rendering WhatsApp button."); // DEBUG
                 const encodedMessage = encodeURIComponent(`${whatsAppMessage}\n\n${link}`);
                 const waHref = `https://wa.me/?text=${encodedMessage}`;
                 waBtn.href = waHref;
                 waBtnText.textContent = buttonText;
                 waBtn.classList.remove('hidden');
-                if (waBtnCard) waBtnCard.classList.remove('hidden'); // Ensure parent card is visible
+                if (waBtnCard) {
+                    waBtnCard.classList.remove('hidden');
+                } else {
+                    console.error("Could not find .bg-white parent card for WhatsApp button.");
+                }
             } else {
+                console.log("showMessage: Hiding WhatsApp button."); // DEBUG
                 waBtn.classList.add('hidden');
-                if (waBtnCard) waBtnCard.classList.add('hidden'); // Hide parent card
+                if (waBtnCard) {
+                    waBtnCard.classList.add('hidden');
+                } else {
+                     console.error("Could not find .bg-white parent card for WhatsApp button.");
+                }
             }
 
             showView('message');
@@ -1024,12 +1034,10 @@
             document.getElementById('view-colleagueNewShift').textContent = currentRequestData.colleagueNewShift;
             document.getElementById('view-colleagueSignature').textContent = formatTimestamp(currentRequestData.colleagueSignatureTimestamp);
             
-            // CHANGED: tlOcComments and tlOcSignatureTimestamp
             document.getElementById('view-tl-oc-Comments').textContent = currentRequestData.tlOcComments || "No comments.";
             document.getElementById('view-tl-oc-Signature').textContent = formatTimestamp(currentRequestData.tlOcSignatureTimestamp);
 
             const status = currentRequestData.status;
-            // CHANGED: Handle tl_oc status
             let statusText = status.replace('_', ' ').replace('tl oc', 'TL/OC').replace(/\b\w/g, l => l.toUpperCase()); // Capitalize words
             // FIXED: Inlined Tailwind classes from .status-banner
             statusBannerContainer.innerHTML = `<div class="p-4 rounded-lg text-center font-bold text-lg mb-6 shadow-sm status-${status}">${statusText}</div>`;
@@ -1070,24 +1078,19 @@
                 document.getElementById('colleague-agree-btn').addEventListener('click', () => handleColleagueAction(true));
                 document.getElementById('colleague-disagree-btn').addEventListener('click', () => handleColleagueAction(false));
             }
-            // CHANGED: pending_tl_oc and action=tl_oc
             else if (status === 'pending_tl_oc' && currentRequestAction === 'tl_oc') {
                  actionContainer.innerHTML = `
                     <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75 space-y-4">
-                        <!-- CHANGED: TL/OC Approval -->
                         <h3 class="text-xl font-semibold text-center border-b pb-2">TL/OC Approval</h3>
                         <div>
                             <label for="tl-oc-CommentsInput" class="block text-sm font-medium text-gray-700 mb-1">Comments (Optional):</label>
-                            <!-- CHANGED: tl-oc-CommentsInput -->
                             <textarea id="tl-oc-CommentsInput" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"></textarea>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <!-- CHANGED: tl-oc-approve-btn -->
                             <button id="tl-oc-approve-btn" class="${btnSuccess}">
                                 ${checkIcon}
                                 <span>Approve</span>
                             </button>
-                            <!-- CHANGED: tl-oc-reject-btn -->
                             <button id="tl-oc-reject-btn" class="${btnDanger}">
                                 ${xIcon}
                                 <span>Reject</span>
@@ -1095,16 +1098,13 @@
                         </div>
                     </div>
                 `;
-                // CHANGED: Event listeners
                 document.getElementById('tl-oc-approve-btn').addEventListener('click', () => handleTlOcAction(true));
                 document.getElementById('tl-oc-reject-btn').addEventListener('click', () => handleTlOcAction(false));
             }
             else {
                 if (currentRequestAction && (status.includes('approved') || status.includes('rejected'))) {
-                    // CHANGED: Handle tl_oc status
                     actionContainer.innerHTML = `<p class="text-center text-gray-600">This request has already been <strong>${status.replace('_', ' ').replace('tl oc', 'TL/OC').toUpperCase()}</strong>.</p>`;
                 } else if (!currentRequestAction && status.includes('pending')) {
-                    // CHANGED: Handle tl_oc status
                      actionContainer.innerHTML = `<p class="text-center text-gray-600">This request is <strong>${status.replace('_', ' ').replace('tl oc', 'TL/OC').toUpperCase()}</strong>. Waiting for action.</p>`;
                 } else {
                      actionContainer.innerHTML = `<p class="text-center text-gray-600">This request is finalized. No further actions are needed.</p>`;
@@ -1124,22 +1124,21 @@
 
                 if (didAgree) {
                     await updateDoc(docRef, {
-                        // CHANGED: pending_tl_oc
                         status: 'pending_tl_oc',
                         colleagueSignatureTimestamp: serverTimestamp()
                     });
                     
-                    // CHANGED: action=tl_oc
                     const whatsAppLink = `${baseUrl}?requestId=${currentRequestId}&action=tl_oc`;
                     const whatsAppMessage = `Hi , this is a shift change request for ${currentRequestData.requesterName} and ${currentRequestData.colleagueName} on ${currentRequestData.shiftDate}. We have both agreed. Please approve:`;
 
+                    // CHANGED: Added new title argument
                     showMessage(
                         "Agreement Submitted!",
-                        // CHANGED: TL/OC
                         `Thank you! Your agreement has been recorded. Please forward the link below to your TL/OC for final approval.`,
                         whatsAppLink,
-                        // CHANGED: Share to TL/OC
-                        "Share to TL/OC"
+                        whatsAppMessage,
+                        "Share to TL/OC",
+                        "Step 3: Get TL/OC Approval" // <-- New title
                     );
                 } else {
                     await updateDoc(docRef, {
@@ -1151,7 +1150,7 @@
                     showMessage(
                         "Request Rejected",
                         `You have rejected this request. The requester has been notified (implicitly).`,
-                        link, null, null
+                        link, null, null, "Request Status" // <-- New title
                     );
                 }
             } catch (error) {
@@ -1159,10 +1158,8 @@
             }
         }
         
-        // CHANGED: handleTlOcAction
         async function handleTlOcAction(didApprove) {
             const docRef = doc(shiftRequestsCollection, currentRequestId);
-            // CHANGED: tl-oc-CommentsInput
             const tlOcComments = document.getElementById('tl-oc-CommentsInput') ? document.getElementById('tl-oc-CommentsInput').value : "";
 
             try {
@@ -1181,16 +1178,13 @@
                     
                     await updateDoc(docRef, {
                         status: 'approved',
-                        // CHANGED: tlOcComments, tlOcSignatureTimestamp
                         tlOcComments: tlOcComments,
                         tlOcSignatureTimestamp: serverTimestamp()
                     });
                     
                 } else {
                     await updateDoc(docRef, {
-                        // CHANGED: rejected_tl_oc
                         status: 'rejected_tl_oc',
-                        // CHANGED: tlOcComments, tlOcSignatureTimestamp
                         tlOcComments: tlOcComments,
                         tlOcSignatureTimestamp: serverTimestamp()
                     });
@@ -1199,10 +1193,14 @@
                 const baseUrl = getBaseUrl();
                 const link = baseUrl ? `${baseUrl}?requestId=${currentRequestId}` : "Link unavailable (APP_URL not set)";
                 
+                // CHANGED: Added new title argument
                 showMessage(
                     didApprove ? "Request Approved!" : "Request Rejected",
                     didApprove ? `The request has been approved and the roster has been updated automatically with a '*' remark.` : `The request has been rejected. The roster was not changed.`,
-                    link, null, null
+                    link, 
+                    null, 
+                    null,
+                    "Request Finalized" // <-- New title
                 );
 
             } catch (error)
