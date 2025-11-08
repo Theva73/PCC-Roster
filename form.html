@@ -105,7 +105,7 @@
             <form id="new-request-form">
                 <!-- Requesting APO's Detail -->
                 <!-- FIXED: Inlined Tailwind classes from .form-section -->
-                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75 space-y-4">
+                <div class.bind="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75 space-y-4">
                     <h2 class="text-xl font-semibold text-gray-900 border-b pb-2">1. Requesting APO's Detail</h2>
                     
                     <div>
@@ -156,8 +156,8 @@
                     
                     <div>
                         <label for="colleagueName" class="block text-sm font-medium text-gray-700 mb-1">Name:</label>
-                        <select id="colleagueName" placeholder="Type to search colleague's name..." required>
-                            <option value="">-- Select Requester First --</option>
+                        <select id="colleagueName" placeholder="Select a suitable colleague..." required>
+                            <option value="">-- Select Requester & Date First --</option>
                         </select>
                     </div>
                     
@@ -351,7 +351,7 @@
                 <a id="whatsapp-share-btn" href="#" target="_blank" 
                    class="w-full px-5 py-3 rounded-lg shadow-lg font-semibold text-white transition-all duration-300 flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-green-600 hover:bg-green-700 focus:ring-green-500 text-lg hover:shadow-xl transform hover:-translate-y-0.5">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.627-2.961 6.58-6.591 6.58zM5.59 5.603a.35.35 0 0 0-.273.512c.16.32.555 1.22 1.232 1.89C7.882 9.173 8.82 9.3 9.13 9.21c.31-.09.72-.372 1.038-.724.318-.35.555-.8.7-1.285.145-.485.08-.936-.026-1.083-.105-.146-.318-.24-.635-.426-.318-.187-.72-.187-.986-.113-.265.074-.469.165-.65.339-.181.174-.29.4-.395.572-.105.173-.21.265-.364.265-.155 0-.318-.09-.46-.21a4.9 4.9 0 0 1-1.6-1.485 5 5 0 0 1-1.04-1.745s-.105-.146.026-.28c.13-.134.288-.174.395-.21.105-.036.18-.01.264.04s.24.09.352.21c.112.12.164.195.21.318.047.123.027.265-.04.395-.07.13-.127.21-.184.288a.35.35 0 0 1-.264.112c-.09 0-.17-.036-.21-.074-.047-.036-.144-.165-.21-.28z"/>
+                        <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.627-2.961 6.58-6.591 6.58zM5.59 5.59a.35.35 0 0 0-.273.512c.16.32.555 1.22 1.232 1.89C7.882 9.173 8.82 9.3 9.13 9.21c.31-.09.72-.372 1.038-.724.318-.35.555-.8.7-1.285.145-.485.08-.936-.026-1.083-.105-.146-.318-.24-.635-.426-.318-.187-.72-.187-.986-.113-.265.074-.469.165-.65.339-.181.174-.29.4-.395.572-.105.173-.21.265-.364.265-.155 0-.318-.09-.46-.21a4.9 4.9 0 0 1-1.6-1.485 5 5 0 0 1-1.04-1.745s-.105-.146.026-.28c.13-.134.288-.174.395-.21.105-.036.18-.01.264.04s.24.09.352.21c.112.12.164.195.21.318.047.123.027.265-.04.395-.07.13-.127.21-.184.288a.35.35 0 0 1-.264.112c-.09 0-.17-.036-.21-.074-.047-.036-.144-.165-.21-.28z"/>
                     </svg>
                     <span id="whatsapp-share-text" class="ml-3 text-lg">Share to Colleague</span>
                 </a>
@@ -641,7 +641,7 @@
             
             colleagueSelect.disable();
             colleagueSelect.clearOptions();
-            colleagueSelect.addOption({ value: "", text: "-- Select Requester First --" });
+            colleagueSelect.addOption({ value: "", text: "-- Select Requester & Date First --" });
         }
         
         async function updateEmployeeDetails(employeeId, type) {
@@ -715,6 +715,7 @@
             } 
             
             try {
+                // Pass the shift the requester *wants* to the dropdown filter
                 await updateColleagueDropdown(requesterId, date, reqNewShift);
             } catch (dropdownError) {
                 console.error("Error updating colleague dropdown:", dropdownError);
@@ -725,6 +726,8 @@
             }
         }
 
+        // --- **** MODIFIED FUNCTION **** ---
+        // This function now filters the list based on the requesterWantsShift
         async function updateColleagueDropdown(requesterId, date, requesterWantsShift) {
             const normalizedRequesterWantsShift = requesterWantsShift ? requesterWantsShift.trim().toUpperCase() : "";
 
@@ -750,13 +753,14 @@
 
             const requesterTeamId = requester.team_id;
 
+            // Filter out the requester AND anyone on their own team
             const eligibleColleagues = allEmployees.filter(emp => 
                 emp.id !== requesterId && emp.team_id !== requesterTeamId
             );
 
             let bestMatches = [];
-            let otherColleagues = [];
 
+            // We ONLY proceed if we have a date and a target shift.
             if (date && normalizedRequesterWantsShift && normalizedRequesterWantsShift.length > 0) {
                 const shiftPromises = eligibleColleagues.map(colleague => 
                     getShiftFromRoster(colleague.id, date)
@@ -766,41 +770,44 @@
                 shifts.forEach((shift, index) => {
                     const colleague = eligibleColleagues[index];
                     const normalizedShift = (shift || "").trim().toUpperCase(); 
+                    
+                    // This is the core logic: only add if the colleague's shift matches
                     if (normalizedShift && normalizedShift === normalizedRequesterWantsShift) {
                         bestMatches.push(colleague);
-                    } else {
-                        otherColleagues.push(colleague);
                     }
+                    // No 'else' block. We simply ignore colleagues who don't match.
                 });
-            } else {
-                otherColleagues = eligibleColleagues;
             }
+            // If no date/shift is selected, bestMatches remains empty.
 
             colleagueSelect.clearOptions();
-            colleagueSelect.addOption({ value: "", text: "-- Select Colleague's Name --" });
 
+            // New UI logic based on what we found
             if (bestMatches.length > 0) {
-                colleagueSelect.addOptionGroup('best', { label: "Best Matches (Working your desired shift)" });
+                // Give a more descriptive label
+                const groupLabel = `Suitable Colleagues (Working Shift "${normalizedRequesterWantsShift}")`;
+                colleagueSelect.addOptionGroup('matches', { label: groupLabel });
+                
+                // Add the placeholder *after* clearing
+                colleagueSelect.addOption({ value: "", text: "-- Select a Suitable Colleague --" });
+                
                 bestMatches.forEach(emp => {
-                    colleagueSelect.addOption({ value: emp.id, text: emp.name, optgroup: 'best' });
+                    colleagueSelect.addOption({ value: emp.id, text: emp.name, optgroup: 'matches' });
                 });
+            } else {
+                // No matches. We need to know *why*.
+                if (!date || !normalizedRequesterWantsShift) {
+                    colleagueSelect.addOption({ value: "", text: "-- Select Date & Your Shift First --" });
+                } else {
+                    colleagueSelect.addOption({ value: "", text: `No colleagues found working shift "${normalizedRequesterWantsShift}"` });
+                }
             }
-
-            if (otherColleagues.length > 0) {
-                colleagueSelect.addOptionGroup('other', { label: "Other Colleagues (Not on your team)" });
-                otherColleagues.forEach(emp => {
-                    colleagueSelect.addOption({ value: emp.id, text: emp.name, optgroup: 'other' });
-                });
-            }
-
-            if (bestMatches.length === 0 && otherColleagues.length === 0) {
-                colleagueSelect.clearOptions();
-                colleagueSelect.addOption({ value: "", text: "-- No eligible colleagues found --" });
-            }
-
+            
             colleagueSelect.enable();
             colleagueSelect.setValue("");
         }
+        // --- **** END OF MODIFIED FUNCTION **** ---
+
 
         // --- UPDATED: Form Submit Handler ---
         async function handleFormSubmit(e) {
