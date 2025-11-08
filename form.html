@@ -253,6 +253,14 @@
                     </div>
                 </div>
 
+                <!-- NEW: Error Message Container -->
+                <div id="error-message-container" class="hidden">
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">
+                        <strong class="font-bold">Submission Failed!</strong>
+                        <span class="block sm:inline" id="error-message-text"></span>
+                    </div>
+                </div>
+
                 <!-- Submit Button -->
                 <div class="mt-6">
                     <button type="submit" id="submit-request-btn" class="btn-base btn-primary">
@@ -473,7 +481,8 @@
         let loadingView, loadingText, newRequestView, viewRequestView, messageView, newRequestForm,
             requesterNameSelect, requesterRankId, requesterTeam, colleagueNameSelect, colleagueRankId,
             colleagueTeam, shiftDateInput, requesterOriginalShift, requesterNewShift,
-            colleagueOriginalShift, colleagueNewShift, statusBannerContainer, actionContainer;
+            colleagueOriginalShift, colleagueNewShift, statusBannerContainer, actionContainer,
+            errorMessageContainer, errorMessageText; // <-- NEW ELEMENTS
 
         // --- 3. HELPER FUNCTIONS ---
         
@@ -492,6 +501,16 @@
             return APP_URL.split('?')[0];
         }
 
+        // --- NEW: Error Handling Functions ---
+        function showError(message) {
+            errorMessageText.textContent = message;
+            errorMessageContainer.classList.remove('hidden');
+        }
+
+        function clearError() {
+            errorMessageText.textContent = "";
+            errorMessageContainer.classList.add('hidden');
+        }
 
         function getUrlParams() {
             const params = new URLSearchParams(window.location.search);
@@ -826,9 +845,11 @@
             colleagueSelect.setValue("");
         }
 
-
+        // --- UPDATED: Form Submit Handler ---
         async function handleFormSubmit(e) {
             e.preventDefault();
+            clearError(); // <-- NEW: Clear old errors
+            
             const submitBtn = document.getElementById('submit-request-btn');
             submitBtn.disabled = true;
             submitBtn.firstElementChild.textContent = "Submitting...";
@@ -838,18 +859,16 @@
             const colleagueId = colleagueSelect.getValue();
             
             if (requesterId === colleagueId) {
-                // Use a custom modal or inline error message instead of alert
                 console.error("User selected self.");
-                // alert("You cannot change shifts with yourself.");
+                showError("You cannot change shifts with yourself. Please select a different colleague."); // <-- NEW
                 submitBtn.disabled = false;
                 submitBtn.firstElementChild.textContent = "Submit Request";
                 submitBtn.classList.remove('opacity-75');
                 return;
             }
             if (!requesterId || !colleagueId) {
-                 // Use a custom modal or inline error message instead of alert
                  console.error("Missing fields.");
-                // alert("Please select both a requester and a colleague.");
+                 showError("Please select both your name and your colleague's name."); // <-- NEW
                 submitBtn.disabled = false;
                 submitBtn.firstElementChild.textContent = "Submit Request";
                 submitBtn.classList.remove('opacity-75');
@@ -894,7 +913,8 @@
                 requestData.requesterOriginalShift !== requestData.colleagueNewShift) {
                 
                 console.error("Shift mismatch.");
-                // alert("Shift mismatch. The requester's new shift must match the colleague's original shift, and vice-versa. Please re-select the names and date.");
+                // <-- NEW: Show detailed error
+                showError(`Shift Mismatch. Your 'Change Shift to' (${requestData.requesterNewShift}) must match your Colleague's 'Original Shift' (${requestData.colleagueOriginalShift}). Please check the date and colleague.`);
                 submitBtn.disabled = false;
                 submitBtn.firstElementChild.textContent = "Submit Request";
                 submitBtn.classList.remove('opacity-75');
@@ -906,8 +926,8 @@
                 
                 const baseUrl = getBaseUrl();
                 if (!baseUrl) {
-                    // alert("CRITICAL ERROR: APP_URL is not set correctly. Cannot generate sharing link. Please contact administrator.");
                     console.error("APP_URL not set.");
+                    showError("CRITICAL ERROR: APP_URL is not set correctly. Cannot generate sharing link. Please contact administrator."); // <-- NEW
                     submitBtn.disabled = false;
                     submitBtn.firstElementChild.textContent = "Submit Request";
                     submitBtn.classList.remove('opacity-75');
@@ -926,7 +946,7 @@
                 );
             } catch (error) {
                 console.error("Error adding document: ", error);
-                // alert("An error occurred. Please try again.");
+                showError(`An unexpected error occurred: ${error.message}. Please try again.`); // <-- NEW
                 submitBtn.disabled = false;
                 submitBtn.firstElementChild.textContent = "Submit Request";
                 submitBtn.classList.remove('opacity-75');
@@ -1113,7 +1133,6 @@
             try {
                 const baseUrl = getBaseUrl();
                 if (!baseUrl) {
-                    // alert("CRITICAL ERROR: APP_URL is not set correctly. Cannot generate sharing link. Please contact administrator.");
                     console.error("APP_URL not set.");
                     return;
                 }
@@ -1149,7 +1168,6 @@
                 }
             } catch (error) {
                 console.error("Error updating request: ", error);
-                // alert("An error occurred. Please try again.");
             }
         }
         
@@ -1196,7 +1214,6 @@
 
             } catch (error) {
                 console.error("Error finalizing request: ", error);
-                // alert("An error occurred. The roster may not have been updated. Please try again.");
             }
         }
 
@@ -1204,6 +1221,7 @@
         
         let authStateProcessed = false;
         
+        // --- UPDATED: Assign DOM Elements ---
         function assignDOMElements() {
             loadingView = document.getElementById('loading-view');
             loadingText = document.getElementById('loading-text');
@@ -1224,6 +1242,11 @@
             colleagueNewShift = document.getElementById('colleagueNewShift');
             statusBannerContainer = document.getElementById('status-banner-container');
             actionContainer = document.getElementById('action-container');
+            
+            // --- NEW ---
+            errorMessageContainer = document.getElementById('error-message-container');
+            errorMessageText = document.getElementById('error-message-text');
+
             console.log("DOM elements assigned.");
         }
         
@@ -1294,11 +1317,6 @@
         // Start the app only after the DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DOM Loaded. Assigning elements and initializing Firebase.");
-            // Replace all 'alert' calls with a non-blocking alternative
-            // window.alert = function(message) {
-            //     console.warn("Alert called, but disabled:", message);
-            //     // You could implement a custom modal here if needed
-            // };
             assignDOMElements();
             initFirebase();
         });
