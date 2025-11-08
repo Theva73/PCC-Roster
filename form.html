@@ -25,52 +25,6 @@
             opacity: 1;
         }
 
-        /* Form section card */
-        .form-section {
-            @apply bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75;
-        }
-
-        /* Form labels */
-        .form-label {
-            @apply block text-sm font-medium text-gray-700 mb-1;
-        }
-
-        /* Form inputs */
-        .form-input, .form-select {
-            @apply w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150;
-        }
-
-        /* Read-only value display */
-        .form-value {
-            @apply w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center;
-        }
-
-        /* --- Improved Button Styles --- */
-        .btn-base {
-            @apply w-full px-5 py-3 rounded-lg shadow-md font-semibold text-white transition-all duration-200 flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-offset-2;
-        }
-        
-        /* Primary button (Submit, Approve) */
-        .btn-primary {
-            @apply bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500;
-        }
-        
-        /* Success button (WhatsApp, Agree) */
-        .btn-success {
-            @apply bg-green-600 hover:bg-green-700 focus:ring-green-500;
-        }
-        
-        /* Danger button (Reject, Disagree) */
-        .btn-danger {
-            @apply bg-red-600 hover:bg-red-700 focus:ring-red-500;
-        }
-        
-        /* Secondary button (Copy Link) */
-        .btn-secondary {
-            @apply bg-indigo-100 text-indigo-700 font-medium hover:bg-indigo-200 focus:ring-indigo-300;
-        }
-        /* --- End of Button Styles --- */
-
         /* Loading spinner */
         .loader {
             border: 4px solid #f3f3f3;
@@ -86,16 +40,13 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Status banners */
-        .status-banner {
-            @apply p-4 rounded-lg text-center font-bold text-lg mb-6 shadow-sm;
-        }
+        /* Status banners - These are simple bg/text/border colors, no @apply */
         .status-pending_colleague { @apply bg-yellow-100 text-yellow-800 border border-yellow-200; }
         .status-pending_manager { @apply bg-blue-100 text-blue-800 border border-blue-200; }
         .status-approved { @apply bg-green-100 text-green-800 border border-green-200; }
         .status-rejected_colleague, .status-rejected_manager { @apply bg-red-100 text-red-800 border border-red-200; }
 
-        /* TomSelect overrides */
+        /* TomSelect overrides - These do not use @apply and are fine */
         .ts-control {
             @apply w-full border border-gray-300 rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 !important;
             padding-top: 0.5rem !important;
@@ -153,11 +104,13 @@
         <div id="new-request-view" class="hidden space-y-6">
             <form id="new-request-form">
                 <!-- Requesting APO's Detail -->
-                <div class="form-section space-y-4">
+                <!-- FIXED: Inlined Tailwind classes from .form-section -->
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75 space-y-4">
                     <h2 class="text-xl font-semibold text-gray-900 border-b pb-2">1. Requesting APO's Detail</h2>
                     
                     <div>
-                        <label for="requesterName" class="form-label">Name:</label>
+                        <!-- FIXED: Inlined Tailwind classes from .form-label -->
+                        <label for="requesterName" class="block text-sm font-medium text-gray-700 mb-1">Name:</label>
                         <select id="requesterName" placeholder="Type to search your name..." required>
                             <option value="">-- Select Your Name --</option>
                         </select>
@@ -165,43 +118,44 @@
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label for="requesterRankId" class="form-label">Emp ID:</label>
-                            <input type="text" id="requesterRankId" class="form-input" disabled>
+                            <label for="requesterRankId" class="block text-sm font-medium text-gray-700 mb-1">Emp ID:</label>
+                            <!-- FIXED: Inlined Tailwind classes from .form-input -->
+                            <input type="text" id="requesterRankId" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" disabled>
                         </div>
                         <div>
-                            <label for="requesterTeam" class="form-label">Unit/Team:</label>
-                            <input type="text" id="requesterTeam" class="form-input" disabled>
+                            <label for="requesterTeam" class="block text-sm font-medium text-gray-700 mb-1">Unit/Team:</label>
+                            <input type="text" id="requesterTeam" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" disabled>
                         </div>
                     </div>
                     
                     <div>
-                        <label for="shiftDate" class="form-label">Date/Day of Change:</label>
-                        <input type="date" id="shiftDate" class="form-input" required>
+                        <label for="shiftDate" class="block text-sm font-medium text-gray-700 mb-1">Date/Day of Change:</label>
+                        <input type="date" id="shiftDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" required>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label for="requesterOriginalShift" class="form-label">Original Shift:</label>
-                            <input type="text" id="requesterOriginalShift" class="form-input" placeholder="e.g., 2" required>
+                            <label for="requesterOriginalShift" class="block text-sm font-medium text-gray-700 mb-1">Original Shift:</label>
+                            <input type="text" id="requesterOriginalShift" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" placeholder="e.g., 2" required>
                         </div>
                         <div>
-                            <label for="requesterNewShift" class="form-label">Change Shift to:</label>
-                            <input type="text" id="requesterNewShift" class="form-input form-input-readonly" readonly>
+                            <label for="requesterNewShift" class="block text-sm font-medium text-gray-700 mb-1">Change Shift to:</label>
+                            <input type="text" id="requesterNewShift" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 form-input-readonly" readonly>
                         </div>
                     </div>
                     
                     <div>
-                        <label for="reason" class="form-label">Reason for change:</label>
-                        <textarea id="reason" rows="2" class="form-input" placeholder="e.g., Family gathering" required></textarea>
+                        <label for="reason" class="block text-sm font-medium text-gray-700 mb-1">Reason for change:</label>
+                        <textarea id="reason" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" placeholder="e.g., Family gathering" required></textarea>
                     </div>
                 </div>
 
                 <!-- Changing with APO's Detail -->
-                <div class="form-section space-y-4">
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75 space-y-4">
                     <h2 class="text-xl font-semibold text-gray-900 border-b pb-2">2. Changing with APO's Detail</h2>
                     
                     <div>
-                        <label for="colleagueName" class="form-label">Name:</label>
+                        <label for="colleagueName" class="block text-sm font-medium text-gray-700 mb-1">Name:</label>
                         <select id="colleagueName" placeholder="Type to search colleague's name..." required>
                             <option value="">-- Select Requester First --</option>
                         </select>
@@ -209,31 +163,31 @@
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label for="colleagueRankId" class="form-label">Emp ID:</label>
-                            <input type="text" id="colleagueRankId" class="form-input" disabled>
+                            <label for="colleagueRankId" class="block text-sm font-medium text-gray-700 mb-1">Emp ID:</label>
+                            <input type="text" id="colleagueRankId" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" disabled>
                         </div>
                         <div>
-                            <label for="colleagueTeam" class="form-label">Unit/Team:</label>
-                            <input type="text" id="colleagueTeam" class="form-input" disabled>
+                            <label for="colleagueTeam" class="block text-sm font-medium text-gray-700 mb-1">Unit/Team:</label>
+                            <input type="text" id="colleagueTeam" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" disabled>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label for="colleagueOriginalShift" class="form-label">Colleague's Original Shift:</label>
-                            <input type="text" id="colleagueOriginalShift" class="form-input" placeholder="e.g., 1" required>
+                            <label for="colleagueOriginalShift" class="block text-sm font-medium text-gray-700 mb-1">Colleague's Original Shift:</label>
+                            <input type="text" id="colleagueOriginalShift" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" placeholder="e.g., 1" required>
                             <p class="text-xs text-gray-500 mt-1">Note: Your 'Change Shift to' should match this.</p>
                         </div>
                         <div>
-                            <label for="colleagueNewShift" class="form-label">Colleague's New Shift:</label>
-                            <input type="text" id="colleagueNewShift" class="form-input form-input-readonly" readonly>
+                            <label for="colleagueNewShift" class="block text-sm font-medium text-gray-700 mb-1">Colleague's New Shift:</label>
+                            <input type="text" id="colleagueNewShift" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 form-input-readonly" readonly>
                              <p class="text-xs text-gray-500 mt-1">Note: This should match your 'Original Shift'.</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Agreement -->
-                <div class="form-section">
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75">
                     <h3 class="font-semibold text-gray-900 mb-2 border-b pb-1">3. Agreement</h3>
                     <div class="text-xs text-gray-600 space-y-2 mt-3">
                         <p>We, hereby understand and acknowledged that:</p>
@@ -263,7 +217,8 @@
 
                 <!-- Submit Button -->
                 <div class="mt-6">
-                    <button type="submit" id="submit-request-btn" class="btn-base btn-primary">
+                    <!-- FIXED: Inlined Tailwind classes from .btn-base and .btn-primary -->
+                    <button type="submit" id="submit-request-btn" class="w-full px-5 py-3 rounded-lg shadow-md font-semibold text-white transition-all duration-200 flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500">
                         <span>Submit Request</span>
                         <!-- Added Icon -->
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -279,104 +234,105 @@
         <div id="view-request-view" class="hidden space-y-6">
             <div id="status-banner-container"></div>
             
-            <div class="form-section space-y-4">
+            <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75 space-y-4">
                 <h2 class="text-xl font-semibold text-gray-900 border-b pb-2">Request Details</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <span class="form-label">Date of Change:</span>
-                        <div id="view-shiftDate" class="form-value font-bold text-indigo-700"></div>
+                        <span class="block text-sm font-medium text-gray-700 mb-1">Date of Change:</span>
+                        <!-- FIXED: Inlined Tailwind classes from .form-value -->
+                        <div id="view-shiftDate" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center font-bold text-indigo-700"></div>
                     </div>
                     <div>
-                        <span class="form-label">Reason for Change:</span>
-                        <div id="view-reason" class="form-value"></div>
+                        <span class="block text-sm font-medium text-gray-700 mb-1">Reason for Change:</span>
+                        <div id="view-reason" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center"></div>
                     </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <!-- Requesting APO -->
-                <div class="form-section space-y-4">
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75 space-y-4">
                     <h3 class="text-lg font-semibold text-indigo-700 border-b pb-2">Requesting APO</h3>
                     <div>
-                        <span class="form-label">Name:</span>
-                        <div id="view-requesterName" class="form-value"></div>
+                        <span class="block text-sm font-medium text-gray-700 mb-1">Name:</span>
+                        <div id="view-requesterName" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center"></div>
                     </div>
                     <div>
-                        <span class="form-label">Emp ID:</span>
-                        <div id="view-requesterRankId" class="form-value"></div>
+                        <span class="block text-sm font-medium text-gray-700 mb-1">Emp ID:</span>
+                        <div id="view-requesterRankId" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center"></div>
                     </div>
                     <div>
-                        <span class="form-label">Unit/Team:</span>
-                        <div id="view-requesterTeam" class="form-value"></div>
+                        <span class="block text-sm font-medium text-gray-700 mb-1">Unit/Team:</span>
+                        <div id="view-requesterTeam" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center"></div>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <span class="form-label">Original Shift:</span>
-                            <div id="view-requesterOriginalShift" class="form-value font-semibold text-red-600"></div>
+                            <span class="block text-sm font-medium text-gray-700 mb-1">Original Shift:</span>
+                            <div id="view-requesterOriginalShift" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center font-semibold text-red-600"></div>
                         </div>
                         <div>
-                            <span class="form-label">Change Shift to:</span>
-                            <div id="view-requesterNewShift" class="form-value font-semibold text-green-600"></div>
+                            <span class="block text-sm font-medium text-gray-700 mb-1">Change Shift to:</span>
+                            <div id="view-requesterNewShift" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center font-semibold text-green-600"></div>
                         </div>
                     </div>
                     <div>
-                        <span class="form-label">Submitted:</span>
-                        <div id="view-requesterSignature" class="form-value text-sm"></div>
+                        <span class="block text-sm font-medium text-gray-700 mb-1">Submitted:</span>
+                        <div id="view-requesterSignature" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center text-sm"></div>
                     </div>
                 </div>
                 
                 <!-- Changing with APO -->
-                <div class="form-section space-y-4">
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75 space-y-4">
                     <h3 class="text-lg font-semibold text-blue-700 border-b pb-2">Changing with APO</h3>
                     <div>
-                        <span class="form-label">Name:</span>
-                        <div id="view-colleagueName" class="form-value"></div>
+                        <span class="block text-sm font-medium text-gray-700 mb-1">Name:</span>
+                        <div id="view-colleagueName" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center"></div>
                     </div>
                     <div>
-                        <span class="form-label">Emp ID:</span>
-                        <div id="view-colleagueRankId" class="form-value"></div>
+                        <span class="block text-sm font-medium text-gray-700 mb-1">Emp ID:</span>
+                        <div id="view-colleagueRankId" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center"></div>
                     </div>
                      <div>
-                        <span class="form-label">Unit/Team:</span>
-                        <div id="view-colleagueTeam" class="form-value"></div>
+                        <span class="block text-sm font-medium text-gray-700 mb-1">Unit/Team:</span>
+                        <div id="view-colleagueTeam" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center"></div>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <span class="form-label">Original Shift:</span>
-                            <div id="view-colleagueOriginalShift" class="form-value font-semibold text-red-600"></div>
+                            <span class="block text-sm font-medium text-gray-700 mb-1">Original Shift:</span>
+                            <div id="view-colleagueOriginalShift" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center font-semibold text-red-600"></div>
                         </div>
                         <div>
-                            <span class="form-label">Change Shift to:</span>
-                            <div id="view-colleagueNewShift" class="form-value font-semibold text-green-600"></div>
+                            <span class="block text-sm font-medium text-gray-700 mb-1">Change Shift to:</span>
+                            <div id="view-colleagueNewShift" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center font-semibold text-green-600"></div>
                         </div>
                     </div>
                     <div>
-                        <span class="form-label">Agreed:</span>
-                        <div id="view-colleagueSignature" class="form-value text-sm"></div>
+                        <span class="block text-sm font-medium text-gray-700 mb-1">Agreed:</span>
+                        <div id="view-colleagueSignature" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center text-sm"></div>
                     </div>
                 </div>
             </div>
             
-            <div class="form-section space-y-4">
+            <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75 space-y-4">
                 <h2 class="text-xl font-semibold text-gray-900 border-b pb-2">3. Approval / Disapproval</h2>
                 <div>
-                    <span class="form-label">Manager Comments:</span>
-                    <div id="view-managerComments" class="form-value min-h-[60px]"></div>
+                    <span class="block text-sm font-medium text-gray-700 mb-1">Manager Comments:</span>
+                    <div id="view-managerComments" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[60px] flex items-center"></div>
                 </div>
                 <div>
-                    <span class="form-label">Supervisor's Signature:</span>
-                    <div id="view-managerSignature" class="form-value text-sm"></div>
+                    <span class="block text-sm font-medium text-gray-700 mb-1">Supervisor's Signature:</span>
+                    <div id="view-managerSignature" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center text-sm"></div>
                 </div>
             </div>
 
             <div id="action-container" class="space-y-4"></div>
         </div>
 
-        <!-- NEW: Success/Message View (Re-designed for clarity) -->
+        <!-- Success/Message View (Redesigned) -->
         <div id="message-view" class="hidden space-y-6">
             
             <!-- Top Card: Success -->
-            <div class="form-section text-center">
+            <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75 text-center">
                 <div id="message-icon-container" class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100">
                     <svg class="h-10 w-10 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
@@ -387,13 +343,13 @@
             </div>
 
             <!-- Action Card 1: WhatsApp (Primary) -->
-            <div class="form-section">
+            <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4 text-center">Step 2: Get Colleague's Agreement</h3>
                 <p class="text-center text-gray-600 mb-5">The easiest way is to send the link via WhatsApp:</p>
                 
-                <!-- Big WhatsApp Button -->
+                <!-- FIXED: Big WhatsApp Button with all classes inlined -->
                 <a id="whatsapp-share-btn" href="#" target="_blank" 
-                   class="btn-base btn-success w-full py-3 text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300">
+                   class="w-full px-5 py-3 rounded-lg shadow-lg font-semibold text-white transition-all duration-300 flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-green-600 hover:bg-green-700 focus:ring-green-500 text-lg hover:shadow-xl transform hover:-translate-y-0.5">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.627-2.961 6.58-6.591 6.58zM5.59 5.603a.35.35 0 0 0-.273.512c.16.32.555 1.22 1.232 1.89C7.882 9.173 8.82 9.3 9.13 9.21c.31-.09.72-.372 1.038-.724.318-.35.555-.8.7-1.285.145-.485.08-.936-.026-1.083-.105-.146-.318-.24-.635-.426-.318-.187-.72-.187-.986-.113-.265.074-.469.165-.65.339-.181.174-.29.4-.395.572-.105.173-.21.265-.364.265-.155 0-.318-.09-.46-.21a4.9 4.9 0 0 1-1.6-1.485 5 5 0 0 1-1.04-1.745s-.105-.146.026-.28c.13-.134.288-.174.395-.21.105-.036.18-.01.264.04s.24.09.352.21c.112.12.164.195.21.318.047.123.027.265-.04.395-.07.13-.127.21-.184.288a.35.35 0 0 1-.264.112c-.09 0-.17-.036-.21-.074-.047-.036-.144-.165-.21-.28z"/>
                     </svg>
@@ -402,11 +358,12 @@
             </div>
 
             <!-- Action Card 2: Copy Link (Secondary) -->
-            <div id="message-link-container" class="form-section bg-gray-50">
+            <div id="message-link-container" class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75 bg-gray-50">
                 <p class="text-sm font-medium text-gray-800 mb-3 text-center">Or copy the link manually:</p>
                 <div class="flex flex-col sm:flex-row gap-2">
-                    <input type="text" id="message-link" class="form-input text-sm text-indigo-600 flex-grow bg-white" readonly>
-                    <button id="copy-link-btn" class="btn-base btn-secondary py-2 px-4 w-full sm:w-auto text-sm">
+                    <input type="text" id="message-link" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 text-sm text-indigo-600 flex-grow bg-white" readonly>
+                    <!-- FIXED: Inlined Tailwind classes for Copy button -->
+                    <button id="copy-link-btn" class="px-4 py-2 rounded-lg shadow-md font-semibold transition-all duration-200 flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-indigo-100 text-indigo-700 font-medium hover:bg-indigo-200 focus:ring-indigo-300 w-full sm:w-auto text-sm">
                         <!-- Added Icon -->
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -999,6 +956,7 @@
 
             const waBtn = document.getElementById('whatsapp-share-btn');
             const waBtnText = document.getElementById('whatsapp-share-text');
+            const waBtnCard = waBtn.closest('.bg-white'); // Find the parent card
 
             if (whatsAppMessage && buttonText) {
                 const encodedMessage = encodeURIComponent(`${whatsAppMessage}\n\n${link}`);
@@ -1006,12 +964,10 @@
                 waBtn.href = waHref;
                 waBtnText.textContent = buttonText;
                 waBtn.classList.remove('hidden');
-                // Ensure the parent container is visible if the button is
-                waBtn.closest('.form-section').classList.remove('hidden');
+                if (waBtnCard) waBtnCard.classList.remove('hidden'); // Ensure parent card is visible
             } else {
                 waBtn.classList.add('hidden');
-                // Hide the parent container if the button is hidden
-                waBtn.closest('.form-section').classList.add('hidden');
+                if (waBtnCard) waBtnCard.classList.add('hidden'); // Hide parent card
             }
 
             showView('message');
@@ -1055,7 +1011,8 @@
 
             const status = currentRequestData.status;
             let statusText = status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()); // Capitalize words
-            statusBannerContainer.innerHTML = `<div class="status-banner status-${status}">${statusText}</div>`;
+            // FIXED: Inlined Tailwind classes from .status-banner
+            statusBannerContainer.innerHTML = `<div class="p-4 rounded-lg text-center font-bold text-lg mb-6 shadow-sm status-${status}">${statusText}</div>`;
 
             renderActionButtons();
             showView('view');
@@ -1065,9 +1022,9 @@
             actionContainer.innerHTML = "";
             const status = currentRequestData.status;
 
-            // Using the new button classes
-            const btnSuccess = "btn-base btn-success";
-            const btnDanger = "btn-base btn-danger";
+            // FIXED: Define the full Tailwind class strings here
+            const btnSuccess = "w-full px-5 py-3 rounded-lg shadow-md font-semibold text-white transition-all duration-200 flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-green-600 hover:bg-green-700 focus:ring-green-500";
+            const btnDanger = "w-full px-5 py-3 rounded-lg shadow-md font-semibold text-white transition-all duration-200 flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-red-600 hover:bg-red-700 focus:ring-red-500";
             
             // --- SVGs for buttons ---
             const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
@@ -1075,7 +1032,7 @@
 
             if (status === 'pending_colleague' && currentRequestAction === 'colleague') {
                 actionContainer.innerHTML = `
-                    <div class="form-section text-center">
+                    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75 text-center">
                         <h3 class="text-xl font-semibold">Hi ${currentRequestData.colleagueName},</h3>
                         <p class="text-gray-700 mt-2">${currentRequestData.requesterName} has requested to change shifts with you. Do you agree?</p>
                     </div>
@@ -1095,11 +1052,11 @@
             }
             else if (status === 'pending_manager' && currentRequestAction === 'manager') {
                  actionContainer.innerHTML = `
-                    <div class="form-section space-y-4">
+                    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75 space-y-4">
                         <h3 class="text-xl font-semibold text-center border-b pb-2">Manager Approval</h3>
                         <div>
-                            <label for="managerCommentsInput" class="form-label">Comments (Optional):</label>
-                            <textarea id="managerCommentsInput" rows="2" class="form-input"></textarea>
+                            <label for="managerCommentsInput" class="block text-sm font-medium text-gray-700 mb-1">Comments (Optional):</label>
+                            <textarea id="managerCommentsInput" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"></textarea>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <button id="manager-approve-btn" class="${btnSuccess}">
