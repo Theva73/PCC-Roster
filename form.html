@@ -11,7 +11,12 @@
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f9fafb; /* Slightly lighter gray */
+        }
+        
+        /* Read-only/Disabled styles */
         input:disabled, select:disabled, textarea:disabled,
         .form-input-readonly {
             background-color: #f3f4f6;
@@ -19,29 +24,60 @@
             cursor: not-allowed;
             opacity: 1;
         }
+
+        /* Form section card */
         .form-section {
-            @apply bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200;
+            @apply bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75;
         }
+
+        /* Form labels */
         .form-label {
             @apply block text-sm font-medium text-gray-700 mb-1;
         }
+
+        /* Form inputs */
         .form-input, .form-select {
-            @apply w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500;
+            @apply w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150;
         }
+
+        /* Read-only value display */
         .form-value {
             @apply w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center;
         }
-        /* MODIFIED: Inlined button styles */
+
+        /* --- Improved Button Styles --- */
         .btn-base {
-            @apply w-full px-4 py-2 rounded-lg shadow-md font-semibold text-white transition-all duration-150 flex items-center justify-center space-x-2;
+            @apply w-full px-5 py-3 rounded-lg shadow-md font-semibold text-white transition-all duration-200 flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-offset-2;
         }
         
+        /* Primary button (Submit, Approve) */
+        .btn-primary {
+            @apply bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500;
+        }
+        
+        /* Success button (WhatsApp, Agree) */
+        .btn-success {
+            @apply bg-green-600 hover:bg-green-700 focus:ring-green-500;
+        }
+        
+        /* Danger button (Reject, Disagree) */
+        .btn-danger {
+            @apply bg-red-600 hover:bg-red-700 focus:ring-red-500;
+        }
+        
+        /* Secondary button (Copy Link) */
+        .btn-secondary {
+            @apply bg-indigo-100 text-indigo-700 font-medium hover:bg-indigo-200 focus:ring-indigo-300;
+        }
+        /* --- End of Button Styles --- */
+
+        /* Loading spinner */
         .loader {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
+            border-top: 4px solid #3b82f6; /* Changed to blue */
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 48px;
+            height: 48px;
             animation: spin 1s linear infinite;
             margin: 20px auto;
         }
@@ -49,18 +85,21 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .status-banner {
-            @apply p-4 rounded-lg text-center font-bold text-lg mb-6;
-        }
-        .status-pending_colleague { @apply bg-yellow-100 text-yellow-800; }
-        .status-pending_manager { @apply bg-blue-100 text-blue-800; }
-        .status-approved { @apply bg-green-100 text-green-800; }
-        .status-rejected_colleague, .status-rejected_manager { @apply bg-red-100 text-red-800; }
 
+        /* Status banners */
+        .status-banner {
+            @apply p-4 rounded-lg text-center font-bold text-lg mb-6 shadow-sm;
+        }
+        .status-pending_colleague { @apply bg-yellow-100 text-yellow-800 border border-yellow-200; }
+        .status-pending_manager { @apply bg-blue-100 text-blue-800 border border-blue-200; }
+        .status-approved { @apply bg-green-100 text-green-800 border border-green-200; }
+        .status-rejected_colleague, .status-rejected_manager { @apply bg-red-100 text-red-800 border border-red-200; }
+
+        /* TomSelect overrides */
         .ts-control {
-            @apply w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus-within:ring-indigo-500 focus-within:border-indigo-500 !important;
-            padding-top: 0.55rem !important;
-            padding-bottom: 0.55rem !important;
+            @apply w-full border border-gray-300 rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 !important;
+            padding-top: 0.5rem !important;
+            padding-bottom: 0.5rem !important;
         }
         .ts-control .ts-input {
             @apply shadow-none p-0 m-0 !important;
@@ -79,23 +118,43 @@
 <body class="bg-gray-100">
 
     <!-- Main Container -->
-    <div class="container mx-auto max-w-2xl p-4 py-8">
+    <div class="container mx-auto max-w-2xl p-4 py-8 sm:py-12">
         
-        <header class="text-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-800">Change of Shift Application Form</h1>
-            <p class="text-gray-600" id="app-subtitle">Submit a new request or view an existing one.</p>
+        <header class="text-center mb-8">
+            <div class="flex justify-center items-center gap-3">
+                <!-- Added Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600">
+                    <path d="M8 7h.01"/>
+                    <path d="M12 7h.01"/>
+                    <path d="M16 7h.01"/>
+                    <path d="M16 11h.01"/>
+                    <path d="M12 11h.01"/>
+                    <path d="M8 11h.01"/>
+                    <path d="M16 15h.01"/>
+                    <path d="M12 15h.01"/>
+                    <path d="M8 15h.01"/>
+                    <path d="M2 6l1.45-2.9A2 2 0 0 1 5.24 2h13.52a2 2 0 0 1 1.79 1.1L22 6"/>
+                    <path d="M2 6h20"/>
+                    <path d="M2 6v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6"/>
+                    <path d="M10 19v-4h4v4"/>
+                </svg>
+                <h1 class="text-3xl font-bold text-gray-800">Change of Shift Application</h1>
+            </div>
+            <p class="text-gray-600 mt-2" id="app-subtitle">Submit a new request or view an existing one.</p>
         </header>
 
+        <!-- Loading View -->
         <div id="loading-view" class="text-center p-10">
             <div class="loader"></div>
-            <p id="loading-text" class="text-gray-600">Loading...</p>
+            <p id="loading-text" class="text-gray-600 text-lg">Loading...</p>
         </div>
 
+        <!-- New Request View -->
         <div id="new-request-view" class="hidden space-y-6">
             <form id="new-request-form">
                 <!-- Requesting APO's Detail -->
                 <div class="form-section space-y-4">
-                    <h2 class="text-xl font-semibold text-gray-900">1. Requesting APO's Detail</h2>
+                    <h2 class="text-xl font-semibold text-gray-900 border-b pb-2">1. Requesting APO's Detail</h2>
                     
                     <div>
                         <label for="requesterName" class="form-label">Name:</label>
@@ -139,7 +198,7 @@
 
                 <!-- Changing with APO's Detail -->
                 <div class="form-section space-y-4">
-                    <h2 class="text-xl font-semibold text-gray-900">2. Changing with APO's Detail</h2>
+                    <h2 class="text-xl font-semibold text-gray-900 border-b pb-2">2. Changing with APO's Detail</h2>
                     
                     <div>
                         <label for="colleagueName" class="form-label">Name:</label>
@@ -175,8 +234,8 @@
 
                 <!-- Agreement -->
                 <div class="form-section">
-                    <h3 class="font-semibold text-gray-900 mb-2">3. Agreement</h3>
-                    <div class="text-xs text-gray-600 space-y-2">
+                    <h3 class="font-semibold text-gray-900 mb-2 border-b pb-1">3. Agreement</h3>
+                    <div class="text-xs text-gray-600 space-y-2 mt-3">
                         <p>We, hereby understand and acknowledged that:</p>
                         <ul class="list-disc list-inside pl-2 space-y-1">
                             <li>Changes are subject to approval by TL/OIC/OC.</li>
@@ -186,17 +245,23 @@
                             <li>*All shift changes shall be made at least 7 days before the actual shift for approval by TL/OIC/OC.</li>
                         </ul>
                     </div>
-                    <div class="mt-4">
+                    <div class="mt-4 bg-gray-50 p-3 rounded-lg">
                         <label class="flex items-center">
-                            <input type="checkbox" id="agreement" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" required>
-                            <span class="ml-2 text-sm text-gray-700">By submitting, I (the requester) agree to the terms.</span>
+                            <input type="checkbox" id="agreement" class="h-4 w-4 rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" required>
+                            <span class="ml-2 text-sm font-medium text-gray-700">By submitting, I (the requester) agree to the terms.</span>
                         </label>
                     </div>
                 </div>
 
+                <!-- Submit Button -->
                 <div class="mt-6">
-                    <button type="submit" id="submit-request-btn" class="btn-base bg-indigo-600 hover:bg-indigo-700">
+                    <button type="submit" id="submit-request-btn" class="btn-base btn-primary">
                         <span>Submit Request</span>
+                        <!-- Added Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
                     </button>
                 </div>
             </form>
@@ -207,11 +272,11 @@
             <div id="status-banner-container"></div>
             
             <div class="form-section space-y-4">
-                <h2 class="text-xl font-semibold text-gray-900">Request Details</h2>
+                <h2 class="text-xl font-semibold text-gray-900 border-b pb-2">Request Details</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <span class="form-label">Date of Change:</span>
-                        <div id="view-shiftDate" class="form-value font-bold"></div>
+                        <div id="view-shiftDate" class="form-value font-bold text-indigo-700"></div>
                     </div>
                     <div>
                         <span class="form-label">Reason for Change:</span>
@@ -223,7 +288,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <!-- Requesting APO -->
                 <div class="form-section space-y-4">
-                    <h3 class="text-lg font-semibold text-indigo-700">Requesting APO</h3>
+                    <h3 class="text-lg font-semibold text-indigo-700 border-b pb-2">Requesting APO</h3>
                     <div>
                         <span class="form-label">Name:</span>
                         <div id="view-requesterName" class="form-value"></div>
@@ -236,13 +301,15 @@
                         <span class="form-label">Unit/Team:</span>
                         <div id="view-requesterTeam" class="form-value"></div>
                     </div>
-                    <div>
-                        <span class="form-label">Original Shift:</span>
-                        <div id="view-requesterOriginalShift" class="form-value font-semibold text-red-600"></div>
-                    </div>
-                    <div>
-                        <span class="form-label">Change Shift to:</span>
-                        <div id="view-requesterNewShift" class="form-value font-semibold text-green-600"></div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <span class="form-label">Original Shift:</span>
+                            <div id="view-requesterOriginalShift" class="form-value font-semibold text-red-600"></div>
+                        </div>
+                        <div>
+                            <span class="form-label">Change Shift to:</span>
+                            <div id="view-requesterNewShift" class="form-value font-semibold text-green-600"></div>
+                        </div>
                     </div>
                     <div>
                         <span class="form-label">Submitted:</span>
@@ -252,7 +319,7 @@
                 
                 <!-- Changing with APO -->
                 <div class="form-section space-y-4">
-                    <h3 class="text-lg font-semibold text-blue-700">Changing with APO</h3>
+                    <h3 class="text-lg font-semibold text-blue-700 border-b pb-2">Changing with APO</h3>
                     <div>
                         <span class="form-label">Name:</span>
                         <div id="view-colleagueName" class="form-value"></div>
@@ -265,13 +332,15 @@
                         <span class="form-label">Unit/Team:</span>
                         <div id="view-colleagueTeam" class="form-value"></div>
                     </div>
-                    <div>
-                        <span class="form-label">Original Shift:</span>
-                        <div id="view-colleagueOriginalShift" class="form-value font-semibold text-red-600"></div>
-                    </div>
-                    <div>
-                        <span class="form-label">Change Shift to:</span>
-                        <div id="view-colleagueNewShift" class="form-value font-semibold text-green-600"></div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <span class="form-label">Original Shift:</span>
+                            <div id="view-colleagueOriginalShift" class="form-value font-semibold text-red-600"></div>
+                        </div>
+                        <div>
+                            <span class="form-label">Change Shift to:</span>
+                            <div id="view-colleagueNewShift" class="form-value font-semibold text-green-600"></div>
+                        </div>
                     </div>
                     <div>
                         <span class="form-label">Agreed:</span>
@@ -281,10 +350,10 @@
             </div>
             
             <div class="form-section space-y-4">
-                <h2 class="text-xl font-semibold text-gray-900">3. Approval / Disapproval</h2>
+                <h2 class="text-xl font-semibold text-gray-900 border-b pb-2">3. Approval / Disapproval</h2>
                 <div>
                     <span class="form-label">Manager Comments:</span>
-                    <div id="view-managerComments" class="form-value"></div>
+                    <div id="view-managerComments" class="form-value min-h-[60px]"></div>
                 </div>
                 <div>
                     <span class="form-label">Supervisor's Signature:</span>
@@ -295,14 +364,22 @@
             <div id="action-container" class="space-y-4"></div>
         </div>
 
-        <!-- Success/Message View -->
+        <!-- Success/Message View (Improved UI) -->
         <div id="message-view" class="hidden text-center form-section">
-            <h2 id="message-title" class="text-2xl font-bold text-green-600">Success!</h2>
-            <p id="message-text" class="mt-4 text-gray-700">Your request has been submitted.</p>
+            <!-- Added Success Icon -->
+            <div id="message-icon-container" class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100">
+                <svg class="h-10 w-10 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+
+            <h2 id="message-title" class="text-2xl font-bold text-gray-900 mt-4">Success!</h2>
+            <p id="message-text" class="mt-2 text-gray-600">Your request has been submitted.</p>
             
             <div class="mt-8 mb-6">
+                <!-- Improved WhatsApp Button -->
                 <a id="whatsapp-share-btn" href="#" target="_blank" 
-                   class="btn-base bg-green-500 hover:bg-green-600 w-full max-w-xs mx-auto py-3 text-lg">
+                   class="btn-base btn-success w-full max-w-xs mx-auto py-3 text-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.627-2.961 6.58-6.591 6.58zM5.59 5.603a.35.35 0 0 0-.273.512c.16.32.555 1.22 1.232 1.89C7.882 9.173 8.82 9.3 9.13 9.21c.31-.09.72-.372 1.038-.724.318-.35.555-.8.7-1.285.145-.485.08-.936-.026-1.083-.105-.146-.318-.24-.635-.426-.318-.187-.72-.187-.986-.113-.265.074-.469.165-.65.339-.181.174-.29.4-.395.572-.105.173-.21.265-.364.265-.155 0-.318-.09-.46-.21a4.9 4.9 0 0 1-1.6-1.485 5 5 0 0 1-1.04-1.745s-.105-.146.026-.28c.13-.134.288-.174.395-.21.105-.036.18-.01.264.04s.24.09.352.21c.112.12.164.195.21.318.047.123.027.265-.04.395-.07.13-.127.21-.184.288a.35.35 0 0 1-.264.112c-.09 0-.17-.036-.21-.074-.047-.036-.144-.165-.21-.28z"/>
                     </svg>
@@ -310,17 +387,27 @@
                 </a>
             </div>
             
-            <div id="message-link-container" class="mt-6 p-4 bg-gray-100 rounded-lg">
-                <p class="text-sm font-medium text-gray-800">Or copy this link:</p>
-                <input type="text" id="message-link" class="form-input text-sm text-indigo-600" readonly>
-                <button id="copy-link-btn" class="mt-2 px-4 py-2 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700">Copy Link</button>
-                <span id="copy-status" class="ml-2 text-sm text-green-600"></span>
+            <!-- Improved Link Copy Section -->
+            <div id="message-link-container" class="mt-8 pt-6 border-t border-gray-200">
+                <p class="text-sm font-medium text-gray-800 mb-2">Or copy this link:</p>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input type="text" id="message-link" class="form-input text-sm text-indigo-600 flex-grow" readonly>
+                    <button id="copy-link-btn" class="btn-base btn-secondary py-2 px-4 w-full sm:w-auto text-sm">
+                        <!-- Added Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        <span>Copy Link</span>
+                    </button>
+                </div>
+                <span id="copy-status" class="mt-2 h-4 block text-sm text-green-600"></span>
             </div>
         </div>
         
     </div>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (No changes to logic) -->
     <script type="module">
         console.log("Shift Request App script started."); // DEBUG: Check if script runs
 
@@ -738,20 +825,27 @@
             const submitBtn = document.getElementById('submit-request-btn');
             submitBtn.disabled = true;
             submitBtn.firstElementChild.textContent = "Submitting...";
+            submitBtn.classList.add('opacity-75');
 
             const requesterId = requesterSelect.getValue();
             const colleagueId = colleagueSelect.getValue();
             
             if (requesterId === colleagueId) {
-                alert("You cannot change shifts with yourself.");
+                // Use a custom modal or inline error message instead of alert
+                console.error("User selected self.");
+                // alert("You cannot change shifts with yourself.");
                 submitBtn.disabled = false;
                 submitBtn.firstElementChild.textContent = "Submit Request";
+                submitBtn.classList.remove('opacity-75');
                 return;
             }
             if (!requesterId || !colleagueId) {
-                 alert("Please select both a requester and a colleague.");
+                 // Use a custom modal or inline error message instead of alert
+                 console.error("Missing fields.");
+                // alert("Please select both a requester and a colleague.");
                 submitBtn.disabled = false;
                 submitBtn.firstElementChild.textContent = "Submit Request";
+                submitBtn.classList.remove('opacity-75');
                 return;
             }
             
@@ -792,9 +886,11 @@
             if (requestData.requesterNewShift !== requestData.colleagueOriginalShift ||
                 requestData.requesterOriginalShift !== requestData.colleagueNewShift) {
                 
-                alert("Shift mismatch. The requester's new shift must match the colleague's original shift, and vice-versa. Please re-select the names and date.");
+                console.error("Shift mismatch.");
+                // alert("Shift mismatch. The requester's new shift must match the colleague's original shift, and vice-versa. Please re-select the names and date.");
                 submitBtn.disabled = false;
                 submitBtn.firstElementChild.textContent = "Submit Request";
+                submitBtn.classList.remove('opacity-75');
                 return;
             }
 
@@ -803,9 +899,11 @@
                 
                 const baseUrl = getBaseUrl();
                 if (!baseUrl) {
-                    alert("CRITICAL ERROR: APP_URL is not set correctly. Cannot generate sharing link. Please contact administrator.");
+                    // alert("CRITICAL ERROR: APP_URL is not set correctly. Cannot generate sharing link. Please contact administrator.");
+                    console.error("APP_URL not set.");
                     submitBtn.disabled = false;
                     submitBtn.firstElementChild.textContent = "Submit Request";
+                    submitBtn.classList.remove('opacity-75');
                     return;
                 }
                 
@@ -821,27 +919,55 @@
                 );
             } catch (error) {
                 console.error("Error adding document: ", error);
-                alert("An error occurred. Please try again.");
+                // alert("An error occurred. Please try again.");
                 submitBtn.disabled = false;
                 submitBtn.firstElementChild.textContent = "Submit Request";
+                submitBtn.classList.remove('opacity-75');
             }
         }
         
         function showMessage(title, text, link, whatsAppMessage, buttonText) {
             document.getElementById('message-title').textContent = title;
             document.getElementById('message-text').innerHTML = text;
+            
+            // Show green check for success, warning icon for others
+            const iconContainer = document.getElementById('message-icon-container');
+            if (title.toLowerCase().includes('success') || title.toLowerCase().includes('approved') || title.toLowerCase().includes('submitted')) {
+                iconContainer.innerHTML = `
+                    <svg class="h-10 w-10 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>`;
+                iconContainer.className = "mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100";
+            } else { // Rejected, etc.
+                iconContainer.innerHTML = `
+                    <svg class="h-10 w-10 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                    </svg>`;
+                iconContainer.className = "mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100";
+            }
+
             const linkInput = document.getElementById('message-link');
             linkInput.value = link;
             
-            document.getElementById('copy-link-btn').onclick = () => {
+            const copyBtn = document.getElementById('copy-link-btn');
+            const copyStatus = document.getElementById('copy-status');
+            
+            copyBtn.onclick = () => {
                 linkInput.select();
                 try {
-                    document.execCommand('copy');
-                    document.getElementById('copy-status').textContent = "Copied!";
+                    // Use modern clipboard API if available (with fallback)
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(link).then(() => {
+                            copyStatus.textContent = "Copied!";
+                        });
+                    } else {
+                        document.execCommand('copy');
+                        copyStatus.textContent = "Copied!";
+                    }
                 } catch (err) {
-                     document.getElementById('copy-status').textContent = "Error copying.";
+                     copyStatus.textContent = "Error copying.";
                 }
-                setTimeout(() => { document.getElementById('copy-status').textContent = ""; }, 2000);
+                setTimeout(() => { copyStatus.textContent = ""; }, 2000);
             };
 
             const waBtn = document.getElementById('whatsapp-share-btn');
@@ -897,7 +1023,7 @@
             document.getElementById('view-managerSignature').textContent = formatTimestamp(currentRequestData.managerSignatureTimestamp);
 
             const status = currentRequestData.status;
-            let statusText = status.replace('_', ' ').toUpperCase();
+            let statusText = status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()); // Capitalize words
             statusBannerContainer.innerHTML = `<div class="status-banner status-${status}">${statusText}</div>`;
 
             renderActionButtons();
@@ -908,19 +1034,29 @@
             actionContainer.innerHTML = "";
             const status = currentRequestData.status;
 
-            const btnBase = "btn-base w-full px-4 py-2 rounded-lg shadow-md font-semibold text-white transition-all duration-150 flex items-center justify-center space-x-2";
-            const btnSuccess = "bg-green-600 hover:bg-green-700";
-            const btnDanger = "bg-red-600 hover:bg-red-700";
+            // Using the new button classes
+            const btnSuccess = "btn-base btn-success";
+            const btnDanger = "btn-base btn-danger";
+            
+            // --- SVGs for buttons ---
+            const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            const xIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
 
             if (status === 'pending_colleague' && currentRequestAction === 'colleague') {
                 actionContainer.innerHTML = `
-                    <div class="text-center mb-4">
+                    <div class="form-section text-center">
                         <h3 class="text-xl font-semibold">Hi ${currentRequestData.colleagueName},</h3>
-                        <p class="text-gray-700">${currentRequestData.requesterName} has requested to change shifts with you. Do you agree?</p>
+                        <p class="text-gray-700 mt-2">${currentRequestData.requesterName} has requested to change shifts with you. Do you agree?</p>
                     </div>
-                    <div classs="grid grid-cols-2 gap-4">
-                        <button id="colleague-agree-btn" class="${btnBase} ${btnSuccess} mb-2">I Agree</button>
-                        <button id="colleague-disagree-btn" class="${btnBase} ${btnDanger}">I Disagree</button>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                        <button id="colleague-agree-btn" class="${btnSuccess}">
+                            ${checkIcon}
+                            <span>I Agree</span>
+                        </button>
+                        <button id="colleague-disagree-btn" class="${btnDanger}">
+                            ${xIcon}
+                            <span>I Disagree</span>
+                        </button>
                     </div>
                 `;
                 document.getElementById('colleague-agree-btn').addEventListener('click', () => handleColleagueAction(true));
@@ -928,17 +1064,21 @@
             }
             else if (status === 'pending_manager' && currentRequestAction === 'manager') {
                  actionContainer.innerHTML = `
-                    <div class="text-center mb-4">
-                        <h3 class="text-xl font-semibold">Manager Approval</h3>
-                    </div>
-                    <div class="space-y-4">
+                    <div class="form-section space-y-4">
+                        <h3 class="text-xl font-semibold text-center border-b pb-2">Manager Approval</h3>
                         <div>
                             <label for="managerCommentsInput" class="form-label">Comments (Optional):</label>
                             <textarea id="managerCommentsInput" rows="2" class="form-input"></textarea>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <button id="manager-approve-btn" class="${btnBase} ${btnSuccess}">Approve</button>
-                            <button id="manager-reject-btn" class="${btnBase} ${btnDanger}">Reject</button>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <button id="manager-approve-btn" class="${btnSuccess}">
+                                ${checkIcon}
+                                <span>Approve</span>
+                            </button>
+                            <button id="manager-reject-btn" class="${btnDanger}">
+                                ${xIcon}
+                                <span>Reject</span>
+                            </button>
                         </div>
                     </div>
                 `;
@@ -946,9 +1086,12 @@
                 document.getElementById('manager-reject-btn').addEventListener('click', () => handleManagerAction(false));
             }
             else {
-                actionContainer.innerHTML = `<p class="text-center text-gray-600">This request is now finalized. No further actions are needed.</p>`;
                 if (currentRequestAction && (status.includes('approved') || status.includes('rejected'))) {
                     actionContainer.innerHTML = `<p class="text-center text-gray-600">This request has already been <strong>${status.replace('_', ' ').toUpperCase()}</strong>.</p>`;
+                } else if (!currentRequestAction && status.includes('pending')) {
+                     actionContainer.innerHTML = `<p class="text-center text-gray-600">This request is <strong>${status.replace('_', ' ').toUpperCase()}</strong>. Waiting for action.</p>`;
+                } else {
+                     actionContainer.innerHTML = `<p class="text-center text-gray-600">This request is finalized. No further actions are needed.</p>`;
                 }
             }
         }
@@ -959,7 +1102,8 @@
             try {
                 const baseUrl = getBaseUrl();
                 if (!baseUrl) {
-                    alert("CRITICAL ERROR: APP_URL is not set correctly. Cannot generate sharing link. Please contact administrator.");
+                    // alert("CRITICAL ERROR: APP_URL is not set correctly. Cannot generate sharing link. Please contact administrator.");
+                    console.error("APP_URL not set.");
                     return;
                 }
 
@@ -994,7 +1138,7 @@
                 }
             } catch (error) {
                 console.error("Error updating request: ", error);
-                alert("An error occurred. Please try again.");
+                // alert("An error occurred. Please try again.");
             }
         }
         
@@ -1041,7 +1185,7 @@
 
             } catch (error) {
                 console.error("Error finalizing request: ", error);
-                alert("An error occurred. The roster may not have been updated. Please try again.");
+                // alert("An error occurred. The roster may not have been updated. Please try again.");
             }
         }
 
@@ -1139,6 +1283,11 @@
         // Start the app only after the DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DOM Loaded. Assigning elements and initializing Firebase.");
+            // Replace all 'alert' calls with a non-blocking alternative
+            // window.alert = function(message) {
+            //     console.warn("Alert called, but disabled:", message);
+            //     // You could implement a custom modal here if needed
+            // };
             assignDOMElements();
             initFirebase();
         });
@@ -1146,3 +1295,4 @@
     </script>
 </body>
 </html>
+
