@@ -1108,11 +1108,11 @@
                     });
                     
                     const whatsAppLink = `${baseUrl}?requestId=${currentRequestId}&action=manager`;
-                    const whatsAppMessage = `Hi Manager, this is a shift change request for ${currentRequestData.requesterName} and ${currentRequestData.colleagueName} on ${currentRequestData.shiftDate}. We have both agreed. Please approve:`;
+                    const whatsAppMessage = `Hi , this is a shift change request for ${currentRequestData.requesterName} and ${currentRequestData.colleagueName} on ${currentRequestData.shiftDate}. We have both agreed. Please approve:`;
 
                     showMessage(
                         "Agreement Submitted!",
-                        `Thank you! Your agreement has been recorded. Please forward the link below to your manager for final approval.`,
+                        `Thank you! Your agreement has been recorded. Please forward the link below to your TL/OC for final approval.`,
                         whatsAppLink,
                         whatsAppMessage,
                         "Share to Manager"
