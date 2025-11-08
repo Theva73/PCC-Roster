@@ -42,9 +42,11 @@
 
         /* Status banners - These are simple bg/text/border colors, no @apply */
         .status-pending_colleague { @apply bg-yellow-100 text-yellow-800 border border-yellow-200; }
-        .status-pending_manager { @apply bg-blue-100 text-blue-800 border border-blue-200; }
+        /* CHANGED: pending_manager to pending_tl_oc */
+        .status-pending_tl_oc { @apply bg-blue-100 text-blue-800 border border-blue-200; }
         .status-approved { @apply bg-green-100 text-green-800 border border-green-200; }
-        .status-rejected_colleague, .status-rejected_manager { @apply bg-red-100 text-red-800 border border-red-200; }
+        /* CHANGED: rejected_manager to rejected_tl_oc */
+        .status-rejected_colleague, .status-rejected_tl_oc { @apply bg-red-100 text-red-800 border border-red-200; }
 
         /* TomSelect overrides - These do not use @apply and are fine */
         .ts-control {
@@ -192,10 +194,13 @@
                     <div class="text-xs text-gray-600 space-y-2 mt-3">
                         <p>We, hereby understand and acknowledged that:</p>
                         <ul class="list-disc list-inside pl-2 space-y-1">
+                            <!-- CHANGED: TL/OIC/OC -->
                             <li>Changes are subject to approval by TL/OIC/OC.</li>
                             <li>Changes shall only be effective upon approval TL/OIC/OC.</li>
                             <li>In any event, anyone of us do not turn up as requested, we understand that we are liable to report back to duty as per original shift/roster.</li>
+                            <!-- CHANGED: TL or OIC -->
                             <li>It is our responsibility to remind TL or OIC on the changes.</li>
+                            <!-- CHANGED: TL/OIC/OC -->
                             <li>*All shift changes shall be made at least 7 days before the actual shift for approval by TL/OIC/OC.</li>
                         </ul>
                     </div>
@@ -316,12 +321,16 @@
             <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75 space-y-4">
                 <h2 class="text-xl font-semibold text-gray-900 border-b pb-2">3. Approval / Disapproval</h2>
                 <div>
-                    <span class="block text-sm font-medium text-gray-700 mb-1">Manager Comments:</span>
-                    <div id="view-managerComments" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[60px] flex items-center"></div>
+                    <!-- CHANGED: TL/OC Comments -->
+                    <span class="block text-sm font-medium text-gray-700 mb-1">TL/OC Comments:</span>
+                    <!-- CHANGED: view-tl-oc-Comments -->
+                    <div id="view-tl-oc-Comments" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[60px] flex items-center"></div>
                 </div>
                 <div>
-                    <span class="block text-sm font-medium text-gray-700 mb-1">Supervisor's Signature:</span>
-                    <div id="view-managerSignature" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center text-sm"></div>
+                    <!-- CHANGED: Supervisor's Signature to TL/OC's Signature -->
+                    <span class="block text-sm font-medium text-gray-700 mb-1">TL/OC's Signature:</span>
+                    <!-- CHANGED: view-tl-oc-Signature -->
+                    <div id="view-tl-oc-Signature" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center text-sm"></div>
                 </div>
             </div>
 
@@ -869,8 +878,10 @@
                 
                 requesterSignatureTimestamp: serverTimestamp(),
                 colleagueSignatureTimestamp: null,
-                managerSignatureTimestamp: null,
-                managerComments: "",
+                // CHANGED: tlOcSignatureTimestamp
+                tlOcSignatureTimestamp: null,
+                // CHANGED: tlOcComments
+                tlOcComments: "",
             };
 
             if (requestData.requesterNewShift !== requestData.colleagueOriginalShift ||
@@ -1013,11 +1024,13 @@
             document.getElementById('view-colleagueNewShift').textContent = currentRequestData.colleagueNewShift;
             document.getElementById('view-colleagueSignature').textContent = formatTimestamp(currentRequestData.colleagueSignatureTimestamp);
             
-            document.getElementById('view-managerComments').textContent = currentRequestData.managerComments || "No comments.";
-            document.getElementById('view-managerSignature').textContent = formatTimestamp(currentRequestData.managerSignatureTimestamp);
+            // CHANGED: tlOcComments and tlOcSignatureTimestamp
+            document.getElementById('view-tl-oc-Comments').textContent = currentRequestData.tlOcComments || "No comments.";
+            document.getElementById('view-tl-oc-Signature').textContent = formatTimestamp(currentRequestData.tlOcSignatureTimestamp);
 
             const status = currentRequestData.status;
-            let statusText = status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()); // Capitalize words
+            // CHANGED: Handle tl_oc status
+            let statusText = status.replace('_', ' ').replace('tl oc', 'TL/OC').replace(/\b\w/g, l => l.toUpperCase()); // Capitalize words
             // FIXED: Inlined Tailwind classes from .status-banner
             statusBannerContainer.innerHTML = `<div class="p-4 rounded-lg text-center font-bold text-lg mb-6 shadow-sm status-${status}">${statusText}</div>`;
 
@@ -1057,34 +1070,42 @@
                 document.getElementById('colleague-agree-btn').addEventListener('click', () => handleColleagueAction(true));
                 document.getElementById('colleague-disagree-btn').addEventListener('click', () => handleColleagueAction(false));
             }
-            else if (status === 'pending_manager' && currentRequestAction === 'manager') {
+            // CHANGED: pending_tl_oc and action=tl_oc
+            else if (status === 'pending_tl_oc' && currentRequestAction === 'tl_oc') {
                  actionContainer.innerHTML = `
                     <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75 space-y-4">
-                        <h3 class="text-xl font-semibold text-center border-b pb-2">Manager Approval</h3>
+                        <!-- CHANGED: TL/OC Approval -->
+                        <h3 class="text-xl font-semibold text-center border-b pb-2">TL/OC Approval</h3>
                         <div>
-                            <label for="managerCommentsInput" class="block text-sm font-medium text-gray-700 mb-1">Comments (Optional):</label>
-                            <textarea id="managerCommentsInput" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"></textarea>
+                            <label for="tl-oc-CommentsInput" class="block text-sm font-medium text-gray-700 mb-1">Comments (Optional):</label>
+                            <!-- CHANGED: tl-oc-CommentsInput -->
+                            <textarea id="tl-oc-CommentsInput" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"></textarea>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <button id="manager-approve-btn" class="${btnSuccess}">
+                            <!-- CHANGED: tl-oc-approve-btn -->
+                            <button id="tl-oc-approve-btn" class="${btnSuccess}">
                                 ${checkIcon}
                                 <span>Approve</span>
                             </button>
-                            <button id="manager-reject-btn" class="${btnDanger}">
+                            <!-- CHANGED: tl-oc-reject-btn -->
+                            <button id="tl-oc-reject-btn" class="${btnDanger}">
                                 ${xIcon}
                                 <span>Reject</span>
                             </button>
                         </div>
                     </div>
                 `;
-                document.getElementById('manager-approve-btn').addEventListener('click', () => handleManagerAction(true));
-                document.getElementById('manager-reject-btn').addEventListener('click', () => handleManagerAction(false));
+                // CHANGED: Event listeners
+                document.getElementById('tl-oc-approve-btn').addEventListener('click', () => handleTlOcAction(true));
+                document.getElementById('tl-oc-reject-btn').addEventListener('click', () => handleTlOcAction(false));
             }
             else {
                 if (currentRequestAction && (status.includes('approved') || status.includes('rejected'))) {
-                    actionContainer.innerHTML = `<p class="text-center text-gray-600">This request has already been <strong>${status.replace('_', ' ').toUpperCase()}</strong>.</p>`;
+                    // CHANGED: Handle tl_oc status
+                    actionContainer.innerHTML = `<p class="text-center text-gray-600">This request has already been <strong>${status.replace('_', ' ').replace('tl oc', 'TL/OC').toUpperCase()}</strong>.</p>`;
                 } else if (!currentRequestAction && status.includes('pending')) {
-                     actionContainer.innerHTML = `<p class="text-center text-gray-600">This request is <strong>${status.replace('_', ' ').toUpperCase()}</strong>. Waiting for action.</p>`;
+                    // CHANGED: Handle tl_oc status
+                     actionContainer.innerHTML = `<p class="text-center text-gray-600">This request is <strong>${status.replace('_', ' ').replace('tl oc', 'TL/OC').toUpperCase()}</strong>. Waiting for action.</p>`;
                 } else {
                      actionContainer.innerHTML = `<p class="text-center text-gray-600">This request is finalized. No further actions are needed.</p>`;
                 }
@@ -1103,19 +1124,22 @@
 
                 if (didAgree) {
                     await updateDoc(docRef, {
-                        status: 'pending_manager',
+                        // CHANGED: pending_tl_oc
+                        status: 'pending_tl_oc',
                         colleagueSignatureTimestamp: serverTimestamp()
                     });
                     
-                    const whatsAppLink = `${baseUrl}?requestId=${currentRequestId}&action=manager`;
+                    // CHANGED: action=tl_oc
+                    const whatsAppLink = `${baseUrl}?requestId=${currentRequestId}&action=tl_oc`;
                     const whatsAppMessage = `Hi , this is a shift change request for ${currentRequestData.requesterName} and ${currentRequestData.colleagueName} on ${currentRequestData.shiftDate}. We have both agreed. Please approve:`;
 
                     showMessage(
                         "Agreement Submitted!",
+                        // CHANGED: TL/OC
                         `Thank you! Your agreement has been recorded. Please forward the link below to your TL/OC for final approval.`,
                         whatsAppLink,
-                        whatsAppMessage,
-                        "Share to Manager"
+                        // CHANGED: Share to TL/OC
+                        "Share to TL/OC"
                     );
                 } else {
                     await updateDoc(docRef, {
@@ -1135,9 +1159,11 @@
             }
         }
         
-        async function handleManagerAction(didApprove) {
+        // CHANGED: handleTlOcAction
+        async function handleTlOcAction(didApprove) {
             const docRef = doc(shiftRequestsCollection, currentRequestId);
-            const managerComments = document.getElementById('managerCommentsInput') ? document.getElementById('managerCommentsInput').value : "";
+            // CHANGED: tl-oc-CommentsInput
+            const tlOcComments = document.getElementById('tl-oc-CommentsInput') ? document.getElementById('tl-oc-CommentsInput').value : "";
 
             try {
                 if (didApprove) {
@@ -1155,15 +1181,18 @@
                     
                     await updateDoc(docRef, {
                         status: 'approved',
-                        managerComments: managerComments,
-                        managerSignatureTimestamp: serverTimestamp()
+                        // CHANGED: tlOcComments, tlOcSignatureTimestamp
+                        tlOcComments: tlOcComments,
+                        tlOcSignatureTimestamp: serverTimestamp()
                     });
                     
                 } else {
                     await updateDoc(docRef, {
-                        status: 'rejected_manager',
-                        managerComments: managerComments,
-                        managerSignatureTimestamp: serverTimestamp()
+                        // CHANGED: rejected_tl_oc
+                        status: 'rejected_tl_oc',
+                        // CHANGED: tlOcComments, tlOcSignatureTimestamp
+                        tlOcComments: tlOcComments,
+                        tlOcSignatureTimestamp: serverTimestamp()
                     });
                 }
 
@@ -1176,7 +1205,8 @@
                     link, null, null
                 );
 
-            } catch (error) {
+            } catch (error)
+                {
                 console.error("Error finalizing request: ", error);
             }
         }
@@ -1288,5 +1318,4 @@
     </script>
 </body>
 </html>
-
 
