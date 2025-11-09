@@ -303,7 +303,7 @@
                         </div>
                         <div>
                             <span class="block text-sm font-medium text-gray-700 mb-1">Change Shift to:</span>
-                            <div id="view-colleagueNewShift" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[42px] flex items-center font-semibold text-green-600"></div>
+                            <div id="view-colleagueNewShift" class="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-800 rounded-lg shadow-sm min-h-[4TwoLinesAdded] flex items-center font-semibold text-green-600"></div>
                         </div>
                     </div>
                     <div>
@@ -342,9 +342,18 @@
                 <p id="message-text" class="mt-2 text-gray-700 max-w-md mx-auto">Your request has been created. Please send the link below to <strong>...</strong> for their agreement.</p>
             </div>
 
+            <!-- CHANGED: Added View Details Button -->
+            <a id="view-details-btn" href="#" 
+               class="hidden w-full px-5 py-3 rounded-lg shadow-md font-semibold text-white transition-all duration-200 flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 text-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span>View Request Details</span>
+            </a>
+
             <!-- Action Card 1: WhatsApp (Primary) -->
             <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200/75">
-                <!-- CHANGED: Added id="whatsapp-card-title" -->
                 <h3 id="whatsapp-card-title" class="text-lg font-semibold text-gray-900 mb-4 text-center">Step 2: Get Colleague's Agreement</h3>
                 <p class="text-center text-gray-600 mb-5">The easiest way is to send the link via WhatsApp:</p>
                 
@@ -902,7 +911,6 @@
                 const whatsAppLink = `${baseUrl}?requestId=${docRef.id}&action=colleague`;
                 const whatsAppMessage = `Hi ${colleague.name}, ${requester.name} has requested a shift swap with you for ${requestData.shiftDate}. Please review and agree at this link:`;
 
-                // CHANGED: Added new title argument
                 showMessage(
                     "Request Submitted!",
                     `Your request has been created. Please send the link below to <strong>${colleague.name}</strong> for their agreement.`,
@@ -920,7 +928,7 @@
             }
         }
         
-        // CHANGED: Added whatsAppTitle parameter
+        // CHANGED: Logic for new View Details button
         function showMessage(title, text, link, whatsAppMessage, buttonText, whatsAppTitle) {
             document.getElementById('message-title').textContent = title;
             document.getElementById('message-text').innerHTML = text;
@@ -968,34 +976,46 @@
             const waBtn = document.getElementById('whatsapp-share-btn');
             const waBtnText = document.getElementById('whatsapp-share-text');
             const waBtnCard = waBtn.closest('.bg-white');
-            // CHANGED: Get title element
             const waTitleEl = document.getElementById('whatsapp-card-title');
+            
+            // --- NEW ---
+            const viewDetailsBtn = document.getElementById('view-details-btn');
+            const copyLinkCard = document.getElementById('message-link-container');
+            // --- END NEW ---
 
-            // CHANGED: Update title element
+
             if (waTitleEl) {
                 waTitleEl.textContent = whatsAppTitle || "Step 2: Get Colleague's Agreement";
             }
 
             if (whatsAppMessage && buttonText) {
-                console.log("showMessage: Rendering WhatsApp button."); // DEBUG
+                // This is an intermediate step (share to colleague, share to TL/OC)
+                console.log("showMessage: Rendering WhatsApp button.");
                 const encodedMessage = encodeURIComponent(`${whatsAppMessage}\n\n${link}`);
                 const waHref = `https://wa.me/?text=${encodedMessage}`;
                 waBtn.href = waHref;
                 waBtnText.textContent = buttonText;
+                
                 waBtn.classList.remove('hidden');
-                if (waBtnCard) {
-                    waBtnCard.classList.remove('hidden');
-                } else {
-                    console.error("Could not find .bg-white parent card for WhatsApp button.");
-                }
+                if (waBtnCard) waBtnCard.classList.remove('hidden');
+
+                // --- NEW ---
+                viewDetailsBtn.classList.add('hidden'); // Hide details button
+                copyLinkCard.classList.remove('hidden'); // Show copy link card
+                // --- END NEW ---
+
             } else {
-                console.log("showMessage: Hiding WhatsApp button."); // DEBUG
+                // This is a final step (Approved, Rejected)
+                console.log("showMessage: Hiding WhatsApp button, showing details button.");
+                
                 waBtn.classList.add('hidden');
-                if (waBtnCard) {
-                    waBtnCard.classList.add('hidden');
-                } else {
-                     console.error("Could not find .bg-white parent card for WhatsApp button.");
-                }
+                if (waBtnCard) waBtnCard.classList.add('hidden');
+
+                // --- NEW ---
+                viewDetailsBtn.href = link; // Set link
+                viewDetailsBtn.classList.remove('hidden'); // Show details button
+                copyLinkCard.classList.remove('hidden'); // Ensure copy link card is also visible
+                // --- END NEW ---
             }
 
             showView('message');
@@ -1131,14 +1151,13 @@
                     const whatsAppLink = `${baseUrl}?requestId=${currentRequestId}&action=tl_oc`;
                     const whatsAppMessage = `Hi , this is a shift change request for ${currentRequestData.requesterName} and ${currentRequestData.colleagueName} on ${currentRequestData.shiftDate}. We have both agreed. Please approve:`;
 
-                    // CHANGED: Added new title argument
                     showMessage(
                         "Agreement Submitted!",
                         `Thank you! Your agreement has been recorded. Please forward the link below to your TL/OC for final approval.`,
                         whatsAppLink,
                         whatsAppMessage,
                         "Share to TL/OC",
-                        "Step 3: Get TL/OC Approval" // <-- New title
+                        "Step 3: Get TL/OC Approval"
                     );
                 } else {
                     await updateDoc(docRef, {
@@ -1150,7 +1169,7 @@
                     showMessage(
                         "Request Rejected",
                         `You have rejected this request. The requester has been notified (implicitly).`,
-                        link, null, null, "Request Status" // <-- New title
+                        link, null, null, "Request Status"
                     );
                 }
             } catch (error) {
@@ -1193,14 +1212,13 @@
                 const baseUrl = getBaseUrl();
                 const link = baseUrl ? `${baseUrl}?requestId=${currentRequestId}` : "Link unavailable (APP_URL not set)";
                 
-                // CHANGED: Added new title argument
                 showMessage(
                     didApprove ? "Request Approved!" : "Request Rejected",
                     didApprove ? `The request has been approved and the roster has been updated automatically with a '*' remark.` : `The request has been rejected. The roster was not changed.`,
                     link, 
                     null, 
                     null,
-                    "Request Finalized" // <-- New title
+                    "Request Finalized"
                 );
 
             } catch (error)
