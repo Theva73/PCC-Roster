@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -710,7 +709,6 @@
 
 </style>
 </head>
-<script src="./roster_activity_log_addon.js"></script>
 <body class="bg-gray-100">
 
     <!-- Main container -->
@@ -774,11 +772,16 @@
                                 <div class="p-3 border-b border-gray-200">
                                     <input type="text" id="name-filter-search" placeholder="Search names..." class="w-full px-3 py-2 text-sm rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 </div>
-                                <div class="p-3 border-b border-gray-200">
-                                    <label class="flex items-center space-x-3">
-                                        <input type="checkbox" id="select-all-names-checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                                        <span class="font-medium text-gray-800">Select All</span>
-                                    </label>
+                                <div class="p-3 border-b border-gray-200 flex space-x-2">
+                                    <!-- NEW: Two distinct buttons for clarity -->
+                                    <button id="select-all-names-btn" class="flex-1 px-3 py-1 bg-indigo-500 text-white rounded-lg shadow hover:bg-indigo-600 transition text-sm flex items-center justify-center space-x-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                                        <span>Select All</span>
+                                    </button>
+                                    <button id="unselect-all-names-btn" class="flex-1 px-3 py-1 bg-gray-500 text-white rounded-lg shadow hover:bg-gray-600 transition text-sm flex items-center justify-center space-x-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                        <span>Unselect All</span>
+                                    </button>
                                 </div>
                                 <div id="name-filter-list" class="p-2">
                                     <!-- Name checkboxes will be populated here -->
@@ -1193,7 +1196,8 @@
             <p class="text-gray-600 mb-4">Select which staff to include in the printout.</p>
             <div class="space-y-3">
                 <button id="print-all-visible-btn" class="w-full px-5 py-3 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition duration-150 flex items-center justify-center space-x-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-8V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-8V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
                     <span>Print All Visible Staff</span>
                 </button>
                 <button id="print-selected-btn" class="w-full px-5 py-3 bg-gray-600 text-white rounded-lg shadow hover:bg-gray-700 transition duration-150 flex items-center justify-center space-x-2" disabled>
@@ -1371,7 +1375,8 @@
             teamFilterBtn, teamFilterDropdown, teamFilterList, selectAllTeamsCheckbox,
             manageMenuBtn, manageDropdown,
             modalEmployeeRoleInput,
-            nameFilterBtn, nameFilterDropdown, nameFilterSearch, selectAllNamesCheckbox, nameFilterList,
+            nameFilterBtn, nameFilterDropdown, nameFilterSearch, nameFilterList,
+            selectAllNamesBtn, unselectAllNamesBtn,
             editLabelModal, closeEditLabelModalBtn, editLabelForm, editLabelKey, 
             editLabelText, editLabelColor, editLabelHours, // <-- NEW: Added editLabelHours
             editLabelColorGrid, editLabelError,
@@ -1773,7 +1778,7 @@
               saveBtn.onclick = ()=>{
                 const d = dailyListDate.value;
                 const table = document.getElementById('adhoc-table');
-                if (!table){ alert('No ad-hoc rows.'); return; }
+                if (!table){ /* alert('No ad-hoc rows.'); */ console.log('No ad-hoc rows.'); return; }
                 const rows=[];
                 table.querySelectorAll('tbody tr').forEach(tr=>{
                   const tds = tr.querySelectorAll('td');
@@ -1790,7 +1795,8 @@
                   });
                 });
                 saveAdhocRows(d, rows);
-                alert('Ad-hoc entries saved for '+d);
+                // alert('Ad-hoc entries saved for '+d);
+                console.log('Ad-hoc entries saved for '+d);
                 renderDailyList();
               };
             }
@@ -1836,7 +1842,8 @@
                 <input type="checkbox" id="select-all-checkbox" class="emp-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
                 <label for="select-all-checkbox" class="cursor-pointer">Employee Name</label>
             `;
-            nameHeader.querySelector('#select-all-checkbox').addEventListener('change', (e) => handleSelectAll(e.target.checked));
+            // RENAMED: Changed listener to the new function name
+            nameHeader.querySelector('#select-all-checkbox').addEventListener('change', (e) => handleRosterSelectAll(e.target.checked));
             grid.appendChild(nameHeader);
             
             // NEW: Add Total Hours Header
@@ -2309,7 +2316,8 @@
             updateSelectAllCheckbox();
         }
 
-        function handleSelectAll(isChecked) {
+        // RENAMED: Old handleSelectAll is now handleRosterSelectAll
+        function handleRosterSelectAll(isChecked) {
             const allCheckboxes = document.querySelectorAll('.emp-checkbox');
             const visibleEmployeeIDs_set = new Set(employeeData
                 .filter(emp => visibleTeamIDs.has(emp.team_id) && visibleEmployeeIDs.has(emp.id))
@@ -2703,6 +2711,7 @@
                 const { color, textColor } = colorOptions[colorName];
                 if (!firstColorKey) firstColorKey = colorName;
                 newLabelColor.innerHTML += `<option value="${colorName}" class="${color} ${textColor} font-medium">${colorName}</option>`;
+                
                 const swatch = document.createElement('div');
                 swatch.className = `color-swatch ${color}`;
                 swatch.dataset.colorName = colorName;
@@ -2917,6 +2926,7 @@
                             </label>
                         `;
                         const checkbox = li.querySelector('input');
+                        // FIX #2: Ensure individual checkboxes reflect global state on render
                         checkbox.checked = visibleEmployeeIDs.has(emp.id);
                         checkbox.addEventListener('change', (e) => {
                             handleNameFilterChange(emp.id, e.target.checked);
@@ -2929,8 +2939,6 @@
             if (totalMatches === 0) {
                 nameFilterList.innerHTML = `<li class="text-gray-500 text-sm italic px-2">No names found.</li>`;
             }
-            
-            updateSelectAllNamesCheckbox(); 
         }
 
         function handleNameFilterChange(empId, isChecked) {
@@ -2939,37 +2947,46 @@
             } else {
                 visibleEmployeeIDs.delete(empId);
             }
-            updateSelectAllNamesCheckbox();
+            renderRoster();
+        }
+        
+        // --- NEW: Explicit Select All function (RENAMED) ---
+        function handleNameFilterSelectAll() {
+            // SELECT ALL: add all employee IDs to the visible set
+            employeeData.forEach(emp => visibleEmployeeIDs.add(emp.id));
+            
+            // Clear search term (optional, but good practice)
+            if (nameFilterSearch) {
+                nameFilterSearch.value = "";
+            }
+
+            // Force update UI (Dropdown content) and Roster immediately
+            populateNameFilter();
             renderRoster();
         }
 
-        function updateSelectAllNamesCheckbox() {
-            if (!selectAllNamesCheckbox) return;
-            const totalEmployees = employeeData.length;
-            if (visibleEmployeeIDs.size === totalEmployees) {
-                selectAllNamesCheckbox.checked = true;
-                selectAllNamesCheckbox.indeterminate = false;
-            } else if (visibleEmployeeIDs.size > 0) {
-                selectAllNamesCheckbox.checked = false;
-                selectAllNamesCheckbox.indeterminate = true;
-            } else {
-                selectAllNamesCheckbox.checked = false;
-                selectAllNamesCheckbox.indeterminate = false;
-            }
-        }
+        // --- NEW: Explicit Unselect All function (RENAMED) ---
+        function handleNameFilterUnselectAll() {
+            // UNSELECT ALL: clear the visible set immediately
+            visibleEmployeeIDs.clear();
 
-        function handleSelectAllNames(isChecked) {
-            if (isChecked) {
-                employeeData.forEach(emp => visibleEmployeeIDs.add(emp.id));
-            } else {
-                visibleEmployeeIDs.clear();
+            // FIX: Clear search box input field physically
+            if (nameFilterSearch) {
+                nameFilterSearch.value = "";
             }
-            populateNameFilter(); 
+
+            // Force update UI (Dropdown content) and Roster immediately
+            populateNameFilter();
             renderRoster();
         }
+				
 
         function toggleNameFilterDropdown() {
             nameFilterDropdown.classList.toggle('hidden');
+            // When opening the dropdown, ensure the list is populated based on current search/state
+            if (!nameFilterDropdown.classList.contains('hidden')) {
+                populateNameFilter();
+            }
         }
 
 
@@ -3370,9 +3387,21 @@
                 e.stopPropagation();
                 toggleNameFilterDropdown();
             });
-            selectAllNamesCheckbox.addEventListener('change', (e) => {
-                handleSelectAllNames(e.target.checked);
-            });
+            
+            // --- NEW: Separate Button Listeners ---
+            if (selectAllNamesBtn) {
+                selectAllNamesBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); 
+                    handleNameFilterSelectAll();
+                });
+            }
+            if (unselectAllNamesBtn) {
+                unselectAllNamesBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); 
+                    handleNameFilterUnselectAll();
+                });
+            }
+            
             nameFilterSearch.addEventListener('input', populateNameFilter);
             nameFilterDropdown.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -3478,6 +3507,8 @@
             manageTeamsBtn = document.getElementById('manage-teams-btn');
             manageTeamsModal = document.getElementById('manage-teams-modal');
             closeTeamsModalBtn = document.getElementById('close-teams-modal');
+            manageTeamsModal = document.getElementById('manage-teams-modal');
+            closeTeamsModalBtn = document.getElementById('close-teams-modal');
             addTeamForm = document.getElementById('add-team-form');
             newTeamNameInput = document.getElementById('new-team-name');
             addTeamError = document.getElementById('add-team-error');
@@ -3521,8 +3552,10 @@
             nameFilterBtn = document.getElementById('name-filter-btn');
             nameFilterDropdown = document.getElementById('name-filter-dropdown');
             nameFilterSearch = document.getElementById('name-filter-search');
-            selectAllNamesCheckbox = document.getElementById('select-all-names-checkbox');
             nameFilterList = document.getElementById('name-filter-list');
+            // NEW ASSIGNMENT (buttons)
+            selectAllNamesBtn = document.getElementById('select-all-names-btn');
+            unselectAllNamesBtn = document.getElementById('unselect-all-names-btn');
 
             editLabelModal = document.getElementById('edit-label-modal');
             closeEditLabelModalBtn = document.getElementById('close-edit-label-modal');
@@ -3802,3 +3835,4 @@
 
 </body>
 </html>
+
