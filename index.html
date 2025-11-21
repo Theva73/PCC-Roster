@@ -2391,10 +2391,19 @@
             const count = selectedEmployeeIds.size;
             batchDeleteCount.textContent = count;
             batchDeleteList.innerHTML = '';
+            
+            // --- FIX: Filter out employees with undefined/falsy IDs ---
             selectedEmployeeIds.forEach(id => {
                 const emp = employeeData.find(e => e.id === id);
-                if (emp) batchDeleteList.innerHTML += `<li>${emp.name} (ID: ${emp.id})</li>`;
+                if (emp && emp.id) { // Only list employees with a defined ID
+                    batchDeleteList.innerHTML += `<li>${emp.name} (ID: ${emp.id})</li>`;
+                } else if (emp) {
+                     // Optionally show a note about the corrupted entry for debugging
+                    batchDeleteList.innerHTML += `<li class="text-red-500">Corrupted entry: ${emp.name} (ID: undefined) - WILL BE SKIPPED</li>`;
+                }
             });
+            // --- END FIX ---
+            
             batchDeleteConfirmModal.classList.remove('hidden');
         }
         
@@ -2405,8 +2414,11 @@
             try {
                 const batch = writeBatch(db);
                 selectedEmployeeIds.forEach(id => {
-                    batch.delete(doc(employeesCollection, id));
-                    batch.delete(doc(rosterCollection, id));
+                    // Only attempt to delete if the ID is valid
+                    if (id) {
+                        batch.delete(doc(employeesCollection, id));
+                        batch.delete(doc(rosterCollection, id));
+                    }
                 });
                 await batch.commit();
                 selectedEmployeeIds.clear();
@@ -3807,7 +3819,7 @@
         }
         m.addedNodes && m.addedNodes.forEach(node=>{
           if (node.nodeType === 1) walkAndWrap(node);
-          else if (node.nodeType === 3) wrapTextNode(node);
+          else if (node.nodeType === 3) wrapAndWrap(node);
         });
       }
     });
