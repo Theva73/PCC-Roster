@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Change of Shift Application</title>
+    
+    <!-- === SMART LINK PREVIEW TAGS (For WhatsApp Cards) === -->
+    <meta property="og:title" content="Shift Change Request">
+    <meta property="og:description" content="A new shift change request requires your attention. Tap to view details.">
+    <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/3652/3652191.png">
+    <meta property="og:type" content="website">
+    <!-- ==================================================== -->
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
@@ -1223,7 +1231,7 @@
                         action: 'tl_oc'
                     });
                     
-                    const whatsAppMessage = `Hi , this is a shift change request for ${currentRequestData.requesterName} and ${currentRequestData.colleagueName} on ${currentRequestData.shiftDate}. We have both agreed. Please approve:`;
+                    const whatsAppMessage = `Hi, this is a shift change request for ${currentRequestData.requesterName} and ${currentRequestData.colleagueName} on ${currentRequestData.shiftDate}. We have both agreed.\n\n👇 Please tap below to approve:`;
 
                     showMessage(
                         "Agreement Submitted!",
@@ -1292,7 +1300,7 @@
                         tlOcSignatureTimestamp: serverTimestamp()
                     });
                     
-                    whatsAppMessage = `Hi ${currentRequestData.requesterName}, your shift change request for ${shiftDate} has been APPROVED by TL/OC. Process completed at ${completionTime}. View details:`;
+                    whatsAppMessage = `Hi ${currentRequestData.requesterName}, your shift change request for ${shiftDate} has been APPROVED by TL/OC. Process completed at ${completionTime}.\n\n👇 Tap below to view details:`;
 
                 } else {
                     await updateDoc(docRef, {
@@ -1301,7 +1309,7 @@
                         tlOcSignatureTimestamp: serverTimestamp()
                     });
                     
-                     whatsAppMessage = `Hi ${currentRequestData.requesterName}, your shift change request for ${currentRequestData.shiftDate} has been REJECTED by TL/OC. Process completed at ${completionTime}. View details:`;
+                     whatsAppMessage = `Hi ${currentRequestData.requesterName}, your shift change request for ${currentRequestData.shiftDate} has been REJECTED by TL/OC. Process completed at ${completionTime}.\n\n👇 Tap below to view details:`;
                 }
 
                 showMessage(
