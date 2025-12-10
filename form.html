@@ -478,7 +478,7 @@
         const APP_URL = "https://theva73.github.io/YOUR_REPO_NAME/Form_07_11_8S.txt";
         // !!!!! IMPORTANT !!!!!
 
-        let employeesCollection, teamsCollection, rosterCollection, shiftRequestsCollection;
+        let employeesCollection, teamsCollection, rosterCollection, shiftRequestsCollection, shortLinksCollection;
         let allEmployees = [];
         let teamsMap = new Map();
         let currentRequestId = null;
@@ -516,10 +516,55 @@
             errorMessageContainer.classList.add('hidden');
         }
 
-        function getUrlParams() {
+        // UPDATED: Now Async to handle Short Link fetching
+        async function resolveUrlParams() {
             const params = new URLSearchParams(window.location.search);
-            currentRequestId = params.get('requestId');
-            currentRequestAction = params.get('action');
+            const shortCode = params.get('code');
+
+            if (shortCode) {
+                loadingText.textContent = "Resolving short link...";
+                try {
+                    const docRef = doc(shortLinksCollection, shortCode);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        currentRequestId = data.requestId;
+                        currentRequestAction = data.action;
+                        console.log("Resolved short code:", shortCode, "to", data);
+                    } else {
+                        console.error("Short link not found");
+                        showError("Invalid or expired link.");
+                    }
+                } catch (error) {
+                    console.error("Error resolving short link:", error);
+                    showError("Error loading link.");
+                }
+            } else {
+                currentRequestId = params.get('requestId');
+                currentRequestAction = params.get('action');
+            }
+        }
+
+        // NEW: Generate Short Link Function
+        async function createShortLink(targetParams) {
+            // targetParams = { requestId: '...', action: '...' }
+            const shortCode = Math.random().toString(36).substring(2, 8); // 6 char random string
+            
+            try {
+                await setDoc(doc(shortLinksCollection, shortCode), {
+                    ...targetParams,
+                    createdAt: serverTimestamp()
+                });
+                
+                const baseUrl = getBaseUrl();
+                return `${baseUrl}?code=${shortCode}`;
+            } catch (error) {
+                console.error("Error creating short link:", error);
+                // Fallback to long link if Firestore fails
+                const baseUrl = getBaseUrl();
+                const queryString = new URLSearchParams(targetParams).toString();
+                return `${baseUrl}?${queryString}`;
+            }
         }
 
         function showView(view) {
@@ -952,22 +997,18 @@
             try {
                 const docRef = await addDoc(shiftRequestsCollection, requestData);
                 
-                const baseUrl = getBaseUrl();
-                if (!baseUrl) {
-                    showError("CRITICAL ERROR: APP_URL is not set correctly. Cannot generate sharing link. Please contact administrator.");
-                    submitBtn.disabled = false;
-                    submitBtn.firstElementChild.textContent = "Submit Request";
-                    submitBtn.classList.remove('opacity-75');
-                    return;
-                }
+                // --- GENERATE SHORT LINK ---
+                const shortLink = await createShortLink({
+                    requestId: docRef.id,
+                    action: 'colleague'
+                });
                 
-                const whatsAppLink = `${baseUrl}?requestId=${docRef.id}&action=colleague`;
                 const whatsAppMessage = `Hi ${colleague.name}, ${requester.name} has requested a shift swap with you for ${requestData.shiftDate}. Please review and agree at this link:`;
 
                 showMessage(
                     "Request Submitted!",
                     `Your request has been created. Please send the link below to <strong>${colleague.name}</strong> for their agreement.`,
-                    whatsAppLink,
+                    shortLink,
                     whatsAppMessage,
                     "Share to Colleague",
                     "Step 2: Get Colleague's Agreement"
@@ -1170,24 +1211,24 @@
             const docRef = doc(shiftRequestsCollection, currentRequestId);
             
             try {
-                const baseUrl = getBaseUrl();
-                if (!baseUrl) {
-                    return;
-                }
-
                 if (didAgree) {
                     await updateDoc(docRef, {
                         status: 'pending_tl_oc',
                         colleagueSignatureTimestamp: serverTimestamp()
                     });
                     
-                    const whatsAppLink = `${baseUrl}?requestId=${currentRequestId}&action=tl_oc`;
+                    // --- GENERATE SHORT LINK ---
+                    const shortLink = await createShortLink({
+                        requestId: currentRequestId,
+                        action: 'tl_oc'
+                    });
+                    
                     const whatsAppMessage = `Hi , this is a shift change request for ${currentRequestData.requesterName} and ${currentRequestData.colleagueName} on ${currentRequestData.shiftDate}. We have both agreed. Please approve:`;
 
                     showMessage(
                         "Agreement Submitted!",
                         `Thank you! Your agreement has been recorded. Please forward the link below to your TL/OC for final approval.`,
-                        whatsAppLink,
+                        shortLink,
                         whatsAppMessage,
                         "Share to TL/OC",
                         "Step 3: Get TL/OC Approval"
@@ -1198,7 +1239,10 @@
                         colleagueSignatureTimestamp: serverTimestamp()
                     });
 
-                    const link = `${baseUrl}?requestId=${currentRequestId}`;
+                     // No short link needed for rejection view
+                     const baseUrl = getBaseUrl();
+                     const link = `${baseUrl}?requestId=${currentRequestId}`;
+                     
                     showMessage(
                         "Request Rejected",
                         `You have rejected this request. The requester has been notified (implicitly).`,
@@ -1214,7 +1258,6 @@
             const docRef = doc(shiftRequestsCollection, currentRequestId);
             const tlOcComments = document.getElementById('tl-oc-CommentsInput') ? document.getElementById('tl-oc-CommentsInput').value : "";
             
-            // Generate timestamp for the message immediately
             const completionTime = new Date().toLocaleString('en-SG', { 
                 dateStyle: 'medium', 
                 timeStyle: 'short',
@@ -1222,17 +1265,21 @@
             });
 
             try {
-                const baseUrl = getBaseUrl();
-                const link = baseUrl ? `${baseUrl}?requestId=${currentRequestId}` : "Link unavailable";
                 let whatsAppMessage = "";
+                let shortLink = "";
                 
+                // --- GENERATE SHORT LINK ---
+                // For final view, we just need requestId, no action
+                 shortLink = await createShortLink({
+                    requestId: currentRequestId
+                });
+
                 if (didApprove) {
                     const { requesterId, colleagueId, shiftDate, requesterNewShift, colleagueNewShift } = currentRequestData;
                     
                     const requesterRosterRef = doc(rosterCollection, requesterId);
                     const colleagueRosterRef = doc(rosterCollection, colleagueId);
                     
-                    // Update backend with [shift] format
                     const requesterShiftWithMark = `[${requesterNewShift}]`;
                     const colleagueShiftWithMark = `[${colleagueNewShift}]`;
                     
@@ -1260,7 +1307,7 @@
                 showMessage(
                     didApprove ? "Request Approved!" : "Request Rejected",
                     didApprove ? `The request has been approved and the roster updated. Please notify the requester.` : `The request has been rejected. Please notify the requester.`,
-                    link, 
+                    shortLink, 
                     whatsAppMessage, 
                     "Notify Requester",
                     "Final Step: Notify Requester"
@@ -1326,9 +1373,12 @@
                         teamsCollection = collection(db, "teams");
                         rosterCollection = collection(db, "roster");
                         shiftRequestsCollection = collection(db, `artifacts/${appId}/public/data/shiftRequests`);
+                        shortLinksCollection = collection(db, `artifacts/${appId}/public/data/shortLinks`);
                         console.log("Collections defined.");
 
-                        getUrlParams();
+                        // NOW ASYNC: Wait for short link resolution
+                        await resolveUrlParams();
+                        
                         if (currentRequestId) {
                             await initViewRequest();
                         } else {
