@@ -28,52 +28,12 @@
         #roster-grid::-webkit-scrollbar-thumb { background: #a8a29e; border-radius: 10px; }
         #roster-grid::-webkit-scrollbar-thumb:hover { background: #78716c; }
 
-        /* Sticky columns (pinned left) */
-        .sticky-col-0 { position: -webkit-sticky; position: sticky; left: 0px; z-index: 12; background: #ffffff; }
-        .sticky-col-1 { position: -webkit-sticky; position: sticky; left: 120px; z-index: 12; background: #ffffff; }
-
-        /* Sticky header row (dates) */
-        .header-cell { position: -webkit-sticky; position: sticky; top: 0; z-index: 15; background-color: #f8fafc; }
-
-        /* Sticky corner cells (top-left headers) */
-        .sticky-header-col-0 { position: -webkit-sticky; position: sticky; top: 0; left: 0px; z-index: 20; background-color: #f1f5f9; }
-        .sticky-header-col-1 { position: -webkit-sticky; position: sticky; top: 0; left: 120px; z-index: 20; background-color: #f1f5f9; }
-
-        .team-header-row {
-            display: flex;
-            align-items: stretch;
-            background: #eef2ff;
-            border-top: 1px solid #c7d2fe;
-            border-bottom: 1px solid #c7d2fe;
-            font-weight: 700;
-            color: #1e3a8a;
-            cursor: pointer;
-            user-select: none;
-            z-index: 18;
-        }
-        .team-header-sticky{
-            position: -webkit-sticky;
-            position: sticky;
-            left: 0px;
-            width: 220px; /* ServiceID(120) + EmpID(100) */
-            min-width: 220px;
-            display:flex;
-            align-items:center;
-            gap:10px;
-            padding: 8px 12px;
-            background: #eef2ff;
-            z-index: 12;
-            border-right: 1px solid #c7d2fe;
-        }
-        .team-header-fill{
-            flex: 1;
-        }
-        .team-toggle-indicator{
-            font-size: 12px;
-            width: 14px;
-            text-align:center;
-        }
-        .team-row-collapsed{ display:none !important; }
+        /* Sticky column Z-index setup */
+        .sticky-col { position: -webkit-sticky; position: sticky; left: 0; z-index: 10; background-color: #ffffff; } /* Employee Names */
+        .header-cell { position: -webkit-sticky; position: sticky; top: 0; z-index: 15; background-color: #f8fafc; } /* Dates */
+        .sticky-header-col { top: 0; left: 0; z-index: 20; background-color: #f1f5f9; } /* Corner */
+        
+        .team-header-row { /* Not sticky */ }
         
         .team-li:hover .edit-team-btn { opacity: 1; }
         .employee-row:hover .delete-btn { opacity: 1; }
@@ -748,35 +708,45 @@
 }
 
 
-        /* --- A+C Hybrid Enhancements --- */
-        #roster-container.roster-container { 
-            overflow: auto; 
-            max-height: calc(100vh - 260px);
-            position: relative;
-        }
-        /* Sticky header cells */
-        .sticky-top {
-            position: sticky;
-            top: 0;
-            z-index: 30;
-        }
-        /* Sticky left columns */
-        .sticky-col {
-            position: sticky;
-            z-index: 20;
-            background: white;
-        }
+        /* === Phase 1 A+C Clean Sticky + Team Collapse (iOS safe) === */
+        .sticky-col-0 { position: -webkit-sticky; position: sticky; left: 0px; z-index: 30; background: #ffffff; }
+        .sticky-col-1 { position: -webkit-sticky; position: sticky; left: 120px; z-index: 30; background: #ffffff; }
+
+        .sticky-header-col-0 { position: -webkit-sticky; position: sticky; top: 0; left: 0px; z-index: 60; background: #f1f5f9; }
+        .sticky-header-col-1 { position: -webkit-sticky; position: sticky; top: 0; left: 120px; z-index: 60; background: #f1f5f9; }
+
         .team-header-cell {
+            background: #eef2ff;
+            border-top: 1px solid #c7d2fe;
+            border-bottom: 1px solid #c7d2fe;
+            font-weight: 800;
+            color: #1e3a8a;
             cursor: pointer;
             user-select: none;
+            z-index: 40;
         }
-        .team-header-cell:hover {
-            filter: brightness(0.98);
+        .team-header-cell .team-header-sticky{
+            position: -webkit-sticky;
+            position: sticky;
+            left: 0px;
+            width: 220px; /* ServiceID(120) + EmpID(100) */
+            min-width: 220px;
+            background: #eef2ff;
+            border-right: 1px solid #c7d2fe;
+            z-index: 55;
         }
-        .team-row-collapsed {
-            display: none !important;
+        .team-toggle-btn{touch-action: manipulation; -webkit-tap-highlight-color: transparent; 
+            all: unset;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            width: 100%;
+            cursor: pointer;
         }
-
+        .team-toggle-btn:active{ background:#e0e7ff; }
+        .team-toggle-indicator{ width: 16px; text-align:center; font-size: 12px; }
+        .team-row-collapsed{ display:none !important; }
 </style>
 </head>
 <body class="bg-gray-100">
@@ -908,39 +878,7 @@
             <p>Authenticating...</p>
         </div>
 
-                <!-- DASHBOARD BAR (A+C Hybrid) -->
-        <div id="dashboard-bar" class="w-full mb-4 bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
-            <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div class="flex items-center gap-3 flex-wrap">
-                    <div class="text-lg font-semibold text-gray-800">Roster Dashboard</div>
-                    <div id="dashboard-month" class="text-sm text-gray-600"></div>
-                    <div id="dashboard-team" class="text-sm text-gray-600"></div>
-                </div>
-                <div class="flex items-center gap-2 flex-wrap">
-                    <div class="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">Staff: <span id="metric-staff">0</span></div>
-                    <div class="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">On Duty: <span id="metric-onduty">0</span></div>
-                    <div class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs">OFF: <span id="metric-off">0</span></div>
-                    <div class="px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs">AL: <span id="metric-al">0</span></div>
-                    <div class="px-3 py-1 rounded-full bg-green-100 text-green-800 text-xs">IA: <span id="metric-ia">0</span></div>
-                    <div class="px-3 py-1 rounded-full bg-orange-100 text-orange-800 text-xs">2N: <span id="metric-2n">0</span></div>
-                    <button id="dashboard-issues-btn" class="px-3 py-1 rounded-full bg-red-100 text-red-800 text-xs hover:bg-red-200 transition">
-                        Alerts: <span id="metric-alerts">0</span>
-                    </button>
-                </div>
-            </div>
-            <div class="mt-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                <div class="text-xs text-gray-500">
-                    Tip: Click a <strong>team header</strong> to collapse/expand that team (Excel-style grouping).
-                </div>
-                <div class="flex items-center gap-2">
-                    <label class="text-xs text-gray-600">Dashboard day:</label>
-                    <input id="dashboard-day" type="number" min="1" max="31" class="w-20 rounded-lg border-gray-300 text-sm px-2 py-1" />
-                    <button id="dashboard-refresh" class="px-3 py-1 rounded-lg bg-indigo-600 text-white text-xs hover:bg-indigo-700 transition">Refresh</button>
-                </div>
-            </div>
-        </div>
-
-<!-- ROSTER GRID CONTAINER -->
+        <!-- ROSTER GRID CONTAINER -->
         <div id="roster-container" class="roster-container w-full">
             <div id="roster-grid">
                 <!-- Content generated by JavaScript -->
@@ -1489,7 +1427,6 @@ Manage Teams Modal -->
         let currentCellElement = null; // Used for modal updates
         let currentEmployeeId = null;
         let currentFullDate = null;
-        let returnToManageStaff = false; // track if details modal came from Edit Staff Profiles
         let employeeIdToDelete = null;
         let teamIdToDelete = null;
         let visibleTeamIDs = new Set();
@@ -1518,8 +1455,6 @@ Manage Teams Modal -->
             teamFilterBtn, teamFilterDropdown, teamFilterList, selectAllTeamsCheckbox,
             manageMenuBtn, manageDropdown,
             modalEmployeeRoleInput, modalEmployeeStarInput,
-            dashboardMonthEl, dashboardTeamEl, dashboardDayInput, dashboardRefreshBtn,
-            metricStaffEl, metricOnDutyEl, metricOffEl, metricAlEl, metricIaEl, metric2nEl, metricAlertsEl,
             manageStaffBtn, manageStaffModal, manageStaffList, closeManageStaffModalBtn,
             nameFilterBtn, nameFilterDropdown, nameFilterSearch, nameFilterList,
             selectAllNamesBtn, unselectAllNamesBtn,
@@ -1577,6 +1512,42 @@ Manage Teams Modal -->
             return cell;
         }
 
+        // Team collapse/expand (iOS-safe). Uses a real button inside each team header.
+        function attachTeamCollapse() {
+            if (!grid) return;
+
+            // Bind once per render (buttons are re-created on each render)
+            grid.querySelectorAll('.team-toggle-btn').forEach(btn => {
+                if (btn.dataset.bound === '1') return;
+                btn.dataset.bound = '1';
+
+                const runToggle = (e) => {
+                    const groupId = btn.dataset.groupId || btn.getAttribute('data-group-id') || '';
+                    if (!groupId) return;
+
+                    const header = btn.closest('.team-header-cell');
+                    if (!header) return;
+
+                    const collapsed = header.dataset.collapsed === '1';
+                    header.dataset.collapsed = collapsed ? '0' : '1';
+
+                    grid.querySelectorAll(`[data-group-id="${groupId}"][data-row-type="staff"]`).forEach(el => {
+                        el.classList.toggle('team-row-collapsed', !collapsed);
+                    });
+
+                    const indicator = btn.querySelector('.team-toggle-indicator');
+                    if (indicator) indicator.textContent = collapsed ? '▼' : '▶';
+
+                    e.preventDefault();
+                    e.stopPropagation();
+                };
+
+                btn.addEventListener('click', runToggle, { capture: true });
+                btn.addEventListener('touchend', runToggle, { capture: true });
+            });
+        }
+
+
         function getStarSortValue(emp) {
             if (emp.star === 'blue') return 1;      // Team Leader (I/C)
             if (emp.star === 'yellow') return 2;    // Section I/C (Assistant)
@@ -1591,143 +1562,7 @@ Manage Teams Modal -->
             }
         }
         
-        
-        function attachTeamHeaderToggles() {
-            if (!grid) return;
-
-            // Bind once (works reliably on mobile taps on the arrow too)
-            if (grid.dataset.teamToggleBound === '1') return;
-            grid.dataset.teamToggleBound = '1';
-
-            grid.addEventListener('click', (e) => {
-                const h = e.target.closest('.team-header-cell');
-                if (!h) return;
-
-                const teamId = h.dataset.teamId || '';
-                if (!teamId) return;
-
-                const isCollapsed = h.dataset.collapsed === '1';
-                h.dataset.collapsed = isCollapsed ? '0' : '1';
-
-                grid.querySelectorAll(`[data-team-id="${teamId}"]:not(.team-header-cell)`).forEach(c => {
-                    c.classList.toggle('team-row-collapsed', !isCollapsed);
-                });
-
-                const indicator = h.querySelector('.team-toggle-indicator');
-                if (indicator) indicator.textContent = isCollapsed ? '▼' : '▶';
-            });
-            // iOS Safari: tapping small arrow sometimes doesn't fire 'click' reliably
-            grid.addEventListener('touchend', (e) => {
-                const h = e.target.closest('.team-header-cell');
-                if (!h) return;
-
-                const teamId = h.dataset.teamId || '';
-                if (!teamId) return;
-
-                const isCollapsed = h.dataset.collapsed === '1';
-                h.dataset.collapsed = isCollapsed ? '0' : '1';
-
-                grid.querySelectorAll(`[data-team-id="${teamId}"]:not(.team-header-cell)`).forEach(c => {
-                    c.classList.toggle('team-row-collapsed', !isCollapsed);
-                });
-
-                const indicator = h.querySelector('.team-toggle-indicator');
-                if (indicator) indicator.textContent = isCollapsed ? '▼' : '▶';
-            }, { passive: true });
-        }
-
-        
-        function applyPinnedColumns(daysInMonth) {
-            if (!grid) return;
-            const cols = 4 + daysInMonth;
-            const cells = Array.from(grid.children);
-            if (cells.length < cols) return;
-
-            // Measure the first two column widths from header row
-            const col0W = cells[0].getBoundingClientRect().width || 100;
-            const col1W = cells[1].getBoundingClientRect().width || 80;
-            const left1 = col0W;
-
-            cells.forEach((cell, idx) => {
-                const col = idx % cols;
-
-                if (col === 0) {
-                    cell.classList.add('pin-col-0');
-                    cell.style.position = 'sticky';
-                    cell.style.left = '0px';
-                    cell.style.zIndex = (idx < cols) ? 30 : 12;
-                    cell.style.background = cell.style.background || '#ffffff';
-                    // Force visible on mobile even if Tailwind 'hidden' existed
-                    cell.style.display = 'block';
-                } else if (col === 1) {
-                    cell.classList.add('pin-col-1');
-                    cell.style.position = 'sticky';
-                    cell.style.left = left1 + 'px';
-                    cell.style.zIndex = (idx < cols) ? 30 : 12;
-                    cell.style.background = cell.style.background || '#ffffff';
-                    cell.style.display = 'block';
-                }
-
-                // Ensure team header sticky block aligns to pinned area
-                if (cell.classList && cell.classList.contains('team-header-cell')) {
-                    const sticky = cell.querySelector('.team-header-sticky');
-                    if (sticky) {
-                        sticky.style.width = (col0W + col1W) + 'px';
-                        sticky.style.minWidth = (col0W + col1W) + 'px';
-                        sticky.style.left = '0px';
-                        sticky.style.position = 'sticky';
-                        sticky.style.zIndex = 40;
-                    }
-                }
-            });
-        }
-
-function updateDashboardMetrics() {
-            if (!isDataLoaded) return;
-            const date = new Date(currentYear, currentMonth);
-            if (dashboardMonthEl) dashboardMonthEl.textContent = `${date.toLocaleString('default', { month: 'long' })} ${currentYear}`;
-            const teamName = currentTeamId ? (teamsMap.get(currentTeamId)?.name || '') : 'All Teams';
-            if (dashboardTeamEl) dashboardTeamEl.textContent = teamName ? `• ${teamName}` : '';
-
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-
-            // Default dashboard day: today if current month/year matches, else 1
-            const now = new Date();
-            let day = 1;
-            if (dashboardDayInput && dashboardDayInput.value) {
-                day = Math.max(1, Math.min(daysInMonth, parseInt(dashboardDayInput.value, 10) || 1));
-            } else {
-                if (now.getFullYear() === currentYear && now.getMonth() === currentMonth) day = now.getDate();
-                if (dashboardDayInput) dashboardDayInput.value = day;
-            }
-
-            const fullDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
-            let staffCount = visibleEmployees.length;
-            let off=0, al=0, ia=0, n2=0, onDuty=0;
-
-            visibleEmployees.forEach(emp => {
-                const { shift, shiftInfo } = getShiftForEmployee(emp, fullDate);
-                const code = (shift || shiftInfo?.text || '').toUpperCase();
-                if (code === 'OFF') off++;
-                else if (code === 'AL') al++;
-                else if (code === 'IA') ia++;
-                else if (code === '2N') n2++;
-                else if (code && code !== '_EMPTY') onDuty++;
-            });
-
-            if (metricStaffEl) metricStaffEl.textContent = staffCount;
-            if (metricOffEl) metricOffEl.textContent = off;
-            if (metricAlEl) metricAlEl.textContent = al;
-            if (metricIaEl) metricIaEl.textContent = ia;
-            if (metric2nEl) metric2nEl.textContent = n2;
-            if (metricOnDutyEl) metricOnDutyEl.textContent = onDuty;
-
-            // Placeholder alerts (Phase 2 will compute real validations)
-            if (metricAlertsEl) metricAlertsEl.textContent = 0;
-        }
-
-    function getRoleDisplayName(role) {
+        function getRoleDisplayName(role) {
             switch (role) {
                 case 'leader': return 'Team Leader';
                 case 'Section I/C': return 'Section I/C (Assistant)';
@@ -2125,16 +1960,20 @@ function updateDashboardMetrics() {
                 grid.style.gridTemplateColumns = `100px 80px minmax(180px, 1fr) 80px repeat(${daysInMonth}, minmax(60px, 1fr))`;
                 grid.classList.add('grid');
                 renderMultiEmployeeGridView(visibleEmployees, daysInMonth);
-                applyPinnedColumns(daysInMonth);
-
             }
         }
         
         function renderMultiEmployeeGridView(visibleEmployees, daysInMonth) {
             
             // A. Render Header Row
-            grid.appendChild(createCell('Service ID', 'header-cell font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 min-w-[100px] sm:min-w-[120px]'));
-            grid.appendChild(createCell('Emp ID', 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 min-w-[80px] sm:min-w-[100px]'));
+            const serviceHeader = createCell('Service ID', 'header-cell font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 min-w-[100px] sm:min-w-[120px]');
+            serviceHeader.classList.add('header-cell', 'sticky-header-col-0');
+            grid.appendChild(serviceHeader);
+
+            const empIdHeader = createCell('Emp ID', 'sticky-header-col font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 min-w-[80px] sm:min-w-[100px]');
+            empIdHeader.classList.add('header-cell', 'sticky-header-col-1');
+            grid.appendChild(empIdHeader);
+
             const nameHeader = document.createElement('div');
             nameHeader.className = 'header-cell font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 flex items-center space-x-3 min-w-[150px] sm:min-w-[200px]';
             nameHeader.innerHTML = `
@@ -2146,7 +1985,7 @@ function updateDashboardMetrics() {
             grid.appendChild(nameHeader);
             
             // NEW: Add Total Hours Header
-            grid.appendChild(createCell('Total Hrs', 'header-cell bg-gray-50 text-xs text-gray-500 font-semibold p-3 border-b border-l border-gray-200 min-w-[80px] text-center'));
+            grid.appendChild(createCell('Total Hrs', 'header-cell font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 min-w-[80px] text-center'));
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const d = new Date(currentYear, currentMonth, day);
@@ -2162,6 +2001,7 @@ function updateDashboardMetrics() {
             
             // B. Render Employee Rows
             let currentTeamName = '';
+            let currentGroupId = 0;
             
             visibleEmployees.sort((a, b) => {
                 const teamAName = teamsMap.get(a.team_id)?.name || 'Unassigned';
@@ -2181,45 +2021,58 @@ function updateDashboardMetrics() {
             }
 
             visibleEmployees.forEach(emp => {
-                const team = teamsMap.get(emp.team_id);
-                const teamName = team?.name || 'Unassigned';
+                const __teamKey = (emp.team_id || emp.team || emp.team_name || emp.teamName || 'unassigned');
+                const team = teamsMap.get(emp.team_id || '');
+                const teamName = team?.name || emp.team || emp.team_name || emp.teamName || 'Unassigned';
 
                 if (teamName !== currentTeamName) {
                     currentTeamName = teamName;
+                    currentGroupId++;
                     // UPDATED: Added 1 to span
                     const teamHeader = document.createElement('div');
-                    teamHeader.className = 'team-header-row team-header-cell';
+                    teamHeader.className = 'team-header-cell team-header-row';
                     teamHeader.style.gridColumn = `span ${4 + daysInMonth}`;
                     teamHeader.dataset.teamId = emp.team_id || '';
+                    teamHeader.setAttribute('data-team-id', emp.team_id || '');
                     teamHeader.dataset.collapsed = '0';
+                    teamHeader.dataset.groupId = String(currentGroupId);
+                    teamHeader.setAttribute('data-group-id', String(currentGroupId));
+                    teamHeader.setAttribute('data-row-type','team-header');
                     teamHeader.innerHTML = `
                         <div class="team-header-sticky">
-                            <span class="team-toggle-indicator">▼</span>
-                            <span class="team-header-title">${currentTeamName}</span>
+                            <button type="button" class="team-toggle-btn" data-team-id="${__teamKey}" data-group-id="${currentGroupId}">
+                                <span class="team-toggle-indicator">▼</span>
+                                <span class="team-header-title">${currentTeamName}</span>
+                            </button>
                         </div>
                         <div class="team-header-fill"></div>
                     `;
                     grid.appendChild(teamHeader);
-
-                    }
+                }
                 
                 const rowCells = [];
 
+                const __teamId = __teamKey;
+                const __groupId = String(currentGroupId);
+
                 // Service ID Cell
                 const empServiceIdCell = createCell(emp.id, 'employee-row text-sm p-3 border-b border-l border-gray-200 text-gray-600 min-w-[100px] sm:min-w-[120px]');
+                empServiceIdCell.setAttribute('data-team-id', __teamId);
+                                empServiceIdCell.setAttribute('data-group-id', __groupId);
+                empServiceIdCell.setAttribute('data-row-type','staff');
                 empServiceIdCell.dataset.empId = emp.id;
-                empServiceIdCell.setAttribute('data-team-id', emp.team_id || '');
-                empServiceIdCell.classList.add('sticky-col');
-                empServiceIdCell.style.left = '0px';
                 rowCells.push(grid.appendChild(empServiceIdCell));
                 
                 // Emp ID Cell (Sticky)
-                const empShortIdCell = createCell(emp.emp_id || '', 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600 min-w-[80px] sm:min-w-[100px] sticky-col-1');
+                const empShortIdCell = createCell(emp.emp_id || '', 'employee-row sticky-col text-sm p-3 border-b border-l border-gray-200 text-gray-600 min-w-[80px] sm:min-w-[100px]');
+                empShortIdCell.setAttribute('data-team-id', __teamId);
+                empShortIdCell.setAttribute('data-group-id', __groupId);
+                empShortIdCell.setAttribute('data-row-type', 'staff');
                 empShortIdCell.dataset.empId = emp.id;
-                empShortIdCell.setAttribute('data-team-id', emp.team_id || '');
-                empShortIdCell.classList.add('sticky-col');
-                empShortIdCell.style.left = '120px';
                 rowCells.push(grid.appendChild(empShortIdCell));
+                empServiceIdCell.classList.add('sticky-col-0');
+                empShortIdCell.classList.add('sticky-col-1');
+
                 
                 // Name Cell
                 let roleIcon = '';
@@ -2247,10 +2100,10 @@ function updateDashboardMetrics() {
                     `;
                 }
                 const nameCell = document.createElement('div');
-                nameCell.setAttribute('data-team-id', emp.team_id || '');
-                nameCell.classList.add('sticky-col');
-                nameCell.style.left = '230px';
                 nameCell.className = 'employee-row text-sm p-3 border-b border-gray-200 text-gray-700 font-medium flex justify-between items-center min-w-[150px] sm:min-w-[200px]';
+                nameCell.setAttribute('data-team-id', __teamId);
+                nameCell.setAttribute('data-group-id', __groupId);
+                nameCell.setAttribute('data-row-type', 'staff');
                 nameCell.dataset.empId = emp.id; 
                 const nameContainer = document.createElement('div');
                 nameContainer.className = 'flex items-center space-x-2 cursor-pointer';
@@ -2284,11 +2137,21 @@ function updateDashboardMetrics() {
 
                 // D. NEW: Append Total Hours Cell
                 const totalHoursCell = createCell(totalHours + 'h', 'employee-row text-sm p-3 border-b border-l border-gray-200 font-bold text-center min-w-[80px] total-hours-cell text-blue-600');
+                totalHoursCell.setAttribute('data-team-id', __teamId);
+                                totalHoursCell.setAttribute('data-group-id', __groupId);
+                totalHoursCell.setAttribute('data-row-type','staff');
                 totalHoursCell.dataset.empId = emp.id;
-                totalHoursCell.setAttribute('data-team-id', emp.team_id || '');
-                totalHoursCell.classList.add('sticky-col');
-                totalHoursCell.style.left = '510px';
                 rowCells.push(grid.appendChild(totalHoursCell));
+                // Ensure Total Hours is NOT sticky (Emp ID should be pinned instead)
+                totalHoursCell.classList.remove('sticky-col','sticky-col-0','sticky-col-1');
+
+                // Tag all cells in this employee row for team collapse
+                rowCells.forEach(c => {
+                    c.dataset.teamId = __teamId;
+                    c.setAttribute('data-team-id', __teamId);
+                    c.setAttribute('data-row-type', 'staff');
+                });
+
 
 
                 // E. DYNAMIC ROSTER CELLS (Existing)
@@ -2297,7 +2160,11 @@ function updateDashboardMetrics() {
                     const { shift, shiftInfo, isAuto } = getShiftForEmployee(emp, fullDate);
                     
                     const dataCell = createCell(shiftInfo.text, `employee-row text-center p-3 border-b border-l border-gray-200 cursor-pointer hover:bg-gray-100 transition duration-150 font-semibold ${shiftInfo.color} ${shiftInfo.textColor}`);
-                    dataCell.dataset.empId = emp.id; 
+                    dataCell.dataset.empId = emp.id;
+                    dataCell.dataset.teamId = __teamId;
+                    dataCell.setAttribute('data-team-id', __teamId);
+                    dataCell.setAttribute('data-group-id', __groupId);
+                    dataCell.setAttribute('data-row-type', 'staff');
                     if (isAuto) dataCell.classList.add('auto-shift');
                     dataCell.addEventListener('click', () => openModal(dataCell, emp.id, emp.name, fullDate));
                     rowCells.push(grid.appendChild(dataCell));
@@ -2311,6 +2178,8 @@ function updateDashboardMetrics() {
             updateSelectAllCheckbox();
             if (typeof handleRosterScroll === 'function') {
                 handleRosterScroll();
+                attachTeamCollapse();
+
             }
         }
 
@@ -2565,14 +2434,7 @@ function updateDashboardMetrics() {
         }
 
         function closeModal() {
-            if (!modal) return;
             modal.classList.add('hidden');
-            if (returnToManageStaff) {
-                // Reset the flag *before* reopening to avoid loops
-                returnToManageStaff = false;
-                // Re-open Edit Staff Profiles
-                openManageStaffModal();
-            }
         }
 
         async function selectShift(shiftCode) {
@@ -3192,9 +3054,6 @@ function updateDashboardMetrics() {
                     modalEmployeeStarInput.value = emp.star || 'none';
                     saveDetailsStatus.textContent = '';
 
-                    // Mark that we came from Edit Staff Profiles
-                    returnToManageStaff = true;
-
                     // We open the same details modal (no date context needed)
                     modalDate.textContent = 'Edit Staff Profile';
 
@@ -3208,10 +3067,8 @@ function updateDashboardMetrics() {
         }
 
         function openManageStaffModal() {
-            // Ensure the shift/details modal is closed first without triggering returnToManageStaff flow
-            if (modal) {
-                modal.classList.add('hidden');
-            }
+            // Ensure the shift/details modal is closed first
+            closeModal();
             renderManageStaffList();
             manageStaffModal.classList.remove('hidden');
         }
@@ -3784,7 +3641,6 @@ function closeAddLabelModal() {
             
             manageStaffBtn.addEventListener('click', openManageStaffModal);
             closeManageStaffModalBtn.addEventListener('click', closeManageStaffModal);
-            if (dashboardRefreshBtn) dashboardRefreshBtn.addEventListener('click', updateDashboardMetrics);
             manageStaffModal.addEventListener('click', (e) => { if (e.target === manageStaffModal) closeManageStaffModal(); });
             manageLabelsBtn.addEventListener('click', openAddLabelModal);
             closeLabelsModalBtn.addEventListener('click', closeAddLabelModal);
@@ -4006,17 +3862,6 @@ function closeAddLabelModal() {
             manageDropdown = document.getElementById('manage-dropdown');
             modalEmployeeRoleInput = document.getElementById('modal-employee-role-input');
             modalEmployeeStarInput = document.getElementById('modal-employee-star-input');
-            dashboardMonthEl = document.getElementById('dashboard-month');
-            dashboardTeamEl = document.getElementById('dashboard-team');
-            dashboardDayInput = document.getElementById('dashboard-day');
-            dashboardRefreshBtn = document.getElementById('dashboard-refresh');
-            metricStaffEl = document.getElementById('metric-staff');
-            metricOnDutyEl = document.getElementById('metric-onduty');
-            metricOffEl = document.getElementById('metric-off');
-            metricAlEl = document.getElementById('metric-al');
-            metricIaEl = document.getElementById('metric-ia');
-            metric2nEl = document.getElementById('metric-2n');
-            metricAlertsEl = document.getElementById('metric-alerts');
             manageStaffBtn = document.getElementById('manage-staff-btn');
             manageStaffModal = document.getElementById('manage-staff-modal');
             manageStaffList = document.getElementById('manage-staff-list');
@@ -4302,10 +4147,7 @@ function closeAddLabelModal() {
     observe(document.getElementById('shift-modal'));
     observe(document.body);
   }
-
-            attachTeamHeaderToggles();
-            updateDashboardMetrics();
-        })();
+})();
 </script>
 
 </body>
