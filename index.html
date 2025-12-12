@@ -4,7 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Roster System</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com">
+        // --- Override: iOS-friendly Name column resize (Pointer Events) ---
+        function initNameColumnResizer() {
+            const resizer = document.getElementById('name-col-resizer');
+            if (!resizer) return;
+            if (resizer.dataset.bound === '1') return;
+            resizer.dataset.bound = '1';
+
+            const saved = parseInt(localStorage.getItem('nameColWidth') || '', 10);
+            if (!Number.isNaN(saved) && saved >= 140 && saved <= 520) {
+                document.documentElement.style.setProperty('--name-col-width', saved + 'px');
+            }
+
+            let startX = 0;
+            let startW = 0;
+            let dragging = false;
+
+            const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+            const onMove = (e) => {
+                if (!dragging) return;
+                const dx = e.clientX - startX;
+                const w = clamp(startW + dx, 140, 520);
+                document.documentElement.style.setProperty('--name-col-width', w + 'px');
+                e.preventDefault();
+            };
+
+            const endDrag = (e) => {
+                if (!dragging) return;
+                dragging = false;
+                document.body.classList.remove('no-scroll-while-resizing');
+                try { resizer.releasePointerCapture(e.pointerId); } catch {}
+                const w = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--name-col-width'), 10);
+                if (!Number.isNaN(w)) localStorage.setItem('nameColWidth', String(w));
+                window.removeEventListener('pointermove', onMove);
+                window.removeEventListener('pointerup', endDrag);
+                window.removeEventListener('pointercancel', endDrag);
+            };
+
+            const startDrag = (e) => {
+                e.preventDefault();
+                dragging = true;
+                startX = e.clientX;
+                const cur = getComputedStyle(document.documentElement).getPropertyValue('--name-col-width');
+                startW = parseInt(cur, 10) || 220;
+                document.body.classList.add('no-scroll-while-resizing');
+                try { resizer.setPointerCapture(e.pointerId); } catch {}
+                window.addEventListener('pointermove', onMove, { passive: false });
+                window.addEventListener('pointerup', endDrag, { passive: false });
+                window.addEventListener('pointercancel', endDrag, { passive: false });
+            };
+
+            resizer.addEventListener('pointerdown', startDrag, { passive: false });
+        }
+
+    </script>
     <style>
         /* Custom styles */
         body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
@@ -711,11 +766,9 @@
         /* === Phase 1 A+C Clean Sticky + Team Collapse (iOS safe) === */
         .sticky-col-0 { position: -webkit-sticky; position: sticky; left: 0px; z-index: 30; background: #ffffff; }
         .sticky-col-1 { position: -webkit-sticky; position: sticky; left: 120px; z-index: 30; background: #ffffff; }
-
-        .sticky-header-col-0 { position: -webkit-sticky; position: sticky; top: 0; left: 0px; z-index: 60; background: #f1f5f9; }
+.sticky-header-col-0 { position: -webkit-sticky; position: sticky; top: 0; left: 0px; z-index: 60; background: #f1f5f9; }
         .sticky-header-col-1 { position: -webkit-sticky; position: sticky; top: 0; left: 120px; z-index: 60; background: #f1f5f9; }
-
-        .team-header-cell {
+.team-header-cell {
             background: #eef2ff;
             border-top: 1px solid #c7d2fe;
             border-bottom: 1px solid #c7d2fe;
@@ -729,8 +782,8 @@
             position: -webkit-sticky;
             position: sticky;
             left: 0px;
-            width: 220px; /* ServiceID(120) + EmpID(100) */
-            min-width: 220px;
+            width: 120px; /* EmpID only */
+            min-width: 120px;
             background: #eef2ff;
             border-right: 1px solid #c7d2fe;
             z-index: 55;
@@ -747,7 +800,77 @@
         .team-toggle-btn:active{ background:#e0e7ff; }
         .team-toggle-indicator{ width: 16px; text-align:center; font-size: 12px; }
         .team-row-collapsed{ display:none !important; }
-</style>
+
+        :root{ --name-col-width: 220px; }
+
+        /* Employee Name column: single-line + resizable */
+        .name-col{ width: var(--name-col-width); min-width: var(--name-col-width); max-width: var(--name-col-width); }
+        .name-col .name-text{ display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+        .name-header{ position:relative; padding-right:26px; }
+        .name-header .col-resizer{
+            position:absolute; top:0; right:0;
+            width:24px; height:100%;
+            cursor:col-resize; touch-action:none;
+            display:flex; align-items:center; justify-content:center;
+            background:rgba(148,163,184,0.10);
+        }
+        .name-header .col-resizer::after{
+            content:"⇔";
+            font-size:14px;
+            color:rgba(30,41,59,0.65);
+            line-height:1;
+        }
+
+    
+        /* Name column resize handle (high visibility) */
+        .name-header{ position: relative; overflow: visible; }
+        #name-col-resizer{
+            position:absolute;
+            top:0;
+            right:-2px;
+            width:32px;
+            height:100%;
+            z-index:9999;
+            cursor:col-resize;
+            touch-action:none;
+            background: rgba(59,130,246,0.10);
+        }
+        #name-col-resizer:after{
+            content:'⇔';
+            position:absolute;
+            top:50%;
+            left:50%;
+            transform:translate(-50%,-50%);
+            font-size:16px;
+            font-weight:700;
+            color: rgba(30,41,59,0.75);
+        }
+
+    
+        /* Inline resize handle (always visible, iOS-friendly) */
+        .name-resize-handle{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            margin-left:8px;
+            padding:2px 8px;
+            border-radius:999px;
+            background: rgba(59,130,246,0.18);
+            border: 1px solid rgba(59,130,246,0.35);
+            color: rgba(30,41,59,0.85);
+            font-weight: 800;
+            font-size: 14px;
+            cursor: col-resize;
+            user-select: none;
+            -webkit-user-select:none;
+            touch-action: none;
+            z-index: 9999;
+        }
+
+    
+        .no-scroll-while-resizing{ overflow:hidden !important; }
+    </style>
 </head>
 <body class="bg-gray-100">
 
@@ -861,6 +984,14 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-8V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                             </svg>
                         </button>
+                        <!-- Collapse / Expand All -->
+                        <button id="collapse-all-btn" class="px-3 py-2 bg-slate-600 text-white rounded-lg shadow hover:bg-slate-700 transition duration-150 text-sm">
+                            Collapse All
+                        </button>
+                        <button id="expand-all-btn" class="px-3 py-2 bg-slate-500 text-white rounded-lg shadow hover:bg-slate-600 transition duration-150 text-sm">
+                            Expand All
+                        </button>
+
 
                     </div>
                     <!-- Batch delete button (initially hidden) -->
@@ -1465,7 +1596,7 @@ Manage Teams Modal -->
             employeeCalendarWeekdays, employeeCalendarGrid, closeEmployeeCalendarBtn,
             confirmModal, confirmModalTitle, confirmModalBody, confirmModalCancel, confirmModalConfirm,
             // Print Modal Elements
-            printBtn, printModal, closePrintModalBtn, printAllVisibleBtn, printSelectedBtn,
+            printBtn, collapseAllBtn, expandAllBtn, printModal, closePrintModalBtn, printAllVisibleBtn, printSelectedBtn,
             // NEW: Daily List Modal Elements
             dailyListBtn, dailyListModal, closeDailyListModalBtn, dailyListDate,
             dailyListContent, printDailyListBtn, dailyListPrintDate;
@@ -1544,6 +1675,29 @@ Manage Teams Modal -->
 
                 btn.addEventListener('click', runToggle, { capture: true });
                 btn.addEventListener('touchend', runToggle, { capture: true });
+            });
+        }
+
+
+        function setAllTeamsCollapsed(shouldCollapse) {
+            if (!grid) return;
+            // Ensure buttons are bound
+            attachTeamCollapse();
+
+            grid.querySelectorAll('.team-header-cell').forEach(header => {
+                const btn = header.querySelector('.team-toggle-btn');
+                if (!btn) return;
+                const groupId = btn.dataset.groupId || btn.getAttribute('data-group-id') || '';
+                if (!groupId) return;
+
+                header.dataset.collapsed = shouldCollapse ? '1' : '0';
+
+                grid.querySelectorAll(`[data-group-id="${groupId}"][data-row-type="staff"]`).forEach(el => {
+                    el.classList.toggle('team-row-collapsed', shouldCollapse);
+                });
+
+                const indicator = btn.querySelector('.team-toggle-indicator');
+                if (indicator) indicator.textContent = shouldCollapse ? '▶' : '▼';
             });
         }
 
@@ -1975,11 +2129,12 @@ Manage Teams Modal -->
             grid.appendChild(empIdHeader);
 
             const nameHeader = document.createElement('div');
-            nameHeader.className = 'header-cell font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 flex items-center space-x-3 min-w-[150px] sm:min-w-[200px]';
+            nameHeader.className = 'header-cell font-semibold text-sm text-gray-700 p-3 border-b border-l border-gray-200 flex items-center space-x-3 min-w-[260px] sm:min-w-[260px] name-col name-header sticky-header';
             nameHeader.innerHTML = `
                 <input type="checkbox" id="select-all-checkbox" class="emp-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                <label for="select-all-checkbox" class="cursor-pointer">Employee Name</label>
-            `;
+                <label for="select-all-checkbox" class="cursor-pointer">Employee Name <span id="name-col-resizer" class="name-resize-handle" aria-label="Resize column" title="Drag to resize">⇔</span></label>
+            
+                `;
             // RENAMED: Changed listener to the new function name
             nameHeader.querySelector('#select-all-checkbox').addEventListener('change', (e) => handleRosterSelectAll(e.target.checked));
             grid.appendChild(nameHeader);
@@ -2070,8 +2225,8 @@ Manage Teams Modal -->
                 empShortIdCell.setAttribute('data-row-type', 'staff');
                 empShortIdCell.dataset.empId = emp.id;
                 rowCells.push(grid.appendChild(empShortIdCell));
-                empServiceIdCell.classList.add('sticky-col-0');
-                empShortIdCell.classList.add('sticky-col-1');
+                
+                empShortIdCell.classList.add('sticky-col-0');
 
                 
                 // Name Cell
@@ -2100,7 +2255,7 @@ Manage Teams Modal -->
                     `;
                 }
                 const nameCell = document.createElement('div');
-                nameCell.className = 'employee-row text-sm p-3 border-b border-gray-200 text-gray-700 font-medium flex justify-between items-center min-w-[150px] sm:min-w-[200px]';
+                nameCell.className = 'employee-row text-sm p-3 border-b border-gray-200 text-gray-700 font-medium flex justify-between items-center min-w-[260px] sm:min-w-[260px] name-col';
                 nameCell.setAttribute('data-team-id', __teamId);
                 nameCell.setAttribute('data-group-id', __groupId);
                 nameCell.setAttribute('data-row-type', 'staff');
@@ -2179,6 +2334,7 @@ Manage Teams Modal -->
             if (typeof handleRosterScroll === 'function') {
                 handleRosterScroll();
                 attachTeamCollapse();
+            initNameColumnResizer();
 
             }
         }
@@ -3731,6 +3887,10 @@ function closeAddLabelModal() {
 
             // Print Listeners
             printBtn.addEventListener('click', openPrintModal);
+
+            // Collapse / Expand All Listeners
+            if (collapseAllBtn) collapseAllBtn.addEventListener('click', () => setAllTeamsCollapsed(true));
+            if (expandAllBtn) expandAllBtn.addEventListener('click', () => setAllTeamsCollapsed(false));
             closePrintModalBtn.addEventListener('click', closePrintModal);
             printModal.addEventListener('click', (e) => { if (e.target === printModal) closePrintModal(); });
             printAllVisibleBtn.addEventListener('click', () => handlePrint(false));
@@ -3899,6 +4059,8 @@ function closeAddLabelModal() {
 
             // Assign Print Modal Elements
             printBtn = document.getElementById('print-btn');
+            collapseAllBtn = document.getElementById('collapse-all-btn');
+            expandAllBtn = document.getElementById('expand-all-btn');
             printModal = document.getElementById('print-modal');
             closePrintModalBtn = document.getElementById('close-print-modal');
             printAllVisibleBtn = document.getElementById('print-all-visible-btn');
