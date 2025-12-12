@@ -30,7 +30,7 @@
             const onMove = (e) => {
                 if (!dragging) return;
                 const dx = e.clientX - startX;
-                const w = clamp(startW + dx, 0, 600); // Limits: 0px to 600px (allow full collapse)
+                const w = clamp(startW + dx, 0, 600); // Limits: 0px to 600px
                 document.documentElement.style.setProperty('--name-col-width', w + 'px');
                 e.preventDefault();
             };
@@ -142,7 +142,7 @@
         #name-col-resizer {
             position: absolute;
             top: 0;
-            right: -15px; /* straddle border, stays clickable at 0px width */
+            right: -15px;
             width: 30px; /* Wide touch area */
             height: 100%;
             z-index: 100;
@@ -215,7 +215,7 @@
 </head>
 <body class="bg-gray-100">
 
-    <div class="main-container w-full min-h-screen md:min-h-0 md:max-w-full md:my-8 md:mx-auto bg-white md:rounded-2xl md:shadow-lg overflow-hidden">
+    <div class="main-container w-full min-h-screen md:min-h-0 md:max-w-full md:my-8 md:mx-auto bg-white md:rounded-2xl md:shadow-lg overflow-visible md:overflow-hidden">
         <header class="p-3 sm:p-5 border-b border-gray-200 bg-gray-50">
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="flex-1 w-full md:w-auto"><h1 class="text-2xl font-bold text-gray-800 text-center md:text-left">PCC/APOs Roster</h1></div>
@@ -231,14 +231,14 @@
                         <!-- Filters & Buttons -->
                         <div class="relative">
                             <button id="team-filter-btn" class="px-4 py-2 bg-gray-600 text-white rounded-lg shadow hover:bg-gray-700 flex items-center space-x-2"><span>Filter Teams</span><svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg></button>
-                            <div id="team-filter-dropdown" class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl z-50 hidden border border-gray-200">
+                            <div id="team-filter-dropdown" class="fixed left-1/2 -translate-x-1/2 top-32 w-[min(92vw,22rem)] md:absolute md:left-auto md:translate-x-0 md:top-auto md:right-0 md:w-64 mt-2 bg-white rounded-lg shadow-xl z-50 hidden border border-gray-200">
                                 <div class="p-3 border-b border-gray-200"><label class="flex items-center space-x-3"><input type="checkbox" id="select-all-teams-checkbox" class="rounded border-gray-300 text-indigo-600"><span class="font-medium text-gray-800">Select All</span></label></div>
                                 <div id="team-filter-list" class="p-3 space-y-2"></div>
                             </div>
                         </div>
                         <div class="relative">
                             <button id="name-filter-btn" class="px-4 py-2 bg-gray-600 text-white rounded-lg shadow hover:bg-gray-700 flex items-center space-x-2"><span>Filter Names</span><svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg></button>
-                            <div id="name-filter-dropdown" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl z-50 hidden border border-gray-200">
+                            <div id="name-filter-dropdown" class="fixed left-1/2 -translate-x-1/2 top-32 w-[min(92vw,22rem)] md:absolute md:left-auto md:translate-x-0 md:top-auto md:right-0 md:w-80 mt-2 bg-white rounded-lg shadow-xl z-50 hidden border border-gray-200">
                                 <div class="p-3 border-b border-gray-200"><input type="text" id="name-filter-search" placeholder="Search names..." class="w-full px-3 py-2 text-sm rounded-lg border-gray-300"></div>
                                 <div class="p-3 border-b border-gray-200 flex space-x-2">
                                     <button id="select-all-names-btn" class="flex-1 px-3 py-1 bg-indigo-500 text-white rounded-lg text-sm">Select All</button>
@@ -250,7 +250,7 @@
                         <button id="add-employee-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700">Add Employee</button>
                         <div class="relative">
                             <button id="manage-menu-btn" class="p-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826 3.31 2.37-2.37.996.608 2.296.096 2.573-1.066z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button>
-                            <div id="manage-dropdown" class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl z-50 hidden border border-gray-200 divide-y divide-gray-100">
+                            <div id="manage-dropdown" class="fixed left-1/2 -translate-x-1/2 top-32 w-[min(92vw,22rem)] md:absolute md:left-auto md:translate-x-0 md:top-auto md:right-0 md:w-56 mt-2 bg-white rounded-lg shadow-xl z-50 hidden border border-gray-200 divide-y divide-gray-100">
                                 <button id="manage-labels-btn" class="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100">Manage Labels & Shifts</button>
                                 <button id="manage-teams-btn" class="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100">Manage Teams</button>
                                 <button id="manage-staff-btn" class="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100">Edit Staff Profiles</button>
@@ -596,7 +596,63 @@
             });
         }
 
-        // Firebase Init
+        
+
+        // ============================
+        // UI BUTTONS / DROPDOWNS
+        // ============================
+        function setupHeaderUI() {
+            const byId = (id) => document.getElementById(id);
+
+            const teamBtn = byId('team-filter-btn');
+            const teamDrop = byId('team-filter-dropdown');
+            const nameBtn = byId('name-filter-btn');
+            const nameDrop = byId('name-filter-dropdown');
+            const manageBtn = byId('manage-menu-btn');
+            const manageDrop = byId('manage-dropdown');
+
+            const addEmployeeBtn = byId('add-employee-btn');
+            const dailyListBtn = byId('daily-list-btn');
+            const printBtn = byId('print-btn');
+
+            const closeAllDropdowns = () => {
+                if (teamDrop) teamDrop.classList.add('hidden');
+                if (nameDrop) nameDrop.classList.add('hidden');
+                if (manageDrop) manageDrop.classList.add('hidden');
+            };
+
+            const toggleDropdown = (drop) => {
+                if (!drop) return;
+                const isHidden = drop.classList.contains('hidden');
+                closeAllDropdowns();
+                drop.classList.toggle('hidden', !isHidden);
+            };
+
+            if (teamBtn && teamDrop) teamBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); toggleDropdown(teamDrop); }, true);
+            if (nameBtn && nameDrop) nameBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); toggleDropdown(nameDrop); }, true);
+            if (manageBtn && manageDrop) manageBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); toggleDropdown(manageDrop); }, true);
+
+            // Click outside closes
+            document.addEventListener('click', () => closeAllDropdowns(), true);
+            document.addEventListener('touchstart', () => closeAllDropdowns(), true);
+
+            // Basic actions (keep existing functionality if your full script defines these)
+            if (addEmployeeBtn) addEmployeeBtn.addEventListener('click', () => {
+                if (typeof window.openAddEmployeeModal === 'function') return window.openAddEmployeeModal();
+                alert('Add Employee: modal logic not found in this build.');
+            });
+
+            if (dailyListBtn) dailyListBtn.addEventListener('click', () => {
+                if (typeof window.openDailyList === 'function') return window.openDailyList();
+                // Fallback: open the existing calendar modal as a harmless action
+                const m = byId('employee-calendar-modal');
+                if (m) m.classList.remove('hidden');
+            });
+
+            if (printBtn) printBtn.addEventListener('click', () => window.print());
+        }
+
+// Firebase Init
         async function initFirebase() {
             onAuthStateChanged(auth, async (user) => {
                 if(user) {
@@ -646,6 +702,7 @@
         // DOM Ready
         document.addEventListener('DOMContentLoaded', () => {
             initFirebase();
+            setupHeaderUI();
             document.getElementById('prev-month').onclick = () => { currentMonth--; if(currentMonth<0){currentMonth=11;currentYear--;} renderRoster(); };
             document.getElementById('next-month').onclick = () => { currentMonth++; if(currentMonth>11){currentMonth=0;currentYear++;} renderRoster(); };
             grid.addEventListener('scroll', () => {
